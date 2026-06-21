@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyNTYnIGhlaWdodD0nMjU2JyB2aWV3Qm94PScwIDAgNjQgNjQnPgogIDxyZWN0IHdpZHRoPSc2NCcgaGVpZ2h0PSc2NCcgcng9JzEyJyBmaWxsPScjMjU2M2ViJy8+CiAgPHJlY3QgeD0nMTAnIHk9JzEyJyB3aWR0aD0nMTInIGhlaWdodD0nMTInIHJ4PSczJyBmaWxsPScjZmZmZmZmJyBvcGFjaXR5PScwLjI1Jy8+CiAgPHJlY3QgeD0nNDInIHk9JzQwJyB3aWR0aD0nMTInIGhlaWdodD0nMTInIHJ4PSczJyBmaWxsPScjZmZmZmZmJyBvcGFjaXR5PScwLjI1Jy8+CiAgPHRleHQgeD0nNTAlJyB5PSc1MiUnIGRvbWluYW50LWJhc2VsaW5lPSdtaWRkbGUnIHRleHQtYW5jaG9yPSdtaWRkbGUnIGZvbnQtZmFtaWx5PSdTZWdvZSBVSSwgQXJpYWwsIHNhbnMtc2VyaWYnIGZvbnQtc2l6ZT0nMzAnIGZpbGw9JyNmZmZmZmYnPkI8L3RleHQ+Cjwvc3ZnPg==">
+  <title>Blû</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="topbar">
+    <button id="hamburger" title="Menu" onclick="toggleMenu()">&#9776;</button>
+    <div id="searchWrap">
+      <input id="searchInput" type="text" placeholder="Pesquisar..." oninput="doSearch({ collapseOnClear: true })">
+    </div>
+    <select id="searchType" title="Filtrar por" onchange="doSearch()">
+      <option value="all">Tudo</option>
+      <option value="name">Nome</option>
+      <option value="tag">Tag/Grupo</option>
+    </select>
+  </div>
+
+  <div id="menuOverlay">
+    <button class="menu-btn" onclick="openModal('sectionModal')" title="Criar nova seção">&#128193; Nova Seção</button>
+    <button class="menu-btn" onclick="openPopout()"" title="Abrir em nova janela">⧉ Nova Janela</button>
+    <button class="menu-btn" id="exportBtn" onclick="exportData()" title="Exportar JSON">&#128228; Exportar</button>
+    <button class="menu-btn" onclick="openModal('importModal')" title="Importar JSON">&#128229; Importar</button>
+    <button class="menu-btn" onclick="clearAll()" title="Limpar todos os dados">&#128465;&#65039; Limpar Tudo</button>
+    <button class="menu-btn" id="editModeBtn" onclick="toggleEditMode()" title="Ativar/desativar modo edição">&#9999;&#65039; Modo Edição: OFF</button>
+    <button class="menu-btn" onclick="openModal('tagModal')" title="Gerenciar tags">&#127991;&#65039; Tags</button>
+    <button class="menu-btn" onclick="openPopoutBlank()" title="Abrir em pop-out (about:blank)">⊞ Pop Out</button>
+    <button class="menu-btn" id="toggleSectionsBtn" onclick="toggleAllSections()" title="Expandir/minimizar categorias — Ctrl + E">⬇&#65039; Expandir Categorias</button>
+    <button class="menu-btn" id="themeBtn" onclick="toggleTheme()" title="Alternar tema">&#127769; Tema Escuro</button>
+  </div>
+
+  <div id="main">
+    <div id="sections"></div>
+    <button id="addSectionBtn" onclick="openModal('sectionModal')" title="Criar nova seção">＋ Nova Seção</button>
+  </div>
+
+  <div class="modal-bg" id="btnModal">
+    <div class="modal">
+      <h2 id="btnModalTitle">&#10133; Novo Botão</h2>
+      <div class="form-group"><label>Nome</label><input id="bName" placeholder="Ex: Bem-vindo"></div>
+      <div class="form-group"><label>Texto a copiar</label><textarea id="bText" placeholder="Texto que será copiado ao clicar"></textarea></div>
+      <div class="form-group"><label>Tag / Grupo</label><input id="bTag" list="tagOptions" placeholder="(opcional)"><datalist id="tagOptions"></datalist></div>
+      <div class="form-group"><label>Visibilidade</label><select id="bVis"><option value="other">Outro (padrão)</option><option value="public">&#127758; Público</option><option value="private">&#128274; Privado</option></select></div>
+      <div class="modal-footer"><button class="mbtn secondary" onclick="closeModal('btnModal')">Cancelar</button><button class="mbtn primary" onclick="saveBtn()">Salvar</button></div>
+    </div>
+  </div>
+
+  <div class="modal-bg" id="sectionModal">
+    <div class="modal">
+      <h2>&#128193; Nova Seção</h2>
+      <div class="form-group"><label>Nome da Seção</label><input id="sName" placeholder="Ex: Saudações"></div>
+      <div class="modal-footer"><button class="mbtn secondary" onclick="closeModal('sectionModal')">Cancelar</button><button class="mbtn primary" onclick="saveSection()">Criar</button></div>
+    </div>
+  </div>
+
+  <div class="modal-bg" id="tagModal">
+    <div class="modal">
+      <h2>&#127991;&#65039; Gerenciar Tags</h2>
+      <div id="tagList"></div>
+      <div style="display:flex;gap:8px;">
+        <input id="newTagInput" placeholder="Nova tag..." style="flex:1;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:13px;outline:none;">
+        <button class="mbtn primary" onclick="addTag()">Adicionar</button>
+      </div>
+      <div class="modal-footer"><button class="mbtn secondary" onclick="closeModal('tagModal')">Fechar</button></div>
+    </div>
+  </div>
+
+  <div class="modal-bg" id="importModal">
+    <div class="modal">
+      <h2>&#128229; Importar JSON</h2>
+      <div class="import-helper">Cole o JSON abaixo ou carregue um arquivo <code>.json</code> / <code>.txt</code>. O conteúdo será exibido na caixa para revisão antes da importação.</div>
+      <div class="import-actions">
+        <button class="mbtn ghost" type="button" onclick="triggerImportFilePicker()">&#128194; Carregar arquivo</button>
+        <button class="mbtn secondary" type="button" onclick="clearImportSource()">Limpar conteúdo</button>
+        <input id="importFileInput" type="file" accept=".json,.txt,application/json,text/plain" onchange="handleImportFileSelected(event)" style="display:none">
+      </div>
+      <div id="importFileMeta" class="import-file-meta">Nenhum arquivo carregado.</div>
+      <div class="form-group"><label>Cole o JSON aqui</label><textarea id="importJson" style="min-height:160px;" placeholder='{"sections":[],"tags":[]}'></textarea></div>
+      <div class="modal-footer"><button class="mbtn secondary" onclick="closeModal('importModal')">Cancelar</button><button class="mbtn primary" onclick="importData()">Importar</button></div>
+    </div>
+  </div>
+
+  <div id="notifArea"></div>
+  <div id="appVersion">Blü</div>
+    <script src="scripts.js"></script>
+</body>
+</html>
