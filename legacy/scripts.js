@@ -10,7 +10,7 @@ const REDO_LIMIT = 10;
 const VERSION = '3.8.3 Beta';
 let lastCommittedComparableState = '';
 const BASE_TITLE = 'Blû';
-const isPopoutWindow = !!window.opener && ['BluPopOut', 'BluPopout'].includes(window.name);
+const isPopoutWindow = !!window.opener && ['BluLGPopOut', 'BluLGPopout'].includes(window.name);
 
 function getComparableStateString() {
   const state = collectState();
@@ -988,14 +988,14 @@ function clearAll() {
 function openPopout() {
   const width = 440;
   const height = 1200;
-  window.open(location.href, 'BluePopout', `width=${width},height=${height},left=${(screen.width - width) / 2},top=${(screen.height - height) / 2},resizable=yes,scrollbars=yes`);
+  window.open(location.href, 'BlueLGPopout', `width=${width},height=${height},left=${(screen.width - width) / 2},top=${(screen.height - height) / 2},resizable=yes,scrollbars=yes`);
 }
 
 function openPopoutBlank() {
   const width = 440;
   const height = 1200;
 
-  const win = window.open('', 'BluePopOut',
+  const win = window.open('', 'BlueLGPopOut',
     `width=${width},height=${height},left=${(screen.width - width) / 2},top=${(screen.height - height) / 2},resizable=yes,scrollbars=yes`
   );
 
