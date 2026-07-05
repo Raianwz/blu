@@ -235,6 +235,13 @@ document.addEventListener('keydown', event => {
     return;
   }
 
+  // Alt+C — Ativar/desativar criptografia do próximo export
+  if (event.altKey && key === 'c' && !typing) {
+    event.preventDefault();
+    toggleExportEncryption();
+    return;
+  }
+
   // / — Foca a busca (padrão Slack/GitHub/Notion)
   if (event.key === '/' && !typing) {
     event.preventDefault();

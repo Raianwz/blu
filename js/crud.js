@@ -5,8 +5,31 @@
 let currentSectionId = null;
 let currentBtnId = null;
 
+// Criptografia do export: controlada via atalho Alt+C (não há mais
+// checkbox no menu — o estado liga/desliga e reflete como um pequeno
+// cadeado no botão Exportar).
+let encryptExportEnabled = false;
+
+function setExportEncryption(enabled) {
+  encryptExportEnabled = enabled;
+  const exportBtn = document.getElementById('exportBtn');
+  if (exportBtn) exportBtn.classList.toggle('encryption-on', enabled);
+}
+
+function toggleExportEncryption() {
+  setExportEncryption(!encryptExportEnabled);
+  notify(encryptExportEnabled ? '🔒 Criptografia ativada para o próximo export' : 'Criptografia desativada');
+}
+
 function openModal(id) {
   document.getElementById(id).classList.add('open');
+
+  if (id === 'tagModal') {
+    const filterInput = document.getElementById('tagFilterInput');
+    if (filterInput) filterInput.value = '';
+    renderTagList();
+  }
+
   const input = document.querySelector(`#${id} input, #${id} textarea`);
   if (input) setTimeout(() => input.focus(), 50);
 }
@@ -62,8 +85,15 @@ async function deleteSection(sectionId) {
   const ok = await confirmDialog(msg, { title: '🗑️ Excluir Seção', danger: true, confirmText: 'Excluir' });
   if (!ok) return;
 
+  const affectedTags = new Set(
+    [...wrap.querySelectorAll('.btn-wrap')]
+      .map(button => button.dataset.tag)
+      .filter(Boolean)
+  );
+
   pushHistory();
   wrap.remove();
+  affectedTags.forEach(removeTagIfOrphan);
   notify('Seção removida!');
   updateToggleSectionsBtnLabel();
   updateUnsavedChangesUI();
@@ -144,7 +174,9 @@ function saveBtn() {
       notify('Botão original não encontrado', 'err');
       return;
     }
+    const oldTag = old.dataset.tag;
     old.replaceWith(createBtnEl(button, currentSectionId));
+    if (oldTag && oldTag !== normalizeSearchText(tag)) removeTagIfOrphan(oldTag);
     notify('Botão atualizado!');
   } else {
     body.appendChild(createBtnEl(button, currentSectionId));
@@ -168,8 +200,11 @@ async function deleteBtn(sectionId, btnId) {
   const ok = await confirmDialog('Remover este botão?', { title: '🗑️ Remover Botão', danger: true, confirmText: 'Remover' });
   if (!ok) return;
 
+  const removedTag = target.dataset.tag;
+
   pushHistory();
   target.remove();
+  if (removedTag) removeTagIfOrphan(removedTag);
   updateSectionCount(sectionId);
   notify('Botão removido!');
   doSearch();
@@ -178,16 +213,62 @@ async function deleteBtn(sectionId, btnId) {
 
 // --- Tags --------------------------------------------------
 
+function getTagUsageMap() {
+  const usage = {};
+  document.querySelectorAll('.btn-wrap').forEach(button => {
+    const tag = button.dataset.tag;
+    if (tag) usage[tag] = (usage[tag] || 0) + 1;
+  });
+  return usage;
+}
+
 function renderTagList() {
   const list = document.getElementById('tagList');
+  const emptyMsg = document.getElementById('tagEmptyMsg');
+  const filterInput = document.getElementById('tagFilterInput');
+  const filterValue = filterInput ? filterInput.value.trim() : '';
+  const filter = normalizeSearchText(filterValue);
+  const usage = getTagUsageMap();
+
   list.innerHTML = '';
 
-  tags.forEach(tag => {
+  const visibleTags = tags.filter(tag => !filter || normalizeSearchText(tag).includes(filter));
+
+  visibleTags.forEach(tag => {
+    const count = usage[tag] || 0;
     const chip = document.createElement('span');
     chip.className = 'tag-chip';
-    chip.innerHTML = `${escapeHtml(tag)} <button onclick="removeTag('${String(tag).replace(/'/g, "\\'")}')" title="Remover tag">✕</button>`;
+    chip.title = count > 0 ? `Usada em ${count} botão(ões)` : 'Nenhum botão usa esta tag';
+    chip.innerHTML = `${escapeHtml(tag)} <span class="tag-chip-count">${count}</span> <button onclick="removeTag('${String(tag).replace(/'/g, "\\'")}')" title="Remover tag">✕</button>`;
     list.appendChild(chip);
   });
+
+  if (emptyMsg) {
+    if (tags.length === 0) {
+      emptyMsg.textContent = 'Nenhuma tag criada ainda.';
+      emptyMsg.classList.add('show');
+    } else if (visibleTags.length === 0) {
+      emptyMsg.textContent = `Nenhuma tag encontrada para "${filterValue}".`;
+      emptyMsg.classList.add('show');
+    } else {
+      emptyMsg.classList.remove('show');
+    }
+  }
+}
+
+// Remove uma tag automaticamente da lista se nenhum botão mais a usa —
+// chamada após excluir/editar botões ou seções, nunca após addTag()
+// (uma tag recém-criada, ainda sem botão, não deve ser tratada como órfã).
+function removeTagIfOrphan(tag) {
+  if (!tag) return;
+  const stillUsed = document.querySelector(`.btn-wrap[data-tag="${cssEscape(tag)}"]`);
+  if (stillUsed) return;
+
+  const index = tags.indexOf(tag);
+  if (index === -1) return;
+
+  tags.splice(index, 1);
+  updateTagDatalist();
 }
 
 function addTag() {
@@ -224,9 +305,24 @@ function updateTagDatalist() {
 
 // --- Export / Import --------------------------------------
 
-function exportData() {
+async function exportData() {
   const state = collectState();
-  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  let jsonString = JSON.stringify(state, null, 2);
+
+  const shouldEncrypt = encryptExportEnabled;
+  let filenameSuffix = '';
+
+  if (shouldEncrypt) {
+    try {
+      jsonString = await encryptJsonString(jsonString);
+      filenameSuffix = '-enc';
+    } catch (error) {
+      console.error('Erro ao criptografar:', error);
+      notify('Não foi possível criptografar. Exportando sem criptografia.', 'err');
+    }
+  }
+
+  const blob = new Blob([jsonString], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   const now = new Date();
@@ -234,11 +330,11 @@ function exportData() {
   const exportTime = `${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}${String(now.getSeconds()).padStart(2, '0')}`;
 
   link.href = url;
-  link.download = `blu_data-${exportDate}-${exportTime}.json`;
+  link.download = `blu_data-${exportDate}-${exportTime}${filenameSuffix}.json`;
   link.click();
   URL.revokeObjectURL(url);
   markCurrentStateAsExported();
-  notify('Exportado!');
+  notify(shouldEncrypt && filenameSuffix ? 'Exportado (criptografado)!' : 'Exportado!');
 }
 
 function normalizeImportedData(parsed) {
@@ -347,7 +443,20 @@ async function importData() {
   }
 
   try {
-    const parsed = JSON.parse(raw);
+    let parsed = JSON.parse(raw);
+    let wasEncrypted = false;
+
+    if (isEncryptedPayload(parsed)) {
+      wasEncrypted = true;
+      try {
+        const decryptedString = await decryptJsonPayload(parsed);
+        parsed = JSON.parse(decryptedString);
+      } catch (decryptError) {
+        console.error('Erro ao descriptografar:', decryptError);
+        throw new Error('não foi possível descriptografar este arquivo');
+      }
+    }
+
     if (!parsed.sections && !parsed.categories) throw new Error('Formato inválido: esperado "sections" ou "categories"');
 
     const ok = await confirmDialog('Isso substituirá todos os dados atuais. Continuar?', { title: '📥 Importar JSON', danger: true, confirmText: 'Importar' });
@@ -358,7 +467,7 @@ async function importData() {
     markCurrentStateAsExported();
     closeModal('importModal');
     clearImportSource();
-    notify('Importado com sucesso!');
+    notify(wasEncrypted ? 'Importado com sucesso (arquivo criptografado)!' : 'Importado com sucesso!');
   } catch (error) {
     notify('JSON inválido: ' + error.message, 'err');
   }
