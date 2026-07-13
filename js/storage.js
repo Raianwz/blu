@@ -3,7 +3,7 @@
 // ==========================================================
 
 const STORAGE_KEY = 'blu:data';
-const VERSION = '1.0';
+const VERSION = '1.5';
 const BASE_TITLE = 'Blû';
 
 let editMode = false;
