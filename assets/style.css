@@ -946,12 +946,19 @@ body.shift-locked .btn-wrap.blu-button-shift-row .copy-btn {
   transition: outline 0.18s ease;
 }
 
-/* Lembrete de backup (export pendente) */
+/* Lembrete de backup (export pendente)
+   Escondido via translateY(150%) em vez de um "bottom" fixo em px:
+   a altura do banner varia (quebra de texto, empilhamento em telas
+   estreitas), entao um offset fixo podia nao ser suficiente para
+   tira-lo totalmente da tela. translateY(%) se ajusta a altura real
+   do proprio elemento, sempre. */
 #backupBanner {
   position: fixed;
   left: 50%;
-  bottom: -160px;
-  transform: translateX(-50%);
+  bottom: 14px;
+  transform: translateX(-50%) translateY(150%);
+  opacity: 0;
+  pointer-events: none;
   z-index: 1800;
   display: flex;
   flex-wrap: wrap;
@@ -964,11 +971,13 @@ body.shift-locked .btn-wrap.blu-button-shift-row .copy-btn {
   border-radius: 12px;
   width: min(420px, calc(100% - 24px));
   box-sizing: border-box;
-  transition: bottom 0.3s ease;
+  transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
 #backupBanner.show {
-  bottom: 14px;
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .backup-banner-icon {
@@ -1017,11 +1026,6 @@ body.shift-locked .btn-wrap.blu-button-shift-row .copy-btn {
     align-items: stretch;
     text-align: center;
     padding: 12px 14px;
-    bottom: -220px;
-  }
-
-  #backupBanner.show {
-    bottom: 10px;
   }
 
   .backup-banner-actions {

@@ -71,6 +71,12 @@ function doSearch(options = {}) {
   }
 
   if (raw.startsWith('@')) {
+    searchCategoriesByName(raw.slice(1));
+    setNoResultsMessage(raw);
+    return;
+  }
+
+  if (type === 'category') {
     searchCategoriesByName(raw);
     setNoResultsMessage(raw);
     return;
@@ -81,8 +87,8 @@ function doSearch(options = {}) {
   setNoResultsMessage(raw);
 }
 
-function searchCategoriesByName(raw) {
-  const categoryQuery = normalizeSearchText(raw.slice(1));
+function searchCategoriesByName(rawQuery) {
+  const categoryQuery = normalizeSearchText(rawQuery);
 
   document.querySelectorAll('.btn-wrap').forEach(button => {
     button.classList.remove('search-hidden');
