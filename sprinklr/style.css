@@ -182,6 +182,7 @@ body {
   margin: -1px 0;
 }
 
+
 .menu-btn {
   background: var(--surface2);
   border: 1.5px solid var(--border);
@@ -245,6 +246,13 @@ body {
   background: var(--red);
   border-color: var(--red);
   color: #ffffff;
+}
+
+.menu-btn[disabled] {
+  opacity: 0.56;
+  cursor: not-allowed;
+  filter: grayscale(0.06);
+  pointer-events: none;
 }
 
 /* Indicador de criptografia no botao Exportar (Alt+C alterna) */
