@@ -93,8 +93,9 @@
   <div class="modal-bg" id="tagModal">
     <div class="modal">
       <h2>&#127991;&#65039; Gerenciar Tags</h2>
-      <div class="form-group">
+      <div class="form-group tag-filter-row">
         <input id="tagFilterInput" type="text" placeholder="Filtrar tags..." oninput="renderTagList()">
+        <button type="button" class="mbtn ghost tag-clear-empty-btn" onclick="clearEmptyTags()" title="Remover tags sem nenhum botão associado">🧹 Limpar vazias</button>
       </div>
       <div id="tagListWrap" class="tag-list-wrap" tabindex="0" role="region" aria-label="Lista de tags">
         <div id="tagList"></div>
