@@ -4,6 +4,10 @@
 
 let currentSectionId = null;
 let currentBtnId = null;
+
+// Criptografia do export: controlada via atalho Alt+C (não há mais
+// checkbox no menu — o estado liga/desliga e reflete como um pequeno
+// cadeado no botão Exportar).
 let encryptExportEnabled = false;
 
 function setExportEncryption(enabled) {
