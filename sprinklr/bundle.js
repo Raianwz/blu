@@ -880,6 +880,8 @@ function closeModal(id) {
   document.getElementById(id).classList.remove('open');
 }
 
+// --- Seções --------------------------------------------------
+
 function saveSection() {
   const name = document.getElementById('sName').value.trim();
   if (!name) {
@@ -938,6 +940,8 @@ async function deleteSection(sectionId) {
   updateToggleSectionsBtnLabel();
   updateUnsavedChangesUI();
 }
+
+// --- Botões ----------------------------------------------------
 
 function openAddBtn(sectionId) {
   currentSectionId = sectionId;
@@ -1049,6 +1053,8 @@ async function deleteBtn(sectionId, btnId) {
   updateUnsavedChangesUI();
 }
 
+// --- Tags --------------------------------------------------
+
 function getTagUsageMap() {
   const usage = {};
   document.querySelectorAll('.btn-wrap').forEach(button => {
@@ -1066,17 +1072,17 @@ function renderTagList() {
   const filter = normalizeSearchText(filterValue);
   const usage = getTagUsageMap();
 
-  if (!list) return;
   list.innerHTML = '';
 
   const visibleTags = tags.filter(tag => !filter || normalizeSearchText(tag).includes(filter));
 
   visibleTags.forEach(tag => {
     const count = usage[tag] || 0;
+    const safeTag = String(tag).replace(/'/g, "\\'");
     const chip = document.createElement('span');
     chip.className = 'tag-chip';
     chip.title = count > 0 ? `Usada em ${count} botão(ões)` : 'Nenhum botão usa esta tag';
-    chip.innerHTML = `${escapeHtml(tag)} <span class="tag-chip-count">${count}</span> <button onclick="removeTag('${String(tag).replace(/'/g, "\\'")}')" title="Remover tag">✕</button>`;
+    chip.innerHTML = `${escapeHtml(tag)} <span class="tag-chip-count">${count}</span> <button class="tag-chip-btn tag-chip-edit" onclick="renameTag('${safeTag}')" title="Renomear tag">✏️</button> <button class="tag-chip-btn tag-chip-del" onclick="removeTag('${safeTag}')" title="Remover tag">✕</button>`;
     list.appendChild(chip);
   });
 
@@ -1093,6 +1099,68 @@ function renderTagList() {
   }
 }
 
+// Renomeia uma tag existente. Se o novo nome já pertencer a outra tag,
+// pergunta se deseja mesclar as duas (todos os botões passam a usar a
+// mesma tag, sem duplicar entradas na lista).
+async function renameTag(oldTag) {
+  const newNameRaw = await promptDialog(`Novo nome para a tag "${oldTag}":`, oldTag, { title: '✏️ Renomear Tag' });
+  if (newNameRaw === null) return;
+
+  const newTag = newNameRaw.trim().toLowerCase();
+  if (!newTag || newTag === oldTag) return;
+
+  const collides = tags.includes(newTag);
+  if (collides) {
+    const ok = await confirmDialog(`Já existe uma tag "${newTag}". Deseja mesclar "${oldTag}" com ela? Todos os botões passarão a usar "${newTag}".`, { title: '🔀 Mesclar Tags', confirmText: 'Mesclar' });
+    if (!ok) return;
+  }
+
+  pushHistory();
+
+  document.querySelectorAll(`.btn-wrap[data-tag="${cssEscape(oldTag)}"]`).forEach(button => {
+    button.dataset.tag = newTag;
+  });
+
+  const oldIndex = tags.indexOf(oldTag);
+  if (oldIndex !== -1) tags.splice(oldIndex, 1);
+  if (!tags.includes(newTag)) tags.push(newTag);
+
+  updateTagDatalist();
+  doSearch();
+  notify(collides ? `Tags mescladas em "${newTag}"` : `Tag renomeada para "${newTag}"`);
+  updateUnsavedChangesUI();
+}
+
+// Tags sem nenhum botão associado (candidatas a limpeza em massa).
+function getEmptyTags() {
+  const usage = getTagUsageMap();
+  return tags.filter(tag => !usage[tag]);
+}
+
+async function clearEmptyTags() {
+  const emptyTags = getEmptyTags();
+
+  if (emptyTags.length === 0) {
+    notify('Nenhuma tag vazia encontrada');
+    return;
+  }
+
+  const ok = await confirmDialog(
+    `Remover ${emptyTags.length} tag(s) sem nenhum botão associado?\n\n${emptyTags.join(', ')}`,
+    { title: '🧹 Limpar Tags Vazias', danger: true, confirmText: 'Remover' }
+  );
+  if (!ok) return;
+
+  pushHistory();
+  tags = tags.filter(tag => !emptyTags.includes(tag));
+  updateTagDatalist();
+  notify(`${emptyTags.length} tag(s) removida(s)`);
+  updateUnsavedChangesUI();
+}
+
+// Remove uma tag automaticamente da lista se nenhum botão mais a usa —
+// chamada após excluir/editar botões ou seções, nunca após addTag()
+// (uma tag recém-criada, ainda sem botão, não deve ser tratada como órfã).
 function removeTagIfOrphan(tag) {
   if (!tag) return;
   const stillUsed = document.querySelector(`.btn-wrap[data-tag="${cssEscape(tag)}"]`);
@@ -1107,7 +1175,6 @@ function removeTagIfOrphan(tag) {
 
 function addTag() {
   const input = document.getElementById('newTagInput');
-  if (!input) return;
   const value = input.value.trim().toLowerCase();
   if (!value || tags.includes(value)) return;
 
@@ -1134,10 +1201,11 @@ function removeTag(tag) {
 
 function updateTagDatalist() {
   const dataList = document.getElementById('tagOptions');
-  if (!dataList) return;
   dataList.innerHTML = tags.map(tag => `<option value="${escapeHtmlAttr(tag)}">`).join('');
   renderTagList();
 }
+
+// --- Export / Import --------------------------------------
 
 async function exportData() {
   const state = collectState();
@@ -1181,19 +1249,19 @@ function normalizeImportedData(parsed) {
     ? parsed.sections
     : Array.isArray(parsed.categories)
       ? parsed.categories.map(category => ({
-        id: category.id,
-        name: `${sanitizeText(category.icon).trim()} ${sanitizeText(category.name).trim()}`.trim(),
-        collapsed: !!category.collapsed,
-        buttons: Array.isArray(category.buttons)
-          ? category.buttons.map(button => ({
-            id: button.id,
-            name: button.name ?? button.btnName ?? '',
-            text: button.text ?? '',
-            tag: button.tag ?? '',
-            vis: button.vis ?? 'other'
-          }))
-          : []
-      }))
+          id: category.id,
+          name: `${sanitizeText(category.icon).trim()} ${sanitizeText(category.name).trim()}`.trim(),
+          collapsed: !!category.collapsed,
+          buttons: Array.isArray(category.buttons)
+            ? category.buttons.map(button => ({
+                id: button.id,
+                name: button.name ?? button.btnName ?? '',
+                text: button.text ?? '',
+                tag: button.tag ?? '',
+                vis: button.vis ?? 'other'
+              }))
+            : []
+        }))
       : [];
 
   base.sections = sourceSections.map((section, sectionIndex) => ({
@@ -1202,12 +1270,12 @@ function normalizeImportedData(parsed) {
     collapsed: !!section.collapsed,
     buttons: Array.isArray(section.buttons)
       ? section.buttons.map((button, buttonIndex) => ({
-        id: String(button.id || ('b' + Date.now() + buttonIndex)),
-        name: sanitizeText(button.name ?? button.btnName ?? ''),
-        text: sanitizeText(button.text),
-        tag: sanitizeText(button.tag || ''),
-        vis: ['public', 'private', 'other'].includes(button.vis) ? button.vis : 'other'
-      }))
+          id: String(button.id || ('b' + Date.now() + buttonIndex)),
+          name: sanitizeText(button.name ?? button.btnName ?? ''),
+          text: sanitizeText(button.text),
+          tag: sanitizeText(button.tag || ''),
+          vis: ['public', 'private', 'other'].includes(button.vis) ? button.vis : 'other'
+        }))
       : []
   }));
 
@@ -1315,8 +1383,7 @@ async function clearAll() {
   restoreState({ tags: [], sections: [] });
   notify('Tudo limpo!');
   updateUnsavedChangesUI();
-
-  try { localStorage.clear(); } catch (_) { }
+  try { localStorage.clear(); } catch (_) {}
 }
 
 /* ------------------ dnd.js ------------------ */

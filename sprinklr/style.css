@@ -200,13 +200,6 @@ body {
   white-space: nowrap;
 }
 
-.menu-btn[disabled] {
-  opacity: 0.56;
-  cursor: not-allowed;
-  filter: grayscale(0.06);
-  pointer-events: none;
-}
-
 .menu-btn:hover {
   background: var(--border);
   border-color: var(--accent1);
@@ -662,6 +655,25 @@ body.edit-mode .btn-del {
   flex-direction: column;
 }
 
+.tag-filter-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.tag-filter-row input {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+}
+
+.tag-clear-empty-btn {
+  padding: 8px 10px;
+  font-size: 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 #tagListWrap {
   overflow-y: auto;
   max-height: 260px;
@@ -688,14 +700,25 @@ body.edit-mode .btn-del {
   color: var(--text);
 }
 
-.tag-chip button {
+.tag-chip-btn {
   background: none;
   border: none;
   cursor: pointer;
-  color: var(--red);
   font-size: 12px;
   padding: 0;
   line-height: 1;
+}
+
+.tag-chip-edit {
+  color: var(--text2);
+}
+
+.tag-chip-edit:hover {
+  color: var(--accent1);
+}
+
+.tag-chip-del {
+  color: var(--red);
 }
 
 .tag-chip-count {
