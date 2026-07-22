@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="shortcut icon" href="assets/blu.svg" type="image/svg+xml">
+  <link rel="shortcut icon" href="/assets/blu.svg" type="image/svg+xml">
   <title>Blû — Link Compartilhado</title>
-  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="/assets/style.css">
 </head>
 <body>
   <div class="share-page">
     <div class="share-card">
-      <img class="share-logo" src="assets/blu.svg" alt="Blû" width="56" height="56">
+      <img class="share-logo" src="/assets/blu.svg" alt="Blû" width="56" height="56">
       <h1 id="shareTitle">Carregando link compartilhado…</h1>
       <p id="shareDesc" class="share-desc"></p>
       <div id="shareActions" class="share-actions"></div>
@@ -33,9 +33,9 @@
 
   <div id="notifArea"></div>
 
-  <script src="js/utils.js"></script>
-  <script src="js/dialogs.js"></script>
-  <script src="js/crypto.js"></script>
+  <script src="/js/utils.js"></script>
+  <script src="/js/dialogs.js"></script>
+  <script src="/js/crypto.js"></script>
   <script>
     // Chave usada pelo app principal (js/storage.js) para o autosave —
     // mantida em sincronia manualmente aqui, já que esta página não
@@ -100,7 +100,7 @@
         importBtn.onclick = () => importShare(normalized);
 
         const cancelLink = document.createElement('a');
-        cancelLink.href = 'index.html';
+        cancelLink.href = '/index.html';
         cancelLink.className = 'mbtn secondary';
         cancelLink.textContent = 'Ir para o Blû sem importar';
 
@@ -122,7 +122,7 @@
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
         notify('Importado! Redirecionando…');
-        setTimeout(() => { window.location.href = 'index.html'; }, 700);
+        setTimeout(() => { window.location.href = '/index.html'; }, 700);
       } catch (error) {
         console.error('Erro ao salvar localmente:', error);
         notify('Não foi possível salvar localmente neste navegador.', 'err');
