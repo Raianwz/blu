@@ -397,47 +397,73 @@ async function exportData() {
   notify(shouldEncrypt && filenameSuffix ? 'Exportado (criptografado)!' : 'Exportado!');
 }
 
-function normalizeImportedData(parsed) {
-  const base = {
-    tags: Array.isArray(parsed.tags) ? parsed.tags.map(tag => String(tag).toLowerCase()) : [],
-    sections: []
-  };
+// --- Compartilhar via link (/share/:codigo) -----------------
+// Diferente do export para arquivo, o compartilhamento SEMPRE criptografa
+// antes de enviar — independente do estado do Alt+C (que só afeta o
+// download local). O servidor (Upstash Redis) nunca vê o conteúdo em
+// texto puro, apenas um blob opaco. Link expira em 3 dias.
 
-  const sourceSections = Array.isArray(parsed.sections)
-    ? parsed.sections
-    : Array.isArray(parsed.categories)
-      ? parsed.categories.map(category => ({
-          id: category.id,
-          name: `${sanitizeText(category.icon).trim()} ${sanitizeText(category.name).trim()}`.trim(),
-          collapsed: !!category.collapsed,
-          buttons: Array.isArray(category.buttons)
-            ? category.buttons.map(button => ({
-                id: button.id,
-                name: button.name ?? button.btnName ?? '',
-                text: button.text ?? '',
-                tag: button.tag ?? '',
-                vis: button.vis ?? 'other'
-              }))
-            : []
-        }))
-      : [];
+async function shareData() {
+  const state = collectState();
+  const jsonString = JSON.stringify(state);
 
-  base.sections = sourceSections.map((section, sectionIndex) => ({
-    id: String(section.id || ('s' + Date.now() + sectionIndex)),
-    name: sanitizeText(section.name || `Seção ${sectionIndex + 1}`),
-    collapsed: !!section.collapsed,
-    buttons: Array.isArray(section.buttons)
-      ? section.buttons.map((button, buttonIndex) => ({
-          id: String(button.id || ('b' + Date.now() + buttonIndex)),
-          name: sanitizeText(button.name ?? button.btnName ?? ''),
-          text: sanitizeText(button.text),
-          tag: sanitizeText(button.tag || ''),
-          vis: ['public', 'private', 'other'].includes(button.vis) ? button.vis : 'other'
-        }))
-      : []
-  }));
+  let encryptedPayload;
+  try {
+    encryptedPayload = await encryptJsonString(jsonString);
+  } catch (error) {
+    console.error('Erro ao criptografar para compartilhamento:', error);
+    notify('Não foi possível preparar o compartilhamento (criptografia indisponível neste navegador).', 'err');
+    return;
+  }
 
-  return base;
+  const shareBtn = document.getElementById('shareBtn');
+  if (shareBtn) shareBtn.disabled = true;
+
+  try {
+    const res = await fetch('/api/share', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ data: encryptedPayload })
+    });
+
+    if (res.status === 429) {
+      const body = await res.json().catch(() => ({}));
+      notify(body.message || 'Muitos compartilhamentos recentes. Tente novamente mais tarde.', 'err');
+      return;
+    }
+
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+    const { id } = await res.json();
+    const url = `${window.location.origin}/share/${id}`;
+    openShareResultModal(url);
+  } catch (error) {
+    console.error('Erro ao compartilhar:', error);
+    notify('Não foi possível criar o link de compartilhamento.', 'err');
+  } finally {
+    if (shareBtn) shareBtn.disabled = false;
+  }
+}
+
+function openShareResultModal(url) {
+  const input = document.getElementById('shareResultInput');
+  if (input) input.value = url;
+  openModal('shareResultModal');
+}
+
+async function copyShareLink() {
+  const input = document.getElementById('shareResultInput');
+  if (!input) return;
+
+  input.select();
+
+  try {
+    await copyToClipboard(input.value);
+    notify('Link copiado!');
+  } catch (error) {
+    console.error('Erro ao copiar link:', error);
+    notify('Não foi possível copiar. Copie manualmente.', 'err');
+  }
 }
 
 function triggerImportFilePicker() {

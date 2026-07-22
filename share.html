@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" href="assets/blu.svg" type="image/svg+xml">
+  <title>Blû — Link Compartilhado</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <div class="share-page">
+    <div class="share-card">
+      <img class="share-logo" src="assets/blu.svg" alt="Blû" width="56" height="56">
+      <h1 id="shareTitle">Carregando link compartilhado…</h1>
+      <p id="shareDesc" class="share-desc"></p>
+      <div id="shareActions" class="share-actions"></div>
+    </div>
+  </div>
+
+  <div class="modal-bg" id="dialogModal">
+    <div class="modal">
+      <h2 id="dialogTitle">Confirmar ação</h2>
+      <p id="dialogMessage"></p>
+      <div class="form-group" id="dialogInputWrap" style="display:none;">
+        <input id="dialogInput" type="text">
+      </div>
+      <div class="modal-footer">
+        <button class="mbtn secondary" id="dialogCancelBtn">Cancelar</button>
+        <button class="mbtn primary" id="dialogConfirmBtn">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="notifArea"></div>
+
+  <script src="js/utils.js"></script>
+  <script src="js/dialogs.js"></script>
+  <script src="js/crypto.js"></script>
+  <script>
+    // Chave usada pelo app principal (js/storage.js) para o autosave —
+    // mantida em sincronia manualmente aqui, já que esta página não
+    // carrega o storage.js inteiro (que depende de elementos do DOM
+    // que só existem no index.html).
+    const STORAGE_KEY = 'blu:data';
+
+    setupDialogEvents();
+
+    function getShareCode() {
+      const match = window.location.pathname.match(/\/share\/([^/]+)/);
+      return match ? decodeURIComponent(match[1]) : '';
+    }
+
+    async function loadShare() {
+      const titleEl = document.getElementById('shareTitle');
+      const descEl = document.getElementById('shareDesc');
+      const actionsEl = document.getElementById('shareActions');
+      const code = getShareCode();
+
+      if (!code) {
+        titleEl.textContent = 'Link inválido';
+        descEl.textContent = 'Não encontramos um código de compartilhamento nesta URL.';
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/share/${encodeURIComponent(code)}`);
+
+        if (res.status === 404) {
+          titleEl.textContent = 'Link expirado ou inexistente';
+          descEl.textContent = 'Este link de compartilhamento não existe mais, ou já passou do prazo de 3 dias.';
+          return;
+        }
+
+        if (res.status === 429) {
+          titleEl.textContent = 'Muitas tentativas';
+          descEl.textContent = 'Aguarde um pouco antes de tentar novamente.';
+          return;
+        }
+
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+
+        const { data } = await res.json();
+        let parsed = JSON.parse(data);
+
+        if (isEncryptedPayload(parsed)) {
+          const decryptedString = await decryptJsonPayload(parsed);
+          parsed = JSON.parse(decryptedString);
+        }
+
+        const normalized = normalizeImportedData(parsed);
+        const sectionCount = normalized.sections.length;
+        const buttonCount = normalized.sections.reduce((sum, section) => sum + section.buttons.length, 0);
+
+        titleEl.textContent = '📥 Alguém compartilhou dados com você';
+        descEl.textContent = `${sectionCount} seção(ões) e ${buttonCount} botão(ões) encontrados neste link.`;
+
+        const importBtn = document.createElement('button');
+        importBtn.className = 'mbtn primary';
+        importBtn.textContent = 'Importar para o Blû';
+        importBtn.onclick = () => importShare(normalized);
+
+        const cancelLink = document.createElement('a');
+        cancelLink.href = 'index.html';
+        cancelLink.className = 'mbtn secondary';
+        cancelLink.textContent = 'Ir para o Blû sem importar';
+
+        actionsEl.append(importBtn, cancelLink);
+      } catch (error) {
+        console.error('Erro ao carregar compartilhamento:', error);
+        titleEl.textContent = 'Não foi possível carregar';
+        descEl.textContent = 'Houve um erro ao processar este link. Tente novamente mais tarde.';
+      }
+    }
+
+    async function importShare(normalized) {
+      const ok = await confirmDialog(
+        'Isso substituirá todos os dados atuais do Blû neste navegador. Continuar?',
+        { title: '📥 Importar Compartilhamento', danger: true, confirmText: 'Importar' }
+      );
+      if (!ok) return;
+
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
+        notify('Importado! Redirecionando…');
+        setTimeout(() => { window.location.href = 'index.html'; }, 700);
+      } catch (error) {
+        console.error('Erro ao salvar localmente:', error);
+        notify('Não foi possível salvar localmente neste navegador.', 'err');
+      }
+    }
+
+    loadShare();
+  </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+{
+  "name": "blu",
+  "private": true,
+  "dependencies": {
+    "@upstash/redis": "^1.38.0",
+    "@upstash/ratelimit": "^2.0.8"
+  }
+}

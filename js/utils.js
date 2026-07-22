@@ -67,6 +67,7 @@ const ICONS = {
   app_window: `<rect x="2" y="4" width="20" height="16" rx="2" /> <path d="M10 4v4" /> <path d="M2 8h20" /> <path d="M6 4v4" />`,
   trash_2: `<path d="M10 11v6" /> <path d="M14 11v6" /> <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /> <path d="M3 6h18" /> <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />`,
   lock: `<rect width="18" height="11" x="3" y="11" rx="2" ry="2" /> <path d="M7 11V7a5 5 0 0 1 10 0v4" />`,
+  share: `<circle cx="18" cy="5" r="3" /> <circle cx="6" cy="12" r="3" /> <circle cx="18" cy="19" r="3" /> <line x1="8.59" x2="15.42" y1="13.51" y2="17.49" /> <line x1="15.41" x2="8.59" y1="6.51" y2="10.49" />`,
   menu: `<path d="M4 5h16" /> <path d="M4 12h16" /> <path d="M4 19h16" />`,
   search: `<path d="m21 21-4.34-4.34" /> <circle cx="11" cy="11" r="8" />`,
 };
@@ -79,4 +80,51 @@ function iconSvg(name, extraClass = '') {
 function setIcon(wrapEl, name) {
   if (!wrapEl) return;
   wrapEl.innerHTML = iconSvg(name);
+}
+
+// Normaliza um JSON importado (do fluxo normal de Importar ou de um link
+// de compartilhamento) para o formato interno { tags, sections }. Vive em
+// utils.js (em vez de crud.js) para poder ser reaproveitada também pela
+// página share.html, que não carrega o restante do app.
+function normalizeImportedData(parsed) {
+  const base = {
+    tags: Array.isArray(parsed.tags) ? parsed.tags.map(tag => String(tag).toLowerCase()) : [],
+    sections: []
+  };
+
+  const sourceSections = Array.isArray(parsed.sections)
+    ? parsed.sections
+    : Array.isArray(parsed.categories)
+      ? parsed.categories.map(category => ({
+          id: category.id,
+          name: `${sanitizeText(category.icon).trim()} ${sanitizeText(category.name).trim()}`.trim(),
+          collapsed: !!category.collapsed,
+          buttons: Array.isArray(category.buttons)
+            ? category.buttons.map(button => ({
+                id: button.id,
+                name: button.name ?? button.btnName ?? '',
+                text: button.text ?? '',
+                tag: button.tag ?? '',
+                vis: button.vis ?? 'other'
+              }))
+            : []
+        }))
+      : [];
+
+  base.sections = sourceSections.map((section, sectionIndex) => ({
+    id: String(section.id || ('s' + Date.now() + sectionIndex)),
+    name: sanitizeText(section.name || `Seção ${sectionIndex + 1}`),
+    collapsed: !!section.collapsed,
+    buttons: Array.isArray(section.buttons)
+      ? section.buttons.map((button, buttonIndex) => ({
+          id: String(button.id || ('b' + Date.now() + buttonIndex)),
+          name: sanitizeText(button.name ?? button.btnName ?? ''),
+          text: sanitizeText(button.text),
+          tag: sanitizeText(button.tag || ''),
+          vis: ['public', 'private', 'other'].includes(button.vis) ? button.vis : 'other'
+        }))
+      : []
+  }));
+
+  return base;
 }

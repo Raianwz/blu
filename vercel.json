@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/share/:code", "destination": "/share.html" }
+  ]
+}
