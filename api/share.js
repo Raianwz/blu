@@ -2,7 +2,7 @@ const { Redis } = require('@upstash/redis');
 const { Ratelimit } = require('@upstash/ratelimit');
 const crypto = require('crypto');
 
-const redis = Redis.fromEnv();
+const redis = Redis.fromEnv({ automaticDeserialization: false });
 
 // Reaproveitado entre invocações "quentes" do mesmo runtime — não precisa
 // recriar a cada requisição.

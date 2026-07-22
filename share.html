@@ -80,7 +80,7 @@
         if (!res.ok) throw new Error('HTTP ' + res.status);
 
         const { data } = await res.json();
-        let parsed = JSON.parse(data);
+        let parsed = typeof data === 'string' ? JSON.parse(data) : data;
 
         if (isEncryptedPayload(parsed)) {
           const decryptedString = await decryptJsonPayload(parsed);

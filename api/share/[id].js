@@ -1,7 +1,7 @@
 const { Redis } = require('@upstash/redis');
 const { Ratelimit } = require('@upstash/ratelimit');
 
-const redis = Redis.fromEnv();
+const redis = Redis.fromEnv({ automaticDeserialization: false });
 
 const readRatelimit = new Ratelimit({
   redis,
@@ -54,7 +54,12 @@ module.exports = async (req, res) => {
       return;
     }
 
-    res.status(200).json({ data });
+    // Defesa extra: com automaticDeserialization desligado o valor já deve
+    // vir como string, mas se algum dia vier como objeto (mudança de SDK,
+    // etc.), normaliza aqui para nunca quebrar o JSON.parse do cliente.
+    const normalizedData = typeof data === 'string' ? data : JSON.stringify(data);
+
+    res.status(200).json({ data: normalizedData });
   } catch (error) {
     console.error('Erro ao buscar compartilhamento:', error);
     res.status(500).json({ error: 'internal_error' });
