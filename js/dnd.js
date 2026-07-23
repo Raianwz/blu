@@ -39,8 +39,18 @@ function onDragOver(event) {
 
   const body = event.currentTarget;
   const after = getDragAfter(body, event.clientX);
-  if (after) body.insertBefore(placeholder, after);
-  else body.appendChild(placeholder);
+
+  // dragover dispara dezenas de vezes por segundo enquanto o mouse se move.
+  // Só mexe no DOM quando a posição-alvo realmente muda — do contrário o
+  // placeholder fica sendo reinserido sem necessidade, forçando reflow e
+  // causando o "flicker" visual.
+  if (after) {
+    if (placeholder.nextElementSibling !== after) {
+      body.insertBefore(placeholder, after);
+    }
+  } else if (body.lastElementChild !== placeholder) {
+    body.appendChild(placeholder);
+  }
 }
 
 function onDrop(event) {
@@ -99,7 +109,7 @@ function updateShiftMode() {
 function getSectionPlaceholder() {
   if (!sectionPlaceholderEl) {
     sectionPlaceholderEl = document.createElement('div');
-    sectionPlaceholderEl.className = 'drag-placeholder';
+    sectionPlaceholderEl.className = 'section-drag-placeholder';
   }
   return sectionPlaceholderEl;
 }
@@ -176,14 +186,19 @@ window.addEventListener('mousemove', event => {
   const parent = target.parentNode;
   const ph = getSectionPlaceholder();
 
-  if (event.clientY < mid) parent.insertBefore(ph, target);
-  else parent.insertBefore(ph, target.nextSibling);
+  // Mesma lógica anti-flicker do drag de botões: só mexe no DOM se a
+  // posição-alvo realmente mudou desde o último mousemove.
+  if (event.clientY < mid) {
+    if (ph.nextElementSibling !== target) parent.insertBefore(ph, target);
+  } else {
+    if (target.nextElementSibling !== ph) parent.insertBefore(ph, target.nextSibling);
+  }
 });
 
 window.addEventListener('mouseup', () => {
   if (!isDraggingSection || !draggingSectionEl) return;
 
-  const ph = document.querySelector('.drag-placeholder');
+  const ph = document.querySelector('.section-drag-placeholder');
   if (ph && ph.parentNode) {
     ph.parentNode.insertBefore(draggingSectionEl, ph);
     ph.remove();

@@ -674,6 +674,14 @@ body.edit-mode .btn-del {
   flex-shrink: 0;
 }
 
+#shareResultInput {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px;
+}
+
 #tagListWrap {
   overflow-y: auto;
   max-height: 260px;
@@ -905,13 +913,13 @@ body.shift-mode .section-move-controls {
   opacity: .6
 }
 
-.drag-placeholder {
+.section-drag-placeholder {
   height: 0;
   border-top: 2px dashed #f59e0b;
   margin: 6px 0
 }
 
-body.shift-locked .drag-placeholder {
+body.shift-locked .section-drag-placeholder {
   border-top: 2px dashed #22c55e
 }
 
@@ -1146,4 +1154,55 @@ kbd {
 
 .no-results strong {
   color: var(--text);
+}
+
+/* Página standalone /share/:codigo */
+.share-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--bg);
+}
+
+.share-card {
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 16px;
+  padding: 32px 28px;
+  box-shadow: 0 10px 30px var(--shadow);
+}
+
+.share-logo {
+  margin-bottom: 16px;
+  border-radius: 12px;
+}
+
+.share-card h1 {
+  font-size: 17px;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+.share-desc {
+  font-size: 13.5px;
+  color: var(--text2);
+  line-height: 1.5;
+  margin-bottom: 22px;
+}
+
+.share-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.share-actions .mbtn {
+  width: 100%;
+  text-decoration: none;
+  display: inline-block;
 }
