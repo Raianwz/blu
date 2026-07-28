@@ -8,7 +8,7 @@ const redis = Redis.fromEnv({ automaticDeserialization: false });
 // recriar a cada requisição.
 const createRatelimit = new Ratelimit({
   redis,
-  limiter: Ratelimit.slidingWindow(10, '1 h'), // 10 compartilhamentos/hora por IP
+  limiter: Ratelimit.slidingWindow(30, '1 h'), // 30 compartilhamentos/hora por IP
   prefix: 'blu:ratelimit:share:create'
 });
 
