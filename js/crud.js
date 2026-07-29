@@ -566,11 +566,15 @@ async function clearAll() {
   pushHistory();
   restoreState({ tags: [], sections: [] });
   notify('Tudo limpo!');
-  updateUnsavedChangesUI();
 
-  // Remove o registro salvo (não localStorage.clear(), que ignora o
-  // argumento e apagaria TUDO, inclusive preferências como o tema).
-  // Assim, num próximo F5 sem nada ter sido adicionado, o demo volta.
-  try { localStorage.clear(); } catch (_) {}
+  // Trata o estado vazio como a nova "baseline" — não há nada de fato para
+  // fazer backup logo após limpar tudo, então não faz sentido o banner de
+  // lembrete aparecer na hora.
+  markCurrentStateAsExported();
+
+  // Remove só o registro do Blû (não localStorage.clear(), que apagaria
+  // TUDO no domínio, inclusive preferências como o tema). Assim, num
+  // próximo F5 sem nada ter sido adicionado, o demo volta.
+  try { localStorage.removeItem(STORAGE_KEY); } catch (_) {}
 }
   

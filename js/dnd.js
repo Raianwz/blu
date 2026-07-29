@@ -98,12 +98,37 @@ function updateShiftMode() {
     shiftLocked = false;
     document.body.classList.remove('shift-mode', 'shift-locked');
     applyButtonReorderControls();
+    updateOrganizeModeButtonUI();
     return;
   }
 
   document.body.classList.toggle('shift-mode', shiftActive || shiftLocked);
   document.body.classList.toggle('shift-locked', shiftLocked);
   applyButtonReorderControls();
+  updateOrganizeModeButtonUI();
+}
+
+// Ponto único que reflete shiftLocked no botão do menu — chamado sempre
+// por dentro de updateShiftMode(), então tanto o clique no botão quanto
+// o atalho de teclado (duplo Shift / Ctrl+Shift) mantêm a UI em sincronia
+// automaticamente, sem duplicar lógica em dois lugares.
+function updateOrganizeModeButtonUI() {
+  const button = document.getElementById('organizeModeBtn');
+  if (!button) return;
+
+  button.disabled = !editMode;
+  button.classList.toggle('active', shiftLocked);
+  button.setAttribute('aria-pressed', String(shiftLocked));
+  button.querySelector('.menu-btn-label').textContent = `Modo Organização: ${shiftLocked ? 'ON' : 'OFF'}`;
+}
+
+// Alterna o Modo Organização a partir do clique no botão do menu — usa a
+// mesma variável e o mesmo updateShiftMode() que o atalho de teclado.
+function toggleOrganizeMode() {
+  if (!editMode) return; // botão fica desabilitado nesse caso; defesa extra
+  shiftLocked = !shiftLocked;
+  updateShiftMode();
+  notify(shiftLocked ? 'Modo Organização ativado' : 'Modo Organização desativado');
 }
 
 function getSectionPlaceholder() {

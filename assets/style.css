@@ -211,6 +211,12 @@ body {
   color: var(--accent1);
 }
 
+.menu-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .menu-icon {
   width: 16px;
   height: 16px;
