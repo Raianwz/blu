@@ -291,7 +291,8 @@ body {
   display: none;
 }
 
-.menu-btn.active .menu-btn-dot {
+.menu-btn.active .menu-btn-dot,
+.menu-submenu-toggle.active .menu-btn-dot {
   display: block;
 }
 
@@ -985,14 +986,23 @@ body.shift-locked .section-drag-placeholder {
 
 /* "Mostrar Destino: OFF" — o placeholder continua sendo posicionado no
    DOM normalmente (necessário para o drop saber onde inserir o item),
-   só a APARÊNCIA fica invisível. */
+   mas fica com pegada ZERO: sem cor E sem tamanho. Só cor não bastava —
+   um placeholder invisível mas ainda com 40px de altura/80px de largura
+   continuava empurrando os botões vizinhos ao ser inserido, e era esse
+   empurrão (não a cor) que causava o "flicker" percebido. */
 body.drag-preview-off .drag-placeholder {
-  border-color: transparent;
+  width: 0;
+  min-width: 0;
+  height: 0;
+  margin: 0;
+  border: none;
   background: transparent;
 }
 
 body.drag-preview-off .section-drag-placeholder {
-  border-top-color: transparent;
+  height: 0;
+  margin: 0;
+  border-top: none;
 }
 
 

@@ -139,6 +139,11 @@ function updateUnsavedChangesUI() {
     exportBtn.title = dirty ? 'Exportar JSON — há alterações sem backup' : 'Exportar JSON';
   }
 
+  // Propaga o mesmo aviso para o cabeçalho do submenu "Dados" — assim dá
+  // para perceber que há algo pendente lá dentro mesmo com o grupo fechado.
+  const dadosToggle = document.querySelector('.menu-submenu-toggle[data-submenu="dados"]');
+  if (dadosToggle) dadosToggle.classList.toggle('active', dirty);
+
   document.title = dirty ? `● ${BASE_TITLE}` : BASE_TITLE;
   evaluateBackupBanner(dirty);
 }
