@@ -7,6 +7,41 @@
 let dragEl = null;
 let placeholder = null;
 
+// --- Preferência "Mostrar Destino" (preview visual do drag) ---------
+// Desativado por padrão. Importante: mesmo desativado, o placeholder
+// CONTINUA sendo posicionado no DOM normalmente — é só a APARÊNCIA dele
+// que fica invisível via CSS (body.drag-preview-off). Isso preserva o
+// posicionamento correto no drop (onDrop depende de placeholder.parentNode
+// para saber onde inserir o item), sem exibir a "caixa" pra quem não quer vê-la.
+
+let dragPreviewEnabled = false;
+
+function updateDragPreviewButtonUI() {
+  const button = document.getElementById('dragPreviewBtn');
+  if (!button) return;
+  button.classList.toggle('active', dragPreviewEnabled);
+  button.querySelector('.menu-btn-label').textContent = `Mostrar Destino: ${dragPreviewEnabled ? 'ON' : 'OFF'}`;
+}
+
+function applyDragPreviewState() {
+  document.body.classList.toggle('drag-preview-off', !dragPreviewEnabled);
+  updateDragPreviewButtonUI();
+}
+
+function initDragPreviewPreference() {
+  let stored = null;
+  try { stored = localStorage.getItem('blu:dragPreview'); } catch (_) {}
+  dragPreviewEnabled = stored === 'on';
+  applyDragPreviewState();
+}
+
+function toggleDragPreview() {
+  dragPreviewEnabled = !dragPreviewEnabled;
+  try { localStorage.setItem('blu:dragPreview', dragPreviewEnabled ? 'on' : 'off'); } catch (_) {}
+  applyDragPreviewState();
+  notify(dragPreviewEnabled ? 'Preview de movimentação ativado' : 'Preview de movimentação desativado');
+}
+
 function setupDrop(body) {
   body.addEventListener('dragover', onDragOver);
   body.addEventListener('drop', onDrop);

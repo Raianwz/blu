@@ -126,6 +126,16 @@ function toggleMenu() {
   document.getElementById('menuOverlay').classList.toggle('open');
 }
 
+function toggleSubmenu(name) {
+  const body = document.getElementById(`submenu-${name}`);
+  const toggleBtn = document.querySelector(`.menu-submenu-toggle[data-submenu="${name}"]`);
+  if (!body || !toggleBtn) return;
+
+  const isOpen = body.classList.toggle('open');
+  toggleBtn.classList.toggle('open', isOpen);
+  toggleBtn.setAttribute('aria-expanded', String(isOpen));
+}
+
 function openPopout() {
   const width = 440;
   const height = 1200;
@@ -257,7 +267,7 @@ document.addEventListener('keydown', event => {
   }
 
   if (event.key === 'Escape') {
-    ['btnModal', 'sectionModal', 'tagModal', 'importModal', 'dialogModal', 'shortcutsModal'].forEach(closeModal);
+    ['btnModal', 'sectionModal', 'tagModal', 'importModal', 'dialogModal', 'shortcutsModal', 'shareModal'].forEach(closeModal);
     document.getElementById('menuOverlay').classList.remove('open');
   }
 
@@ -276,4 +286,5 @@ document.querySelectorAll('.modal-bg').forEach(background => {
 setupDialogEvents();
 setupVersionBadgeHover();
 initTheme();
+initDragPreviewPreference();
 init();

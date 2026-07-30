@@ -402,7 +402,131 @@ async function exportData() {
 // antes de enviar — independente do estado do Alt+C (que só afeta o
 // download local). O servidor (Upstash Redis) nunca vê o conteúdo em
 // texto puro, apenas um blob opaco. Link expira em 3 dias.
+//
+// Fluxo: clicar em "Compartilhar" abre um modal de prévia (contagem de
+// seções/botões/tags + aviso de botões privados) ANTES de qualquer coisa
+// ir para o servidor. Se já existe um link válido para o estado ATUAL
+// (dados não mudaram desde a última vez), o modal mostra esse link em vez
+// de criar um novo — só copia. Um novo link só é gerado se o anterior
+// expirou, os dados mudaram, ou a pessoa pedir explicitamente.
 
+const LAST_SHARE_KEY = 'blu:lastShare';
+
+function getLastShareRecord() {
+  try {
+    const raw = localStorage.getItem(LAST_SHARE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (_) {
+    return null;
+  }
+}
+
+function saveLastShareRecord(record) {
+  try { localStorage.setItem(LAST_SHARE_KEY, JSON.stringify(record)); } catch (_) {}
+}
+
+function formatTimeRemaining(msRemaining) {
+  if (msRemaining <= 0) return 'expirado';
+
+  const totalMinutes = Math.floor(msRemaining / 60000);
+  const days = Math.floor(totalMinutes / (60 * 24));
+  const hours = Math.floor((totalMinutes % (60 * 24)) / 60);
+  const minutes = totalMinutes % 60;
+
+  if (days > 0) return `${days} dia${days === 1 ? '' : 's'} e ${hours} hora${hours === 1 ? '' : 's'}`;
+  if (hours > 0) return `${hours} hora${hours === 1 ? '' : 's'} e ${minutes} minuto${minutes === 1 ? '' : 's'}`;
+  return `${minutes} minuto${minutes === 1 ? '' : 's'}`;
+}
+
+function buildShareCountsHtml(state) {
+  const sectionCount = state.sections.length;
+  const buttonCount = state.sections.reduce((sum, s) => sum + s.buttons.length, 0);
+  const tagCount = state.tags.length;
+  const privateCount = state.sections.reduce(
+    (sum, s) => sum + s.buttons.filter(b => b.vis === 'private').length,
+    0
+  );
+
+  let html = `
+    <div class="share-counts">
+      <span>${iconSvg('folder_plus')} ${sectionCount} seç${sectionCount === 1 ? 'ão' : 'ões'}</span>
+      <span>${iconSvg('tag')} ${tagCount} tag${tagCount === 1 ? '' : 's'}</span>
+      <span>${iconSvg('share')} ${buttonCount} botã${buttonCount === 1 ? 'o' : 'o'}${buttonCount === 1 ? '' : 's'}</span>
+    </div>
+  `;
+
+  if (privateCount > 0) {
+    html += `<div class="share-warning">${iconSvg('lock')} ${privateCount} botão(ões) marcado(s) como Privado ${privateCount === 1 ? 'será' : 'serão'} incluído(s) no link.</div>`;
+  }
+
+  return html;
+}
+
+// Monta e abre o modal — decide sozinho, a cada abertura, se mostra a
+// prévia de criação ou o link já ativo (comparando o estado atual com o
+// registro do último compartilhamento salvo).
+function openShareModal() {
+  const state = collectState();
+  const currentComparable = getComparableStateString();
+  const lastShare = getLastShareRecord();
+  const stillValid = !!(lastShare && lastShare.comparableState === currentComparable && lastShare.expiresAt > Date.now());
+
+  const titleEl = document.getElementById('shareModalTitle');
+  const bodyEl = document.getElementById('shareModalBody');
+  const footerEl = document.getElementById('shareModalFooter');
+  const countsHtml = buildShareCountsHtml(state);
+
+  if (stillValid) {
+    titleEl.textContent = '🔗 Link Ativo';
+    bodyEl.innerHTML = `
+      <p class="share-modal-desc">Você já tem um link válido para os dados atuais:</p>
+      <div class="form-group">
+        <input id="shareResultInput" type="text" readonly value="${escapeHtmlAttr(lastShare.url)}">
+      </div>
+      <p class="share-expiry">⏱️ Expira em ${formatTimeRemaining(lastShare.expiresAt - Date.now())}</p>
+      ${countsHtml}
+    `;
+
+    footerEl.innerHTML = '';
+    const regenBtn = document.createElement('button');
+    regenBtn.className = 'mbtn secondary';
+    regenBtn.textContent = 'Gerar novo link mesmo assim';
+    regenBtn.onclick = () => shareData();
+
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'mbtn primary';
+    copyBtn.textContent = 'Copiar';
+    copyBtn.onclick = copyShareLink;
+
+    footerEl.append(regenBtn, copyBtn);
+  } else {
+    titleEl.textContent = '🔗 Compartilhar Dados';
+    bodyEl.innerHTML = `
+      <p class="share-modal-desc">Isso vai gerar um link público (válido por 3 dias) com os dados abaixo:</p>
+      ${countsHtml}
+    `;
+
+    footerEl.innerHTML = '';
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'mbtn secondary';
+    cancelBtn.textContent = 'Cancelar';
+    cancelBtn.onclick = () => closeModal('shareModal');
+
+    const confirmBtn = document.createElement('button');
+    confirmBtn.className = 'mbtn primary';
+    confirmBtn.id = 'confirmShareBtn';
+    confirmBtn.textContent = 'Compartilhar';
+    confirmBtn.onclick = () => shareData();
+
+    footerEl.append(cancelBtn, confirmBtn);
+  }
+
+  openModal('shareModal');
+}
+
+// Cria de fato um novo link (chamada pelos botões "Compartilhar" e "Gerar
+// novo link mesmo assim" dentro do modal — a decisão de reaproveitar ou
+// não já foi tomada em openShareModal() antes de chegar aqui).
 async function shareData() {
   const state = collectState();
   const jsonString = JSON.stringify(state);
@@ -416,8 +540,8 @@ async function shareData() {
     return;
   }
 
-  const shareBtn = document.getElementById('shareBtn');
-  if (shareBtn) shareBtn.disabled = true;
+  const confirmBtn = document.getElementById('confirmShareBtn');
+  if (confirmBtn) confirmBtn.disabled = true;
 
   try {
     const res = await fetch('/api/share', {
@@ -434,21 +558,22 @@ async function shareData() {
 
     if (!res.ok) throw new Error('HTTP ' + res.status);
 
-    const { id } = await res.json();
+    const { id, expiresInSeconds } = await res.json();
     const url = `${window.location.origin}/share/${id}`;
-    openShareResultModal(url);
+
+    saveLastShareRecord({
+      comparableState: getComparableStateString(),
+      url,
+      expiresAt: Date.now() + expiresInSeconds * 1000
+    });
+
+    openShareModal(); // reabre já mostrando o link recém-criado (Estado 2)
   } catch (error) {
     console.error('Erro ao compartilhar:', error);
     notify('Não foi possível criar o link de compartilhamento.', 'err');
   } finally {
-    if (shareBtn) shareBtn.disabled = false;
+    if (confirmBtn) confirmBtn.disabled = false;
   }
-}
-
-function openShareResultModal(url) {
-  const input = document.getElementById('shareResultInput');
-  if (input) input.value = url;
-  openModal('shareResultModal');
 }
 
 async function copyShareLink() {
@@ -576,5 +701,71 @@ async function clearAll() {
   // TUDO no domínio, inclusive preferências como o tema). Assim, num
   // próximo F5 sem nada ter sido adicionado, o demo volta.
   try { localStorage.removeItem(STORAGE_KEY); } catch (_) {}
+}
+
+// --- Ferramentas (menu "Ferramentas") ------------------------
+
+// Checagem leve de integridade estrutural do estado atual: IDs duplicados,
+// seções/botões sem nome, botões sem texto para copiar. Não corrige nada
+// sozinho — só relata, deixando a decisão com quem está usando.
+function checkJsonIntegrity() {
+  const state = collectState();
+  const issues = [];
+  const sectionIds = new Set();
+  const buttonIds = new Set();
+
+  state.sections.forEach(section => {
+    if (!section.id) issues.push('Seção sem ID encontrada.');
+    if (section.id && sectionIds.has(section.id)) issues.push(`ID de seção duplicado: "${section.id}".`);
+    sectionIds.add(section.id);
+
+    if (!section.name || !section.name.trim()) issues.push(`Seção com nome vazio (id: ${section.id || '?'}).`);
+
+    section.buttons.forEach(button => {
+      if (!button.id) issues.push(`Botão sem ID na seção "${section.name}".`);
+      if (button.id && buttonIds.has(button.id)) issues.push(`ID de botão duplicado: "${button.id}".`);
+      buttonIds.add(button.id);
+
+      if (!button.name || !button.name.trim()) issues.push(`Botão sem nome (id: ${button.id || '?'}).`);
+      if (!button.text || !button.text.trim()) issues.push(`Botão "${button.name || button.id}" sem texto para copiar.`);
+    });
+  });
+
+  if (issues.length === 0) {
+    notify('✅ JSON verificado — tudo certo!');
+    return;
+  }
+
+  notify(`⚠️ ${issues.length} problema(s) encontrado(s). Veja o console (F12) para a lista completa.`, 'err');
+  console.warn('[Blû] Verificação de JSON encontrou os seguintes pontos:', issues);
+}
+
+// Checagem leve das tags: tags sem nenhum botão associado (órfãs) e tags
+// que só diferem por acento/maiúscula entre si (candidatas a mesclar).
+function checkTagsIntegrity() {
+  const empty = getEmptyTags();
+
+  const groups = {};
+  tags.forEach(tag => {
+    const normalized = normalizeSearchText(tag);
+    if (!groups[normalized]) groups[normalized] = [];
+    groups[normalized].push(tag);
+  });
+  const collisions = Object.values(groups).filter(group => group.length > 1);
+
+  if (empty.length === 0 && collisions.length === 0) {
+    notify('✅ Tags verificadas — tudo certo!');
+    return;
+  }
+
+  if (empty.length > 0) {
+    notify(`⚠️ ${empty.length} tag(s) sem nenhum botão associado: ${empty.join(', ')}`, 'err');
+  }
+
+  if (collisions.length > 0) {
+    collisions.forEach(group => {
+      notify(`⚠️ Tags parecidas (considerar mesclar): ${group.join(' / ')}`, 'err');
+    });
+  }
 }
   
