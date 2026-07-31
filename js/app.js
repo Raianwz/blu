@@ -81,6 +81,24 @@ function toggleEditMode() {
   notify(editMode ? 'Modo edição ativado' : 'Modo edição desativado');
 }
 
+// "Ocultar Marca/Versão" — propositalmente NÃO persiste em localStorage:
+// é um estado só da sessão atual, sempre volta a aparecer num F5/nova
+// visita (pensado como um "modo apresentação" rápido, não preferência).
+let versionHidden = false;
+
+function toggleVersionVisibility() {
+  versionHidden = !versionHidden;
+
+  const versionBadge = document.getElementById('appVersion');
+  if (versionBadge) versionBadge.classList.toggle('version-hidden', versionHidden);
+
+  const button = document.getElementById('hideVersionBtn');
+  if (button) {
+    button.classList.toggle('active', versionHidden);
+    button.querySelector('.menu-btn-label').textContent = `Ocultar Marca/Versão: ${versionHidden ? 'ON' : 'OFF'}`;
+  }
+}
+
 function toggleTheme() {
   const dark = document.body.classList.toggle('dark');
   applyThemeButtonUI(dark);
@@ -134,6 +152,22 @@ function toggleSubmenu(name) {
   const isOpen = body.classList.toggle('open');
   toggleBtn.classList.toggle('open', isOpen);
   toggleBtn.setAttribute('aria-expanded', String(isOpen));
+
+  // Comportamento accordion: abrir um grupo fecha os demais, evitando o
+  // menu inteiro ficar "caótico" com vários submenus abertos ao mesmo tempo.
+  if (isOpen) {
+    document.querySelectorAll('.menu-submenu-body.open').forEach(otherBody => {
+      if (otherBody === body) return;
+      otherBody.classList.remove('open');
+
+      const otherName = otherBody.id.replace('submenu-', '');
+      const otherToggle = document.querySelector(`.menu-submenu-toggle[data-submenu="${otherName}"]`);
+      if (otherToggle) {
+        otherToggle.classList.remove('open');
+        otherToggle.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
 }
 
 function openPopout() {
