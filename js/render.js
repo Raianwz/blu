@@ -2,6 +2,95 @@
 // Renderização de seções e botões
 // ==========================================================
 
+const TEXT_PREVIEW_STORAGE_KEY = 'blu:textPreview';
+let textPreviewEnabled = true;
+let textPreviewEl = null;
+
+function updateTextPreviewButtonUI() {
+  const button = document.getElementById('textPreviewBtn');
+  if (!button) return;
+  button.classList.toggle('active', textPreviewEnabled);
+  button.querySelector('.menu-btn-label').textContent = `Prévia de Texto: ${textPreviewEnabled ? 'ON' : 'OFF'}`;
+}
+
+function getCopyButtonTitle(button) {
+  const wrap = button.closest('.btn-wrap');
+  const text = wrap?.dataset.text || '';
+  if (!text) return '';
+  return wrap?.dataset.vis === 'private' ? `🔒 Privado\n\n${text}` : text;
+}
+
+function syncCopyButtonTitles() {
+  document.querySelectorAll('.copy-btn').forEach(button => {
+    if (textPreviewEnabled) {
+      button.removeAttribute('title');
+    } else {
+      const title = getCopyButtonTitle(button);
+      if (title) button.title = title;
+      else button.removeAttribute('title');
+    }
+  });
+}
+
+function applyTextPreviewState(enabled, persist = false) {
+  textPreviewEnabled = !!enabled;
+  updateTextPreviewButtonUI();
+  syncCopyButtonTitles();
+  if (!textPreviewEnabled) hideButtonPreview();
+
+  if (persist) {
+    try { localStorage.setItem(TEXT_PREVIEW_STORAGE_KEY, textPreviewEnabled ? 'on' : 'off'); } catch (_) {}
+  }
+}
+
+function initTextPreviewPreference() {
+  let stored = null;
+  try { stored = localStorage.getItem(TEXT_PREVIEW_STORAGE_KEY); } catch (_) {}
+  applyTextPreviewState(stored !== 'off');
+}
+
+function toggleTextPreview() {
+  applyTextPreviewState(!textPreviewEnabled, true);
+}
+
+function getTextPreviewEl() {
+  if (textPreviewEl) return textPreviewEl;
+  textPreviewEl = document.createElement('div');
+  textPreviewEl.id = 'buttonPreviewTooltip';
+  textPreviewEl.setAttribute('role', 'tooltip');
+  document.body.appendChild(textPreviewEl);
+  return textPreviewEl;
+}
+
+function showButtonPreview(button) {
+  if (!textPreviewEnabled || !button.dataset.preview) return;
+
+  const tooltip = getTextPreviewEl();
+  tooltip.textContent = button.dataset.preview;
+  tooltip.classList.add('show');
+
+  const buttonRect = button.getBoundingClientRect();
+  const tooltipRect = tooltip.getBoundingClientRect();
+  const gap = 8;
+  const viewportPadding = 8;
+  const centeredLeft = buttonRect.left + (buttonRect.width - tooltipRect.width) / 2;
+  const maxLeft = Math.max(viewportPadding, window.innerWidth - tooltipRect.width - viewportPadding);
+  const left = Math.min(Math.max(centeredLeft, viewportPadding), maxLeft);
+  const top = buttonRect.top >= tooltipRect.height + gap + viewportPadding
+    ? buttonRect.top - tooltipRect.height - gap
+    : buttonRect.bottom + gap;
+
+  tooltip.style.left = `${Math.round(left)}px`;
+  tooltip.style.top = `${Math.round(top)}px`;
+}
+
+function hideButtonPreview() {
+  textPreviewEl?.classList.remove('show');
+}
+
+window.addEventListener('scroll', hideButtonPreview, true);
+window.addEventListener('resize', hideButtonPreview);
+
 function renderAll(sectionsData) {
   const container = document.getElementById('sections');
   container.innerHTML = '';
@@ -60,19 +149,19 @@ function createBtnEl(button, sectionId) {
   copyBtn.dataset.preview = vis === 'private'
     ? `🔒 Privado\n\n${previewText(wrap.dataset.text)}`
     : previewText(wrap.dataset.text);
-  copyBtn.title = vis === 'private'
-    ? `🔒 Privado\n\n${wrap.dataset.text || ''}`
-    : (wrap.dataset.text || '');
+  if (!textPreviewEnabled && wrap.dataset.text) {
+    copyBtn.title = vis === 'private' ? `🔒 Privado\n\n${wrap.dataset.text}` : wrap.dataset.text;
+  }
   copyBtn.innerHTML = `${visIcon ? `<span>${visIcon}</span>` : ''}<span class="btn-label">${escapeHtml(button.name || '')}</span>`;
   copyBtn.onclick = () => doCopy(wrap.dataset.text || '', copyBtn);
 
   let tipTimer;
   copyBtn.addEventListener('mouseenter', () => {
-    tipTimer = setTimeout(() => copyBtn.classList.add('show-tip'), 700);
+    if (textPreviewEnabled) tipTimer = setTimeout(() => showButtonPreview(copyBtn), 700);
   });
   copyBtn.addEventListener('mouseleave', () => {
     clearTimeout(tipTimer);
-    copyBtn.classList.remove('show-tip');
+    hideButtonPreview();
   });
 
   const editBtn = document.createElement('button');
@@ -119,6 +208,7 @@ function updateSectionCount(sectionId) {
 }
 
 async function doCopy(text, btn) {
+  hideButtonPreview();
   const originalHTML = btn.innerHTML;
   const originalDisabled = btn.disabled;
 

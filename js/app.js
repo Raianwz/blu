@@ -333,5 +333,6 @@ setupDialogEvents();
 setupVersionBadgeHover();
 initTheme();
 initDragPreviewPreference();
+initTextPreviewPreference();
 registerServiceWorker();
 init();
