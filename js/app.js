@@ -212,6 +212,18 @@ function openPopoutBlank() {
   }, 50);
 }
 
+// O worker fica em /js para manter a raiz organizada, mas precisa controlar
+// todo o app. O cabeçalho Service-Worker-Allowed configurado na Vercel autoriza
+// explicitamente esse escopo mais amplo.
+function registerServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/js/service-worker.js', { scope: '/' })
+      .catch(error => console.warn('Não foi possível registrar o service worker:', error));
+  });
+}
+
 // --- Atalhos globais e wiring de eventos --------------------
 
 document.addEventListener('click', event => {
@@ -321,4 +333,5 @@ setupDialogEvents();
 setupVersionBadgeHover();
 initTheme();
 initDragPreviewPreference();
+registerServiceWorker();
 init();
