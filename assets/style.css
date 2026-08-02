@@ -1165,15 +1165,17 @@ body.shift-locked .btn-wrap.blu-button-shift-row .copy-btn {
   color: var(--text2);
 }
 
-@media (max-width: 420px) {
+@media (max-width: 480px) {
   #backupBanner {
-    flex-direction: column;
-    align-items: stretch;
-    text-align: center;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    text-align: left;
     padding: 12px 14px;
   }
 
   .backup-banner-actions {
+    grid-column: 1 / -1;
     margin-left: 0;
     justify-content: center;
   }

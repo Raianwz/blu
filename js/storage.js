@@ -244,13 +244,6 @@ function evaluateBackupBanner(dirty) {
   const banner = document.getElementById('backupBanner');
   if (!banner) return;
 
-  // Em janelas pop-out/secundárias o lembrete de backup não faz sentido:
-  // elas são um atalho de cópia rápida, não a superfície principal de edição.
-  if (isPopoutWindow) {
-    banner.classList.remove('show');
-    return;
-  }
-
   const current = getComparableStateString();
   if (!dirty || backupBannerDismissedFor === current) {
     banner.classList.remove('show');
