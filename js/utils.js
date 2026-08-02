@@ -14,6 +14,12 @@ function normalizeSearchText(value) {
     .trim();
 }
 
+// Forma canônica usada para armazenar e comparar tags. Além de ignorar
+// maiúsculas e acentos, evita tags duplicadas causadas por espaços extras.
+function normalizeTag(value) {
+  return normalizeSearchText(value).replace(/\s+/g, ' ');
+}
+
 function previewText(text, max = 220) {
   const clean = sanitizeText(text).trim();
   if (!clean) return '';
@@ -92,10 +98,19 @@ function setIcon(wrapEl, name) {
 // utils.js (em vez de crud.js) para poder ser reaproveitada também pela
 // página share.html, que não carrega o restante do app.
 function normalizeImportedData(parsed) {
+  const normalizedTags = [];
+  const addNormalizedTag = value => {
+    const tag = normalizeTag(value);
+    if (tag && !normalizedTags.includes(tag)) normalizedTags.push(tag);
+    return tag;
+  };
+
   const base = {
-    tags: Array.isArray(parsed.tags) ? parsed.tags.map(tag => String(tag).toLowerCase()) : [],
+    tags: normalizedTags,
     sections: []
   };
+
+  if (Array.isArray(parsed.tags)) parsed.tags.forEach(addNormalizedTag);
 
   const sourceSections = Array.isArray(parsed.sections)
     ? parsed.sections
@@ -125,7 +140,7 @@ function normalizeImportedData(parsed) {
           id: String(button.id || ('b' + Date.now() + buttonIndex)),
           name: sanitizeText(button.name ?? button.btnName ?? ''),
           text: sanitizeText(button.text),
-          tag: sanitizeText(button.tag || ''),
+          tag: addNormalizedTag(button.tag || ''),
           vis: ['public', 'private', 'other'].includes(button.vis) ? button.vis : 'other'
         }))
       : []

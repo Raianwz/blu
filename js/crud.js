@@ -134,7 +134,7 @@ function openEditBtn(sectionId, btnId) {
 function saveBtn() {
   const name = document.getElementById('bName').value.trim();
   const text = document.getElementById('bText').value.trim();
-  const tag = document.getElementById('bTag').value.trim();
+  const tag = normalizeTag(document.getElementById('bTag').value);
   const vis = document.getElementById('bVis').value || 'other';
 
   if (!name || !text) {
@@ -147,8 +147,8 @@ function saveBtn() {
     return;
   }
 
-  if (tag && !tags.includes(tag.toLowerCase())) {
-    tags.push(tag.toLowerCase());
+  if (tag && !tags.includes(tag)) {
+    tags.push(tag);
     updateTagDatalist();
   }
 
@@ -176,7 +176,7 @@ function saveBtn() {
     }
     const oldTag = old.dataset.tag;
     old.replaceWith(createBtnEl(button, currentSectionId));
-    if (oldTag && oldTag !== normalizeSearchText(tag)) removeTagIfOrphan(oldTag);
+    if (oldTag && oldTag !== tag) removeTagIfOrphan(oldTag);
     notify('Botão atualizado!');
   } else {
     body.appendChild(createBtnEl(button, currentSectionId));
@@ -264,7 +264,7 @@ async function renameTag(oldTag) {
   const newNameRaw = await promptDialog(`Novo nome para a tag "${oldTag}":`, oldTag, { title: '✏️ Renomear Tag' });
   if (newNameRaw === null) return;
 
-  const newTag = newNameRaw.trim().toLowerCase();
+  const newTag = normalizeTag(newNameRaw);
   if (!newTag || newTag === oldTag) return;
 
   const collides = tags.includes(newTag);
@@ -333,7 +333,7 @@ function removeTagIfOrphan(tag) {
 
 function addTag() {
   const input = document.getElementById('newTagInput');
-  const value = input.value.trim().toLowerCase();
+  const value = normalizeTag(input.value);
   if (!value || tags.includes(value)) return;
 
   tags.push(value);
@@ -685,10 +685,16 @@ async function importData() {
 }
 
 async function clearAll() {
-  const ok = await confirmDialog('Limpar TODOS os dados? Esta ação não pode ser desfeita.', { title: '🗑️ Limpar Tudo', danger: true, confirmText: 'Limpar tudo' });
+  const ok = await confirmDialog('Limpar TODOS os dados e preferências locais do Blû? Os botões e seções poderão ser recuperados com Ctrl+Z enquanto esta página permanecer aberta; as preferências continuarão limpas.', { title: '🗑️ Limpar Tudo', danger: true, confirmText: 'Limpar tudo' });
   if (!ok) return;
 
+  const stateBeforeClear = JSON.stringify(collectState());
+  const exportedStateBeforeClear = lastExportedComparableState;
   pushHistory();
+  clearUndoSnapshot = {
+    stateString: stateBeforeClear,
+    exportedComparableState: exportedStateBeforeClear
+  };
   restoreState({ tags: [], sections: [] });
   notify('Tudo limpo!');
 
@@ -697,10 +703,17 @@ async function clearAll() {
   // lembrete aparecer na hora.
   markCurrentStateAsExported();
 
-  // Remove só o registro do Blû (não localStorage.clear(), que apagaria
-  // TUDO no domínio, inclusive preferências como o tema). Assim, num
-  // próximo F5 sem nada ter sido adicionado, o demo volta.
-  try { localStorage.removeItem(STORAGE_KEY); } catch (_) {}
+  // Limpa todo o namespace do Blû sem afetar possíveis dados de outras
+  // ferramentas hospedadas na mesma origem. Num próximo F5, o demo e as
+  // preferências padrão voltam.
+  clearBluLocalStorage();
+
+  // Reflete imediatamente os padrões na interface sem recriar as
+  // preferências que acabaram de ser removidas.
+  applyTheme(!!systemThemeQuery?.matches);
+  applyTextPreviewState(true);
+  dragPreviewEnabled = false;
+  applyDragPreviewState();
 }
 
 // --- Ferramentas (menu "Ferramentas") ------------------------
@@ -768,4 +781,3 @@ function checkTagsIntegrity() {
     });
   }
 }
-  

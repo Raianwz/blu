@@ -2,7 +2,6 @@
 // Renderização de seções e botões
 // ==========================================================
 
-const TEXT_PREVIEW_STORAGE_KEY = 'blu:textPreview';
 let textPreviewEnabled = true;
 let textPreviewEl = null;
 
@@ -39,13 +38,12 @@ function applyTextPreviewState(enabled, persist = false) {
   if (!textPreviewEnabled) hideButtonPreview();
 
   if (persist) {
-    try { localStorage.setItem(TEXT_PREVIEW_STORAGE_KEY, textPreviewEnabled ? 'on' : 'off'); } catch (_) {}
+    setSetting('textPreview', textPreviewEnabled ? 'on' : 'off');
   }
 }
 
 function initTextPreviewPreference() {
-  let stored = null;
-  try { stored = localStorage.getItem(TEXT_PREVIEW_STORAGE_KEY); } catch (_) {}
+  const stored = getSetting('textPreview');
   applyTextPreviewState(stored !== 'off');
 }
 
@@ -135,7 +133,7 @@ function createBtnEl(button, sectionId) {
   wrap.className = 'btn-wrap';
   wrap.dataset.id = String(button.id || ('b' + Date.now()));
   wrap.dataset.name = normalizeSearchText(button.name);
-  wrap.dataset.tag = normalizeSearchText(button.tag);
+  wrap.dataset.tag = normalizeTag(button.tag);
   wrap.dataset.text = sanitizeText(button.text);
   wrap.dataset.vis = sanitizeText(button.vis || 'other') || 'other';
   wrap.draggable = editMode;

@@ -3,6 +3,7 @@
 // ==========================================================
 
 const STORAGE_KEY = 'blu:data';
+const SETTINGS_STORAGE_KEY = 'blu:settings';
 const VERSION = '1.5';
 const BASE_TITLE = 'Blû';
 
@@ -11,6 +12,8 @@ let tags = [];
 let history = [];
 let redoStack = [];
 const REDO_LIMIT = 10;
+let clearUndoSnapshot = null;
+let clearRedoSnapshot = null;
 
 // Snapshot de referência: o estado no momento do último carregamento
 // ou da última exportação. É contra ele que comparamos para saber se
@@ -18,6 +21,60 @@ const REDO_LIMIT = 10;
 let lastExportedComparableState = '';
 
 const isPopoutWindow = !!window.opener && ['BluePopout', 'BluePopOut'].includes(window.name);
+
+function loadSettings() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) || '{}');
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+  } catch (_) {
+    return {};
+  }
+}
+
+function getSetting(name, fallback = null) {
+  const settings = loadSettings();
+  return Object.prototype.hasOwnProperty.call(settings, name) ? settings[name] : fallback;
+}
+
+function setSetting(name, value) {
+  try {
+    const settings = loadSettings();
+    settings[name] = value;
+    localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+  } catch (_) {}
+}
+
+function migrateLegacySettings() {
+  const legacyKeys = {
+    theme: 'blu:theme',
+    dragPreview: 'blu:dragPreview',
+    textPreview: 'blu:textPreview'
+  };
+  const settings = loadSettings();
+  let changed = false;
+
+  try {
+    Object.entries(legacyKeys).forEach(([name, key]) => {
+      const legacyValue = localStorage.getItem(key);
+      if (!Object.prototype.hasOwnProperty.call(settings, name) && legacyValue !== null) {
+        settings[name] = legacyValue;
+        changed = true;
+      }
+      if (legacyValue !== null) localStorage.removeItem(key);
+    });
+
+    if (changed) localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+  } catch (_) {}
+}
+
+function clearBluLocalStorage() {
+  try {
+    for (let index = localStorage.length - 1; index >= 0; index--) {
+      const key = localStorage.key(index);
+      if (key?.startsWith('blu:')) localStorage.removeItem(key);
+    }
+  } catch (_) {}
+}
 
 function collectState() {
   const sections = [];
@@ -216,6 +273,7 @@ function pushHistory() {
 
   // Qualquer nova ação manual invalida o histórico de refazer.
   redoStack = [];
+  clearRedoSnapshot = null;
 }
 
 function pushRedoState(stateString) {
@@ -224,9 +282,10 @@ function pushRedoState(stateString) {
 }
 
 function restoreState(state) {
-  tags = Array.isArray(state.tags) ? [...state.tags] : [];
+  const normalizedState = normalizeImportedData(state);
+  tags = [...normalizedState.tags];
   updateTagDatalist();
-  renderAll(Array.isArray(state.sections) ? state.sections : []);
+  renderAll(normalizedState.sections);
 
   if (editMode) {
     document.querySelectorAll('.btn-wrap').forEach(button => button.draggable = true);
@@ -240,8 +299,20 @@ function undoLastAction() {
   if (history.length === 0) return;
 
   try {
-    pushRedoState(JSON.stringify(collectState()));
-    const previousState = JSON.parse(history.pop());
+    const currentStateString = JSON.stringify(collectState());
+    pushRedoState(currentStateString);
+    const previousStateString = history.pop();
+
+    if (clearUndoSnapshot?.stateString === previousStateString) {
+      clearRedoSnapshot = {
+        stateString: currentStateString,
+        exportedComparableState: lastExportedComparableState
+      };
+      lastExportedComparableState = clearUndoSnapshot.exportedComparableState;
+      clearUndoSnapshot = null;
+    }
+
+    const previousState = JSON.parse(previousStateString);
     restoreState(previousState);
     notify('Desfeito!');
   } catch (error) {
@@ -254,10 +325,21 @@ function redoLastAction() {
   if (redoStack.length === 0) return;
 
   try {
-    history.push(JSON.stringify(collectState()));
+    const currentStateString = JSON.stringify(collectState());
+    history.push(currentStateString);
     if (history.length > 30) history.shift();
 
-    const nextState = JSON.parse(redoStack.pop());
+    const nextStateString = redoStack.pop();
+    if (clearRedoSnapshot?.stateString === nextStateString) {
+      clearUndoSnapshot = {
+        stateString: currentStateString,
+        exportedComparableState: lastExportedComparableState
+      };
+      lastExportedComparableState = clearRedoSnapshot.exportedComparableState;
+      clearRedoSnapshot = null;
+    }
+
+    const nextState = JSON.parse(nextStateString);
     restoreState(nextState);
     notify('Refeito!');
   } catch (error) {

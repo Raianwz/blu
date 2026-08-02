@@ -52,7 +52,8 @@ function getDemoState() {
 
 function init() {
   const saved = loadPersistedState();
-  const data = saved && Array.isArray(saved.sections) ? saved : getDemoState();
+  const sourceData = saved && Array.isArray(saved.sections) ? saved : getDemoState();
+  const data = normalizeImportedData(sourceData);
 
   tags = Array.isArray(data.tags) ? [...data.tags] : [];
   renderAll(Array.isArray(data.sections) ? data.sections : []);
@@ -103,10 +104,9 @@ function toggleTheme() {
   const dark = document.body.classList.toggle('dark');
   applyThemeButtonUI(dark);
   // Escolha manual passa a valer sobre a preferência do sistema.
-  try { localStorage.setItem(THEME_STORAGE_KEY, dark ? 'dark' : 'light'); } catch (_) { }
+  setSetting('theme', dark ? 'dark' : 'light');
 }
 
-const THEME_STORAGE_KEY = 'blu:theme';
 const systemThemeQuery = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
 
 function applyThemeButtonUI(dark) {
@@ -123,8 +123,7 @@ function applyTheme(dark) {
 }
 
 function initTheme() {
-  let stored = null;
-  try { stored = localStorage.getItem(THEME_STORAGE_KEY); } catch (_) { }
+  const stored = getSetting('theme');
 
   if (stored === 'dark' || stored === 'light') {
     applyTheme(stored === 'dark');
@@ -134,8 +133,7 @@ function initTheme() {
 
   // Se o usuário nunca escolheu manualmente, acompanha mudanças do sistema em tempo real.
   systemThemeQuery?.addEventListener('change', event => {
-    let currentStored = null;
-    try { currentStored = localStorage.getItem(THEME_STORAGE_KEY); } catch (_) { }
+    const currentStored = getSetting('theme');
     if (currentStored !== 'dark' && currentStored !== 'light') applyTheme(event.matches);
   });
 }
@@ -331,6 +329,7 @@ document.querySelectorAll('.modal-bg').forEach(background => {
 
 setupDialogEvents();
 setupVersionBadgeHover();
+migrateLegacySettings();
 initTheme();
 initDragPreviewPreference();
 initTextPreviewPreference();

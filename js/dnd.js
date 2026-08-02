@@ -29,15 +29,14 @@ function applyDragPreviewState() {
 }
 
 function initDragPreviewPreference() {
-  let stored = null;
-  try { stored = localStorage.getItem('blu:dragPreview'); } catch (_) {}
+  const stored = getSetting('dragPreview');
   dragPreviewEnabled = stored === 'on';
   applyDragPreviewState();
 }
 
 function toggleDragPreview() {
   dragPreviewEnabled = !dragPreviewEnabled;
-  try { localStorage.setItem('blu:dragPreview', dragPreviewEnabled ? 'on' : 'off'); } catch (_) {}
+  setSetting('dragPreview', dragPreviewEnabled ? 'on' : 'off');
   applyDragPreviewState();
   notify(dragPreviewEnabled ? 'Preview de movimentação ativado' : 'Preview de movimentação desativado');
 }
