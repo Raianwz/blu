@@ -8,6 +8,21 @@
   <link rel="stylesheet" href="/assets/style.css">
 </head>
 <body>
+  <script>
+    // Aplica o tema antes de renderizar o cartão, evitando o flash do tema
+    // claro. A chave antiga é aceita para links abertos antes da migração.
+    (() => {
+      let storedTheme = null;
+      try {
+        const settings = JSON.parse(localStorage.getItem('blu:settings') || '{}');
+        storedTheme = settings?.theme || localStorage.getItem('blu:theme');
+      } catch (_) {}
+
+      const dark = storedTheme === 'dark'
+        || (storedTheme !== 'light' && window.matchMedia?.('(prefers-color-scheme: dark)').matches);
+      document.body.classList.toggle('dark', dark);
+    })();
+  </script>
   <div class="share-page">
     <div class="share-card">
       <img class="share-logo" src="/assets/blu.svg" alt="Blû" width="56" height="56">
