@@ -178,8 +178,8 @@ function moveSectionUp(btn) {
   const prev = section.previousElementSibling;
   if (!prev) return;
 
-  section.parentNode.insertBefore(section, prev);
   pushHistory();
+  section.parentNode.insertBefore(section, prev);
   updateUnsavedChangesUI();
 }
 
@@ -188,8 +188,8 @@ function moveSectionDown(btn) {
   const next = section.nextElementSibling;
   if (!next) return;
 
-  section.parentNode.insertBefore(next, section);
   pushHistory();
+  section.parentNode.insertBefore(next, section);
   updateUnsavedChangesUI();
 }
 
