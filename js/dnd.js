@@ -53,6 +53,8 @@ function onDragStart(event) {
   }
 
   dragEl = this;
+  hideButtonPreview();
+  this.querySelector('.copy-btn')?.removeAttribute('title');
   this.classList.add('dragging');
   placeholder = document.createElement('div');
   placeholder.className = 'drag-placeholder';
@@ -60,7 +62,14 @@ function onDragStart(event) {
 }
 
 function onDragEnd() {
-  dragEl?.classList.remove('dragging');
+  if (dragEl) {
+    dragEl.classList.remove('dragging');
+    const copyButton = dragEl.querySelector('.copy-btn');
+    if (copyButton && !textPreviewEnabled) {
+      const title = getCopyButtonTitle(copyButton);
+      if (title) copyButton.title = title;
+    }
+  }
   placeholder?.remove();
   dragEl = null;
   placeholder = null;

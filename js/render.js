@@ -61,7 +61,7 @@ function getTextPreviewEl() {
 }
 
 function showButtonPreview(button) {
-  if (!textPreviewEnabled || !button.dataset.preview) return;
+  if (!textPreviewEnabled || !button.dataset.preview || document.querySelector('.btn-wrap.dragging')) return;
 
   const tooltip = getTextPreviewEl();
   tooltip.textContent = button.dataset.preview;
