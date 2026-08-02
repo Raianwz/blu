@@ -760,6 +760,140 @@ body.edit-mode .btn-del {
   flex-shrink: 0;
 }
 
+.tag-modal-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 4px;
+  margin-bottom: 14px;
+  border-radius: 9px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+}
+
+.tag-modal-tab {
+  border: none;
+  border-radius: 7px;
+  padding: 8px 12px;
+  background: transparent;
+  color: var(--text2);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tag-modal-tab.active {
+  background: var(--accent1);
+  color: white;
+}
+
+.tag-modal-panel[hidden] {
+  display: none;
+}
+
+.tag-add-row {
+  display: flex;
+  gap: 8px;
+}
+
+.tag-add-row input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+}
+
+.tag-diagnostic-summary {
+  padding: 11px 12px;
+  margin-bottom: 10px;
+  border: 1.5px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.tag-diagnostic-summary.ok {
+  border-color: rgba(34, 197, 94, 0.5);
+  background: rgba(34, 197, 94, 0.08);
+}
+
+.tag-diagnostic-summary.warning {
+  border-color: rgba(245, 158, 11, 0.55);
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.tag-diagnostic-issues {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 340px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.tag-diagnostic-section {
+  padding: 11px 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface2);
+}
+
+.tag-diagnostic-section h3 {
+  margin: 0 0 4px;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.tag-diagnostic-section p {
+  margin: 0 0 10px;
+  color: var(--text2);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.tag-diagnostic-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.tag-conflict-row {
+  padding: 9px 0;
+  border-top: 1px solid var(--border);
+}
+
+.tag-conflict-row:first-of-type {
+  border-top: none;
+}
+
+.tag-conflict-names {
+  margin-bottom: 7px;
+  color: var(--text);
+  font-size: 12.5px;
+  word-break: break-word;
+}
+
+.tag-conflict-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag-conflict-actions .mbtn {
+  min-width: 0;
+  padding: 6px 9px;
+  font-size: 11.5px;
+  white-space: normal;
+}
+
 #shareResultInput {
   flex: 1;
   min-width: 0;

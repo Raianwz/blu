@@ -28,9 +28,12 @@ function openModal(id) {
     const filterInput = document.getElementById('tagFilterInput');
     if (filterInput) filterInput.value = '';
     renderTagList();
+    renderTagDiagnostics();
   }
 
-  const input = document.querySelector(`#${id} input, #${id} textarea`);
+  const input = id === 'tagModal'
+    ? document.querySelector('#tagModal .tag-modal-panel.active input')
+    : document.querySelector(`#${id} input, #${id} textarea`);
   if (input) setTimeout(() => input.focus(), 50);
 }
 
@@ -213,6 +216,35 @@ async function deleteBtn(sectionId, btnId) {
 
 // --- Tags --------------------------------------------------
 
+let activeTagModalTab = 'manage';
+
+function openTagModal(tab = 'manage') {
+  setTagModalTab(tab);
+  openModal('tagModal');
+}
+
+function setTagModalTab(tab) {
+  activeTagModalTab = tab === 'diagnostic' ? 'diagnostic' : 'manage';
+  const isDiagnostic = activeTagModalTab === 'diagnostic';
+  const manageTab = document.getElementById('tagManageTab');
+  const diagnosticTab = document.getElementById('tagDiagnosticTab');
+  const managePanel = document.getElementById('tagManagePanel');
+  const diagnosticPanel = document.getElementById('tagDiagnosticPanel');
+  const title = document.getElementById('tagModalTitle');
+
+  manageTab?.classList.toggle('active', !isDiagnostic);
+  diagnosticTab?.classList.toggle('active', isDiagnostic);
+  manageTab?.setAttribute('aria-selected', String(!isDiagnostic));
+  diagnosticTab?.setAttribute('aria-selected', String(isDiagnostic));
+  managePanel?.classList.toggle('active', !isDiagnostic);
+  diagnosticPanel?.classList.toggle('active', isDiagnostic);
+  if (managePanel) managePanel.hidden = isDiagnostic;
+  if (diagnosticPanel) diagnosticPanel.hidden = !isDiagnostic;
+  if (title) title.textContent = isDiagnostic ? '🏷️ Verificar Tags' : '🏷️ Gerenciar Tags';
+
+  if (isDiagnostic) renderTagDiagnostics();
+}
+
 function getTagUsageMap() {
   const usage = {};
   document.querySelectorAll('.btn-wrap').forEach(button => {
@@ -361,6 +393,7 @@ function updateTagDatalist() {
   const dataList = document.getElementById('tagOptions');
   dataList.innerHTML = tags.map(tag => `<option value="${escapeHtmlAttr(tag)}">`).join('');
   renderTagList();
+  renderTagDiagnostics();
 }
 
 // --- Export / Import --------------------------------------
@@ -753,31 +786,206 @@ function checkJsonIntegrity() {
   console.warn('[Blû] Verificação de JSON encontrou os seguintes pontos:', issues);
 }
 
-// Checagem leve das tags: tags sem nenhum botão associado (órfãs) e tags
-// que só diferem por acento/maiúscula entre si (candidatas a mesclar).
-function checkTagsIntegrity() {
-  const empty = getEmptyTags();
+function getLevenshteinDistance(left, right) {
+  const a = normalizeTag(left);
+  const b = normalizeTag(right);
+  const previous = Array.from({ length: b.length + 1 }, (_, index) => index);
 
-  const groups = {};
+  for (let row = 1; row <= a.length; row++) {
+    const current = [row];
+    for (let column = 1; column <= b.length; column++) {
+      current[column] = Math.min(
+        current[column - 1] + 1,
+        previous[column] + 1,
+        previous[column - 1] + (a[row - 1] === b[column - 1] ? 0 : 1)
+      );
+    }
+    previous.splice(0, previous.length, ...current);
+  }
+
+  return previous[b.length];
+}
+
+function arePotentiallyConflictingTags(left, right) {
+  const a = normalizeTag(left);
+  const b = normalizeTag(right);
+  if (!a || !b || a === b) return false;
+
+  const shortestLength = Math.min(a.length, b.length);
+  if (shortestLength < 4) return false;
+
+  const distance = getLevenshteinDistance(a, b);
+  return distance <= 1 || (shortestLength >= 8 && distance <= 2);
+}
+
+function getTagDiagnostics() {
+  const usage = getTagUsageMap();
+  const empty = tags.filter(tag => !usage[tag]);
+  const nonCanonical = tags.filter(tag => normalizeTag(tag) !== tag);
+  const listedTags = new Set(tags);
+  const buttonTags = [...document.querySelectorAll('.btn-wrap')]
+    .map(button => button.dataset.tag)
+    .filter(Boolean);
+  const unlisted = [...new Set(buttonTags.filter(tag => !listedTags.has(tag)))];
+
+  const canonicalGroups = {};
   tags.forEach(tag => {
-    const normalized = normalizeSearchText(tag);
-    if (!groups[normalized]) groups[normalized] = [];
-    groups[normalized].push(tag);
+    const canonical = normalizeTag(tag);
+    if (!canonicalGroups[canonical]) canonicalGroups[canonical] = [];
+    canonicalGroups[canonical].push(tag);
   });
-  const collisions = Object.values(groups).filter(group => group.length > 1);
+  const duplicates = Object.values(canonicalGroups).filter(group => group.length > 1);
 
-  if (empty.length === 0 && collisions.length === 0) {
-    notify('✅ Tags verificadas — tudo certo!');
+  const conflicts = [];
+  for (let leftIndex = 0; leftIndex < tags.length; leftIndex++) {
+    for (let rightIndex = leftIndex + 1; rightIndex < tags.length; rightIndex++) {
+      const left = tags[leftIndex];
+      const right = tags[rightIndex];
+      if (arePotentiallyConflictingTags(left, right)) conflicts.push([left, right]);
+    }
+  }
+
+  return { usage, empty, nonCanonical, unlisted, duplicates, conflicts };
+}
+
+function createTagDiagnosticSection(title, description) {
+  const section = document.createElement('section');
+  section.className = 'tag-diagnostic-section';
+
+  const heading = document.createElement('h3');
+  heading.textContent = title;
+  section.appendChild(heading);
+
+  if (description) {
+    const text = document.createElement('p');
+    text.textContent = description;
+    section.appendChild(text);
+  }
+
+  return section;
+}
+
+function appendDiagnosticTagChips(container, tagNames, usage) {
+  const list = document.createElement('div');
+  list.className = 'tag-diagnostic-chip-list';
+  tagNames.forEach(tag => {
+    const chip = document.createElement('span');
+    chip.className = 'tag-chip';
+    chip.textContent = `${tag} (${usage[tag] || 0})`;
+    list.appendChild(chip);
+  });
+  container.appendChild(list);
+}
+
+function renderTagDiagnostics() {
+  const summary = document.getElementById('tagDiagnosticSummary');
+  const issues = document.getElementById('tagDiagnosticIssues');
+  if (!summary || !issues) return;
+
+  const diagnostics = getTagDiagnostics();
+  const automaticIssueCount = diagnostics.nonCanonical.length + diagnostics.unlisted.length + diagnostics.duplicates.length;
+  const issueCount = automaticIssueCount + diagnostics.empty.length + diagnostics.conflicts.length;
+  const buttonCount = Object.values(diagnostics.usage).reduce((total, count) => total + count, 0);
+
+  summary.className = `tag-diagnostic-summary ${issueCount ? 'warning' : 'ok'}`;
+  summary.textContent = tags.length === 0
+    ? 'Nenhuma tag criada para verificar.'
+    : issueCount
+      ? `Foram encontrados ${issueCount} ponto(s) para revisar em ${tags.length} tag(s).`
+      : `Tudo certo: ${tags.length} tag(s) e ${buttonCount} botão(ões) verificados.`;
+  issues.innerHTML = '';
+
+  if (automaticIssueCount > 0) {
+    const section = createTagDiagnosticSection('Correções automáticas', 'Normaliza nomes, remove duplicatas e registra tags encontradas nos botões.');
+    const button = document.createElement('button');
+    button.className = 'mbtn primary';
+    button.textContent = `Corrigir ${automaticIssueCount} problema(s)`;
+    button.onclick = repairTagIntegrity;
+    section.appendChild(button);
+    issues.appendChild(section);
+  }
+
+  if (diagnostics.empty.length > 0) {
+    const section = createTagDiagnosticSection('Tags vazias', 'Estas tags não estão associadas a nenhum botão.');
+    appendDiagnosticTagChips(section, diagnostics.empty, diagnostics.usage);
+    const button = document.createElement('button');
+    button.className = 'mbtn ghost';
+    button.textContent = `Limpar ${diagnostics.empty.length} tag(s) vazia(s)`;
+    button.onclick = clearEmptyTags;
+    section.appendChild(button);
+    issues.appendChild(section);
+  }
+
+  if (diagnostics.conflicts.length > 0) {
+    const section = createTagDiagnosticSection('Tags conflitantes', 'Grafias muito próximas podem representar a mesma tag. Escolha qual nome manter.');
+
+    diagnostics.conflicts.forEach(([left, right]) => {
+      const row = document.createElement('div');
+      row.className = 'tag-conflict-row';
+
+      const names = document.createElement('div');
+      names.className = 'tag-conflict-names';
+      names.textContent = `${left} (${diagnostics.usage[left] || 0}) ↔ ${right} (${diagnostics.usage[right] || 0})`;
+
+      const actions = document.createElement('div');
+      actions.className = 'tag-conflict-actions';
+      const keepLeft = document.createElement('button');
+      keepLeft.className = 'mbtn ghost';
+      keepLeft.textContent = `Usar “${left}”`;
+      keepLeft.onclick = () => mergeTagInto(right, left);
+      const keepRight = document.createElement('button');
+      keepRight.className = 'mbtn ghost';
+      keepRight.textContent = `Usar “${right}”`;
+      keepRight.onclick = () => mergeTagInto(left, right);
+      actions.append(keepLeft, keepRight);
+      row.append(names, actions);
+      section.appendChild(row);
+    });
+
+    issues.appendChild(section);
+  }
+}
+
+async function repairTagIntegrity() {
+  const currentState = collectState();
+  const normalizedState = normalizeImportedData(currentState);
+  if (JSON.stringify(currentState) === JSON.stringify(normalizedState)) {
+    notify('Nenhuma correção automática necessária');
+    renderTagDiagnostics();
     return;
   }
 
-  if (empty.length > 0) {
-    notify(`⚠️ ${empty.length} tag(s) sem nenhum botão associado: ${empty.join(', ')}`, 'err');
-  }
+  const ok = await confirmDialog('Normalizar tags, mesclar duplicatas exatas e reparar associações ausentes?', { title: '🛠️ Corrigir Tags', confirmText: 'Corrigir' });
+  if (!ok) return;
 
-  if (collisions.length > 0) {
-    collisions.forEach(group => {
-      notify(`⚠️ Tags parecidas (considerar mesclar): ${group.join(' / ')}`, 'err');
-    });
-  }
+  pushHistory();
+  restoreState(normalizedState);
+  notify('Tags corrigidas!');
+}
+
+async function mergeTagInto(sourceTag, targetTag) {
+  if (!sourceTag || !targetTag || sourceTag === targetTag) return;
+  const usage = getTagUsageMap();
+  const affected = usage[sourceTag] || 0;
+  const ok = await confirmDialog(
+    `Mesclar “${sourceTag}” em “${targetTag}”? ${affected} botão(ões) será(ão) atualizado(s).`,
+    { title: '🔀 Mesclar Tags', confirmText: 'Mesclar' }
+  );
+  if (!ok) return;
+
+  pushHistory();
+  document.querySelectorAll(`.btn-wrap[data-tag="${cssEscape(sourceTag)}"]`).forEach(button => {
+    button.dataset.tag = targetTag;
+  });
+  tags = tags.filter(tag => tag !== sourceTag);
+  if (!tags.includes(targetTag)) tags.push(targetTag);
+  updateTagDatalist();
+  doSearch();
+  updateUnsavedChangesUI();
+  notify(`Tags mescladas em “${targetTag}”`);
+}
+
+// Mantém compatibilidade com chamadas antigas e abre o diagnóstico completo.
+function checkTagsIntegrity() {
+  openTagModal('diagnostic');
 }
