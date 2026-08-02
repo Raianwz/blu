@@ -1,0 +1,260 @@
+// ==========================================================
+// Diagnóstico, reparo seguro e visualização do JSON atual
+// ==========================================================
+
+let activeJsonModalTab = 'diagnostic';
+let jsonIntegrityIdSequence = 0;
+
+function openJsonModal(tab = 'diagnostic') {
+  setJsonModalTab(tab);
+  openModal('jsonModal');
+}
+
+function setJsonModalTab(tab) {
+  activeJsonModalTab = tab === 'view' ? 'view' : 'diagnostic';
+  const isView = activeJsonModalTab === 'view';
+  const diagnosticTab = document.getElementById('jsonDiagnosticTab');
+  const viewTab = document.getElementById('jsonViewTab');
+  const diagnosticPanel = document.getElementById('jsonDiagnosticPanel');
+  const viewPanel = document.getElementById('jsonViewPanel');
+  const title = document.getElementById('jsonModalTitle');
+
+  diagnosticTab?.classList.toggle('active', !isView);
+  viewTab?.classList.toggle('active', isView);
+  diagnosticTab?.setAttribute('aria-selected', String(!isView));
+  viewTab?.setAttribute('aria-selected', String(isView));
+  diagnosticPanel?.classList.toggle('active', !isView);
+  viewPanel?.classList.toggle('active', isView);
+  if (diagnosticPanel) diagnosticPanel.hidden = isView;
+  if (viewPanel) viewPanel.hidden = !isView;
+  if (title) title.textContent = isView ? '📄 Visualizar JSON' : '📄 Verificar JSON';
+
+  if (isView) refreshJsonView();
+  else renderJsonDiagnostics();
+}
+
+function getJsonDiagnostics(state = collectState()) {
+  const issues = [];
+  const sectionIds = new Set();
+  const buttonIds = new Set();
+  const knownTags = new Set(state.tags || []);
+  const validVisibilities = new Set(['public', 'private', 'other']);
+
+  const canonicalTags = new Set();
+  (state.tags || []).forEach(tag => {
+    const canonical = normalizeTag(tag);
+    if (!canonical) {
+      issues.push({ kind: 'tag', repairable: true, message: 'A lista contém uma tag vazia.' });
+    } else if (canonical !== tag) {
+      issues.push({ kind: 'tag', repairable: true, message: `Tag não normalizada: “${tag}” → “${canonical}”.` });
+    } else if (canonicalTags.has(canonical)) {
+      issues.push({ kind: 'tag', repairable: true, message: `Tag duplicada na lista: “${tag}”.` });
+    }
+    if (canonical) canonicalTags.add(canonical);
+  });
+
+  (state.sections || []).forEach((section, sectionIndex) => {
+    const sectionLabel = section.name?.trim() || `Seção ${sectionIndex + 1}`;
+    const sectionId = String(section.id || '');
+
+    if (!sectionId) {
+      issues.push({ kind: 'id', repairable: true, message: `“${sectionLabel}” está sem ID.` });
+    } else if (sectionIds.has(sectionId)) {
+      issues.push({ kind: 'id', repairable: true, message: `ID de seção duplicado: “${sectionId}”.` });
+    }
+    if (sectionId) sectionIds.add(sectionId);
+
+    if (!section.name?.trim()) {
+      issues.push({ kind: 'content', repairable: false, message: `Seção ${sectionId || sectionIndex + 1} está sem nome.` });
+    }
+
+    (section.buttons || []).forEach((button, buttonIndex) => {
+      const buttonLabel = button.name?.trim() || `Botão ${buttonIndex + 1} de “${sectionLabel}”`;
+      const buttonId = String(button.id || '');
+
+      if (!buttonId) {
+        issues.push({ kind: 'id', repairable: true, message: `“${buttonLabel}” está sem ID.` });
+      } else if (buttonIds.has(buttonId)) {
+        issues.push({ kind: 'id', repairable: true, message: `ID de botão duplicado: “${buttonId}”.` });
+      }
+      if (buttonId) buttonIds.add(buttonId);
+
+      if (!button.name?.trim()) {
+        issues.push({ kind: 'content', repairable: false, message: `Botão ${buttonId || buttonIndex + 1} em “${sectionLabel}” está sem nome.` });
+      }
+      if (!button.text?.trim()) {
+        issues.push({ kind: 'content', repairable: false, message: `“${buttonLabel}” está sem texto para copiar.` });
+      }
+      if (!validVisibilities.has(button.vis)) {
+        issues.push({ kind: 'visibility', repairable: true, message: `“${buttonLabel}” tem visibilidade inválida: “${button.vis || 'vazia'}”.` });
+      }
+      if (button.tag && normalizeTag(button.tag) !== button.tag) {
+        issues.push({ kind: 'tag', repairable: true, message: `“${buttonLabel}” usa uma tag não normalizada: “${button.tag}”.` });
+      } else if (button.tag && !knownTags.has(button.tag)) {
+        issues.push({ kind: 'tag', repairable: true, message: `“${buttonLabel}” usa a tag não registrada “${button.tag}”.` });
+      }
+    });
+  });
+
+  const buttonCount = (state.sections || []).reduce((total, section) => total + (section.buttons?.length || 0), 0);
+  return {
+    state,
+    issues,
+    repairableCount: issues.filter(issue => issue.repairable).length,
+    counts: { sections: state.sections?.length || 0, buttons: buttonCount, tags: state.tags?.length || 0 }
+  };
+}
+
+function createJsonIssueGroup(title, issueList) {
+  const section = document.createElement('section');
+  section.className = 'json-diagnostic-section';
+  const heading = document.createElement('h3');
+  heading.textContent = title;
+  const list = document.createElement('ul');
+
+  issueList.forEach(issue => {
+    const item = document.createElement('li');
+    item.textContent = issue.message;
+    list.appendChild(item);
+  });
+
+  section.append(heading, list);
+  return section;
+}
+
+function renderJsonDiagnostics() {
+  const summary = document.getElementById('jsonDiagnosticSummary');
+  const issuesWrap = document.getElementById('jsonDiagnosticIssues');
+  if (!summary || !issuesWrap) return;
+
+  const diagnostics = getJsonDiagnostics();
+  const { sections, buttons, tags: tagCount } = diagnostics.counts;
+  summary.className = `json-diagnostic-summary ${diagnostics.issues.length ? 'warning' : 'ok'}`;
+  summary.innerHTML = `<strong>${sections}</strong> seção(ões) • <strong>${buttons}</strong> botão(ões) • <strong>${tagCount}</strong> tag(s)<br>${diagnostics.issues.length ? `${diagnostics.issues.length} problema(s) encontrado(s).` : 'Estrutura verificada — tudo certo!'}`;
+  issuesWrap.innerHTML = '';
+
+  if (diagnostics.repairableCount > 0) {
+    const actions = document.createElement('div');
+    actions.className = 'json-diagnostic-repair';
+    const description = document.createElement('span');
+    description.textContent = `${diagnostics.repairableCount} correção(ões) segura(s) disponível(is).`;
+    const button = document.createElement('button');
+    button.className = 'mbtn primary';
+    button.textContent = 'Corrigir automaticamente';
+    button.onclick = repairJsonIntegrity;
+    actions.append(description, button);
+    issuesWrap.appendChild(actions);
+  }
+
+  const groups = [
+    ['IDs', diagnostics.issues.filter(issue => issue.kind === 'id')],
+    ['Conteúdo incompleto', diagnostics.issues.filter(issue => issue.kind === 'content')],
+    ['Visibilidade', diagnostics.issues.filter(issue => issue.kind === 'visibility')],
+    ['Tags', diagnostics.issues.filter(issue => issue.kind === 'tag')]
+  ];
+  groups.forEach(([title, groupIssues]) => {
+    if (groupIssues.length) issuesWrap.appendChild(createJsonIssueGroup(title, groupIssues));
+  });
+}
+
+function createJsonIntegrityId(prefix, usedIds) {
+  let candidate;
+  do {
+    candidate = `${prefix}${Date.now().toString(36)}-${++jsonIntegrityIdSequence}`;
+  } while (usedIds.has(candidate));
+  usedIds.add(candidate);
+  return candidate;
+}
+
+function getSafelyRepairedJsonState(state) {
+  const repaired = JSON.parse(JSON.stringify(state));
+  const sectionIds = new Set();
+  const buttonIds = new Set();
+  const validVisibilities = new Set(['public', 'private', 'other']);
+  let changes = 0;
+
+  const normalizedTags = [];
+  repaired.tags.forEach(tag => {
+    const canonical = normalizeTag(tag);
+    if (canonical && !normalizedTags.includes(canonical)) normalizedTags.push(canonical);
+  });
+  if (JSON.stringify(normalizedTags) !== JSON.stringify(repaired.tags)) {
+    repaired.tags = normalizedTags;
+    changes++;
+  }
+
+  repaired.sections.forEach(section => {
+    const sectionId = String(section.id || '');
+    if (!sectionId || sectionIds.has(sectionId)) {
+      section.id = createJsonIntegrityId('s', sectionIds);
+      changes++;
+    } else {
+      sectionIds.add(sectionId);
+    }
+
+    section.buttons.forEach(button => {
+      const buttonId = String(button.id || '');
+      if (!buttonId || buttonIds.has(buttonId)) {
+        button.id = createJsonIntegrityId('b', buttonIds);
+        changes++;
+      } else {
+        buttonIds.add(buttonId);
+      }
+
+      if (!validVisibilities.has(button.vis)) {
+        button.vis = 'other';
+        changes++;
+      }
+
+      const canonicalButtonTag = normalizeTag(button.tag);
+      if (canonicalButtonTag !== button.tag) {
+        button.tag = canonicalButtonTag;
+        changes++;
+      }
+      if (button.tag && !repaired.tags.includes(button.tag)) {
+        repaired.tags.push(button.tag);
+        changes++;
+      }
+    });
+  });
+
+  return { state: repaired, changes };
+}
+
+async function repairJsonIntegrity() {
+  const { state, changes } = getSafelyRepairedJsonState(collectState());
+  if (!changes) {
+    notify('Nenhuma correção automática necessária');
+    renderJsonDiagnostics();
+    return;
+  }
+
+  const ok = await confirmDialog(
+    `Aplicar ${changes} correção(ões) segura(s)? IDs ausentes/duplicados serão regenerados e visibilidades inválidas passarão para “Outro”.`,
+    { title: '🛠️ Corrigir JSON', confirmText: 'Corrigir' }
+  );
+  if (!ok) return;
+
+  pushHistory();
+  restoreState(state);
+  renderJsonDiagnostics();
+  refreshJsonView();
+  notify('JSON corrigido!');
+}
+
+function refreshJsonView() {
+  const textarea = document.getElementById('jsonViewText');
+  if (textarea) textarea.value = JSON.stringify(collectState(), null, 2);
+}
+
+async function copyJsonView() {
+  refreshJsonView();
+  const json = document.getElementById('jsonViewText')?.value || '';
+  try {
+    await copyToClipboard(json);
+    notify('JSON copiado!');
+  } catch (error) {
+    console.error('Erro ao copiar JSON:', error);
+    notify('Não foi possível copiar o JSON', 'err');
+  }
+}

@@ -31,9 +31,10 @@ function openModal(id) {
     renderTagDiagnostics();
   }
 
-  const input = id === 'tagModal'
-    ? document.querySelector('#tagModal .tag-modal-panel.active input')
-    : document.querySelector(`#${id} input, #${id} textarea`);
+  let input;
+  if (id === 'tagModal') input = document.querySelector('#tagModal .tag-modal-panel.active input');
+  else if (id === 'jsonModal') input = document.querySelector('#jsonModal .json-modal-panel.active textarea');
+  else input = document.querySelector(`#${id} input, #${id} textarea`);
   if (input) setTimeout(() => input.focus(), 50);
 }
 
@@ -751,39 +752,10 @@ async function clearAll() {
 
 // --- Ferramentas (menu "Ferramentas") ------------------------
 
-// Checagem leve de integridade estrutural do estado atual: IDs duplicados,
-// seções/botões sem nome, botões sem texto para copiar. Não corrige nada
-// sozinho — só relata, deixando a decisão com quem está usando.
+// Compatibilidade com chamadas antigas; a implementação completa vive em
+// json-tools.js.
 function checkJsonIntegrity() {
-  const state = collectState();
-  const issues = [];
-  const sectionIds = new Set();
-  const buttonIds = new Set();
-
-  state.sections.forEach(section => {
-    if (!section.id) issues.push('Seção sem ID encontrada.');
-    if (section.id && sectionIds.has(section.id)) issues.push(`ID de seção duplicado: "${section.id}".`);
-    sectionIds.add(section.id);
-
-    if (!section.name || !section.name.trim()) issues.push(`Seção com nome vazio (id: ${section.id || '?'}).`);
-
-    section.buttons.forEach(button => {
-      if (!button.id) issues.push(`Botão sem ID na seção "${section.name}".`);
-      if (button.id && buttonIds.has(button.id)) issues.push(`ID de botão duplicado: "${button.id}".`);
-      buttonIds.add(button.id);
-
-      if (!button.name || !button.name.trim()) issues.push(`Botão sem nome (id: ${button.id || '?'}).`);
-      if (!button.text || !button.text.trim()) issues.push(`Botão "${button.name || button.id}" sem texto para copiar.`);
-    });
-  });
-
-  if (issues.length === 0) {
-    notify('✅ JSON verificado — tudo certo!');
-    return;
-  }
-
-  notify(`⚠️ ${issues.length} problema(s) encontrado(s). Veja o console (F12) para a lista completa.`, 'err');
-  console.warn('[Blû] Verificação de JSON encontrou os seguintes pontos:', issues);
+  openJsonModal('diagnostic');
 }
 
 function getLevenshteinDistance(left, right) {

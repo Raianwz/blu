@@ -982,6 +982,140 @@ body.edit-mode .btn-del {
   white-space: normal;
 }
 
+.json-modal {
+  max-width: 640px;
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.json-modal-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 4px;
+  margin-bottom: 14px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface2);
+}
+
+.json-modal-tab {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text2);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.json-modal-tab.active {
+  background: var(--accent1);
+  color: white;
+}
+
+.json-modal-panel[hidden] {
+  display: none;
+}
+
+.json-diagnostic-summary {
+  padding: 11px 12px;
+  margin-bottom: 10px;
+  border: 1.5px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.json-diagnostic-summary.ok {
+  border-color: rgba(34, 197, 94, 0.5);
+  background: rgba(34, 197, 94, 0.08);
+}
+
+.json-diagnostic-summary.warning {
+  border-color: rgba(245, 158, 11, 0.55);
+  background: rgba(245, 158, 11, 0.08);
+}
+
+.json-diagnostic-issues {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 42vh;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.json-diagnostic-repair,
+.json-diagnostic-section {
+  padding: 11px 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface2);
+}
+
+.json-diagnostic-repair {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--text2);
+  font-size: 12px;
+}
+
+.json-diagnostic-section h3 {
+  margin: 0 0 7px;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.json-diagnostic-section ul {
+  margin: 0;
+  padding-left: 19px;
+  color: var(--text2);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.json-view-text {
+  width: 100%;
+  min-height: min(52vh, 440px);
+  resize: vertical;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface2);
+  color: var(--text);
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.json-view-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+@media (max-width: 520px) {
+  .json-diagnostic-repair {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .json-view-actions .mbtn {
+    flex: 1;
+  }
+}
+
 #shareResultInput {
   flex: 1;
   min-width: 0;

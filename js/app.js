@@ -311,7 +311,7 @@ document.addEventListener('keydown', event => {
   }
 
   if (event.key === 'Escape') {
-    ['btnModal', 'sectionModal', 'tagModal', 'importModal', 'dialogModal', 'shortcutsModal', 'shareModal', 'buttonViewModal'].forEach(closeModal);
+    ['btnModal', 'sectionModal', 'tagModal', 'importModal', 'dialogModal', 'shortcutsModal', 'shareModal', 'buttonViewModal', 'jsonModal'].forEach(closeModal);
     document.getElementById('menuOverlay').classList.remove('open');
   }
 

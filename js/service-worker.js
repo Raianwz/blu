@@ -35,6 +35,7 @@ const APP_SHELL = [
   '/js/crypto.js',
   '/js/crud.js',
   '/js/dnd.js',
+  '/js/json-tools.js',
   '/js/context-menu.js',
   '/js/app.js'
 ];
