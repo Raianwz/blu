@@ -4,7 +4,7 @@
 
 const STORAGE_KEY = 'blu:data';
 const SETTINGS_STORAGE_KEY = 'blu:settings';
-const VERSION = '1.5';
+const VERSION = '1.6';
 const BASE_TITLE = 'Blû';
 
 let editMode = false;
@@ -52,6 +52,13 @@ function migrateLegacySettings() {
   };
   const settings = loadSettings();
   let changed = false;
+
+  // Preferência removida quando a busca por texto passou a ficar sempre
+  // disponível no seletor.
+  if (Object.prototype.hasOwnProperty.call(settings, 'textSearch')) {
+    delete settings.textSearch;
+    changed = true;
+  }
 
   try {
     Object.entries(legacyKeys).forEach(([name, key]) => {
