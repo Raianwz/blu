@@ -151,5 +151,10 @@ function normalizeImportedData(parsed) {
       : []
   }));
 
+  normalizedTags.sort((left, right) => left.localeCompare(right, 'pt-BR', {
+    sensitivity: 'base',
+    numeric: true
+  }));
+
   return base;
 }

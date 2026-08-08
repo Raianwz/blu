@@ -55,6 +55,7 @@ function collapseAllSectionsAfterSearchClear() {
 }
 
 function doSearch(options = {}) {
+  hideButtonPreview();
   const { collapseOnClear = false } = options;
   const raw = document.getElementById('searchInput').value.trim();
   const q = normalizeSearchText(raw);

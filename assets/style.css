@@ -1282,6 +1282,96 @@ body.edit-mode .btn-del {
   gap: 8px;
 }
 
+/* Painel de depuração — temporário, sem persistência nas configurações */
+:root { --debug-panel-height: clamp(190px, 30vh, 300px); }
+
+#debugPanel {
+  position: fixed;
+  inset: auto 0 0;
+  height: var(--debug-panel-height);
+  z-index: 2200;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  color: #e5e7eb;
+  background: #090b10;
+  border-top: 1px solid #394150;
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.35);
+}
+
+#debugPanel[hidden] { display: none; }
+
+.debug-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 14px;
+  border-bottom: 1px solid #252b36;
+}
+
+.debug-panel-header > div:first-child {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+
+.debug-panel-header strong { font-size: 14px; }
+#debugEntryCount { color: #8f99aa; font-size: 11px; }
+.debug-panel-actions { display: flex; gap: 6px; }
+
+.debug-panel-actions button {
+  padding: 5px 9px;
+  color: #cbd5e1;
+  background: #1a1f2a;
+  border: 1px solid #343c4b;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.debug-panel-actions button:hover { color: white; border-color: #667eea; }
+
+#debugLog {
+  flex: 1;
+  overflow: auto;
+  padding: 7px 0;
+  font: 12px/1.45 Consolas, 'Courier New', monospace;
+}
+
+.debug-entry {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: 10px;
+  padding: 5px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.045);
+}
+
+.debug-entry-meta { color: #8993a4; white-space: nowrap; }
+.debug-entry pre { margin: 0; color: inherit; font: inherit; white-space: pre-wrap; overflow-wrap: anywhere; }
+.debug-warn { color: #fbbf24; background: rgba(245, 158, 11, 0.06); }
+.debug-error { color: #f87171; background: rgba(239, 68, 68, 0.08); }
+.debug-info { color: #7dd3fc; }
+.debug-debug { color: #c4b5fd; }
+.debug-empty { padding: 18px 14px; color: #8f99aa; }
+
+body.debug-mode-open { padding-bottom: var(--debug-panel-height); }
+body.debug-mode-open #menuOverlay { z-index: 2300; }
+body.debug-mode-open #appVersion,
+body.debug-mode-open #notifArea,
+body.debug-mode-open #backupBanner { bottom: calc(var(--debug-panel-height) + 14px); }
+
+@media (max-width: 560px) {
+  :root { --debug-panel-height: clamp(230px, 38vh, 360px); }
+  .debug-panel-header { align-items: flex-start; padding: 8px 10px; }
+  .debug-panel-header > div:first-child { display: block; }
+  #debugEntryCount { display: block; margin-top: 2px; }
+  .debug-panel-actions { gap: 4px; }
+  .debug-panel-actions button { padding: 5px 7px; font-size: 11px; }
+  .debug-entry { display: block; padding: 6px 10px; }
+  .debug-entry-meta { display: block; margin-bottom: 2px; font-size: 10px; }
+}
+
 .notif {
   background: var(--green);
   color: white;

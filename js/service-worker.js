@@ -27,6 +27,7 @@ const APP_SHELL = [
   '/assets/icons/icon-512.png',
   '/assets/icons/icon-maskable-192.png',
   '/assets/icons/icon-maskable-512.png',
+  '/js/debug.js',
   '/js/utils.js',
   '/js/dialogs.js',
   '/js/storage.js',

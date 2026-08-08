@@ -4,6 +4,8 @@
 
 let textPreviewEnabled = true;
 let textPreviewEl = null;
+let textPreviewTimer = null;
+let textPreviewSource = null;
 
 function updateTextPreviewButtonUI() {
   const button = document.getElementById('textPreviewBtn');
@@ -61,7 +63,14 @@ function getTextPreviewEl() {
 }
 
 function showButtonPreview(button) {
-  if (!textPreviewEnabled || !button.dataset.preview || document.querySelector('.btn-wrap.dragging')) return;
+  if (
+    !textPreviewEnabled
+    || !button.isConnected
+    || !button.matches(':hover')
+    || !button.dataset.preview
+    || button.closest('.search-hidden')
+    || document.querySelector('.btn-wrap.dragging')
+  ) return;
 
   const tooltip = getTextPreviewEl();
   tooltip.textContent = button.dataset.preview;
@@ -74,15 +83,26 @@ function showButtonPreview(button) {
   const centeredLeft = buttonRect.left + (buttonRect.width - tooltipRect.width) / 2;
   const maxLeft = Math.max(viewportPadding, window.innerWidth - tooltipRect.width - viewportPadding);
   const left = Math.min(Math.max(centeredLeft, viewportPadding), maxLeft);
-  const top = buttonRect.top >= tooltipRect.height + gap + viewportPadding
+  const preferredTop = buttonRect.top >= tooltipRect.height + gap + viewportPadding
     ? buttonRect.top - tooltipRect.height - gap
     : buttonRect.bottom + gap;
+  const topbarBottom = document.getElementById('topbar')?.getBoundingClientRect().bottom || 0;
+  const debugPanel = document.getElementById('debugPanel');
+  const viewportBottom = debugPanel && !debugPanel.hidden
+    ? debugPanel.getBoundingClientRect().top
+    : window.innerHeight;
+  const minTop = topbarBottom + viewportPadding;
+  const maxTop = Math.max(minTop, viewportBottom - tooltipRect.height - viewportPadding);
+  const top = Math.min(Math.max(preferredTop, minTop), maxTop);
 
   tooltip.style.left = `${Math.round(left)}px`;
   tooltip.style.top = `${Math.round(top)}px`;
 }
 
 function hideButtonPreview() {
+  clearTimeout(textPreviewTimer);
+  textPreviewTimer = null;
+  textPreviewSource = null;
   textPreviewEl?.classList.remove('show');
 }
 
@@ -153,12 +173,15 @@ function createBtnEl(button, sectionId) {
   copyBtn.innerHTML = `${visIcon ? `<span>${visIcon}</span>` : ''}<span class="btn-label">${escapeHtml(button.name || '')}</span>`;
   copyBtn.onclick = () => doCopy(wrap.dataset.text || '', copyBtn);
 
-  let tipTimer;
   copyBtn.addEventListener('mouseenter', () => {
-    if (textPreviewEnabled) tipTimer = setTimeout(() => showButtonPreview(copyBtn), 700);
+    if (!textPreviewEnabled) return;
+    hideButtonPreview();
+    textPreviewSource = copyBtn;
+    textPreviewTimer = setTimeout(() => {
+      if (textPreviewSource === copyBtn) showButtonPreview(copyBtn);
+    }, 700);
   });
   copyBtn.addEventListener('mouseleave', () => {
-    clearTimeout(tipTimer);
     hideButtonPreview();
   });
 
