@@ -20,6 +20,10 @@ function normalizeSearchText(value) {
     .trim();
 }
 
+function normalizeTag(value) {
+  return normalizeSearchText(value).replace(/\s+/g, ' ');
+}
+
 function previewText(text, max = 220) {
   const clean = sanitizeText(text).trim();
   if (!clean) return '';
@@ -60,6 +64,14 @@ function notify(msg, type = 'ok') {
   setTimeout(() => element.remove(), 3000);
 }
 const ICONS = {
+  chevron_down: `<path d="m6 9 6 6 6-6" />`,
+  arrow_up: `<path d="m18 15-6-6-6 6" />`,
+  arrow_down: `<path d="m6 9 6 6 6-6" />`,
+  palette: `<path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z" /><circle cx="13.5" cy="6.5" r=".5" fill="currentColor" /><circle cx="17.5" cy="10.5" r=".5" fill="currentColor" /><circle cx="6.5" cy="12.5" r=".5" fill="currentColor" /><circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />`,
+  wrench: `<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z" />`,
+  copy: `<rect width="14" height="14" x="8" y="8" rx="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />`,
+  copy_plus: `<rect width="14" height="14" x="8" y="8" rx="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /><path d="M15 15h6M18 12v6" />`,
+  eye: `<path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" /><circle cx="12" cy="12" r="3" />`,
   pencil: `<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /> <path d="m15 5 4 4" />`,
   folder_plus: `<path d="M12 10v6" /> <path d="M9 13h6" /> <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />`,
   tag: `<path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z" /> <circle cx="7.5" cy="7.5" r=".5" fill="currentColor" />`,
@@ -185,7 +197,8 @@ function setupDialogEvents() {
 // Estado, persistência local (autosave) e lembrete de backup
 // ==========================================================
 const STORAGE_KEY = 'blu:data';
-const VERSION = '1.6 LTS';
+const SETTINGS_STORAGE_KEY = 'blu:settings';
+const VERSION = '1.6.1 LTS';
 const BASE_TITLE = 'Blû';
 
 let editMode = false;
@@ -193,10 +206,51 @@ let tags = [];
 let history = [];
 let redoStack = [];
 const REDO_LIMIT = 10;
+let clearUndoSnapshot = null;
+let clearRedoSnapshot = null;
 
 let lastExportedComparableState = '';
 
 const isPopoutWindow = !!window.opener && ['BluePopout', 'BluePopOut'].includes(window.name);
+
+function loadSettings() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) || '{}');
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+  } catch (_) { return {}; }
+}
+
+function getSetting(name, fallback = null) {
+  const settings = loadSettings();
+  return Object.prototype.hasOwnProperty.call(settings, name) ? settings[name] : fallback;
+}
+
+function setSetting(name, value) {
+  try {
+    const settings = loadSettings();
+    settings[name] = value;
+    localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+  } catch (_) {}
+}
+
+function migrateLegacySettings() {
+  const settings = loadSettings();
+  try {
+    const legacyTheme = localStorage.getItem('blu:theme');
+    if (!Object.prototype.hasOwnProperty.call(settings, 'theme') && legacyTheme !== null) settings.theme = legacyTheme;
+    if (legacyTheme !== null) localStorage.removeItem('blu:theme');
+    localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+  } catch (_) {}
+}
+
+function clearBluLocalStorage() {
+  try {
+    for (let index = localStorage.length - 1; index >= 0; index--) {
+      const key = localStorage.key(index);
+      if (key?.startsWith('blu:')) localStorage.removeItem(key);
+    }
+  } catch (_) {}
+}
 
 function collectState() {
   const sections = [];
@@ -377,6 +431,7 @@ function pushHistory() {
   history.push(JSON.stringify(collectState()));
   if (history.length > 30) history.shift();
   redoStack = [];
+  clearRedoSnapshot = null;
 }
 
 function pushRedoState(stateString) {
@@ -385,9 +440,10 @@ function pushRedoState(stateString) {
 }
 
 function restoreState(state) {
-  tags = Array.isArray(state.tags) ? [...state.tags] : [];
+  const normalizedState = normalizeImportedData(state);
+  tags = [...normalizedState.tags];
   updateTagDatalist();
-  renderAll(Array.isArray(state.sections) ? state.sections : []);
+  renderAll(normalizedState.sections);
 
   if (editMode) {
     document.querySelectorAll('.btn-wrap').forEach(button => button.draggable = true);
@@ -401,8 +457,15 @@ function undoLastAction() {
   if (history.length === 0) return;
 
   try {
-    pushRedoState(JSON.stringify(collectState()));
-    const previousState = JSON.parse(history.pop());
+    const currentStateString = JSON.stringify(collectState());
+    pushRedoState(currentStateString);
+    const previousStateString = history.pop();
+    if (clearUndoSnapshot?.stateString === previousStateString) {
+      clearRedoSnapshot = { stateString: currentStateString, exportedComparableState: lastExportedComparableState };
+      lastExportedComparableState = clearUndoSnapshot.exportedComparableState;
+      clearUndoSnapshot = null;
+    }
+    const previousState = JSON.parse(previousStateString);
     restoreState(previousState);
     notify('Desfeito!');
   } catch (error) {
@@ -415,10 +478,17 @@ function redoLastAction() {
   if (redoStack.length === 0) return;
 
   try {
-    history.push(JSON.stringify(collectState()));
+    const currentStateString = JSON.stringify(collectState());
+    history.push(currentStateString);
     if (history.length > 30) history.shift();
 
-    const nextState = JSON.parse(redoStack.pop());
+    const nextStateString = redoStack.pop();
+    if (clearRedoSnapshot?.stateString === nextStateString) {
+      clearUndoSnapshot = { stateString: currentStateString, exportedComparableState: lastExportedComparableState };
+      lastExportedComparableState = clearRedoSnapshot.exportedComparableState;
+      clearRedoSnapshot = null;
+    }
+    const nextState = JSON.parse(nextStateString);
     restoreState(nextState);
     notify('Refeito!');
   } catch (error) {
@@ -429,6 +499,82 @@ function redoLastAction() {
 
 /* ------------------ render.js (shim) ------------------ */
 // ==========================================================
+
+let textPreviewEnabled = true;
+let textPreviewEl = null;
+let textPreviewTimer = null;
+let textPreviewSource = null;
+
+function getTextPreviewEl() {
+  if (textPreviewEl) return textPreviewEl;
+  textPreviewEl = document.createElement('div');
+  textPreviewEl.id = 'buttonPreviewTooltip';
+  textPreviewEl.setAttribute('role', 'tooltip');
+  document.body.appendChild(textPreviewEl);
+  return textPreviewEl;
+}
+
+function getCopyButtonTitle(button) {
+  const wrap = button.closest('.btn-wrap');
+  const text = wrap?.dataset.text || '';
+  if (!text) return '';
+  return wrap?.dataset.vis === 'private' ? `🔒 Privado\n\n${text}` : text;
+}
+
+function syncCopyButtonTitles() {
+  document.querySelectorAll('.copy-btn').forEach(button => {
+    const title = getCopyButtonTitle(button);
+    if (textPreviewEnabled && title.length <= 220) button.removeAttribute('title');
+    else if (title) button.title = title;
+  });
+}
+
+function applyTextPreviewState(enabled, persist = false) {
+  textPreviewEnabled = !!enabled;
+  const button = document.getElementById('textPreviewBtn');
+  button?.classList.toggle('active', textPreviewEnabled);
+  const label = button?.querySelector('.menu-btn-label');
+  if (label) label.textContent = `Prévia de Texto: ${textPreviewEnabled ? 'ON' : 'OFF'}`;
+  syncCopyButtonTitles();
+  if (!textPreviewEnabled) hideButtonPreview();
+  if (persist) setSetting('textPreview', textPreviewEnabled ? 'on' : 'off');
+}
+
+function initTextPreviewPreference() {
+  applyTextPreviewState(getSetting('textPreview') !== 'off');
+}
+
+function toggleTextPreview() {
+  applyTextPreviewState(!textPreviewEnabled, true);
+}
+
+function showButtonPreview(button) {
+  if (!textPreviewEnabled || !button.isConnected || !button.matches(':hover') || !button.dataset.preview || button.closest('.search-hidden') || document.querySelector('.btn-wrap.dragging')) return;
+  const tooltip = getTextPreviewEl();
+  tooltip.textContent = button.dataset.preview;
+  tooltip.classList.add('show');
+  const buttonRect = button.getBoundingClientRect();
+  const tooltipRect = tooltip.getBoundingClientRect();
+  const gap = 8;
+  const padding = 8;
+  const left = Math.min(Math.max(buttonRect.left + (buttonRect.width - tooltipRect.width) / 2, padding), Math.max(padding, innerWidth - tooltipRect.width - padding));
+  const preferredTop = buttonRect.top >= tooltipRect.height + gap + padding ? buttonRect.top - tooltipRect.height - gap : buttonRect.bottom + gap;
+  const topbarBottom = document.getElementById('topbar')?.getBoundingClientRect().bottom || 0;
+  const minTop = topbarBottom + padding;
+  const top = Math.min(Math.max(preferredTop, minTop), Math.max(minTop, innerHeight - tooltipRect.height - padding));
+  tooltip.style.left = `${Math.round(left)}px`;
+  tooltip.style.top = `${Math.round(top)}px`;
+}
+
+function hideButtonPreview() {
+  clearTimeout(textPreviewTimer);
+  textPreviewTimer = null;
+  textPreviewSource = null;
+  textPreviewEl?.classList.remove('show');
+}
+
+window.addEventListener('scroll', hideButtonPreview, true);
+window.addEventListener('resize', hideButtonPreview);
 // Renderização de seções e botões
 // ==========================================================
 
@@ -476,7 +622,7 @@ function createBtnEl(button, sectionId) {
   wrap.className = 'btn-wrap';
   wrap.dataset.id = String(button.id || ('b' + Date.now()));
   wrap.dataset.name = normalizeSearchText(button.name);
-  wrap.dataset.tag = normalizeSearchText(button.tag);
+  wrap.dataset.tag = normalizeTag(button.tag);
   wrap.dataset.text = sanitizeText(button.text);
   wrap.dataset.vis = sanitizeText(button.vis || 'other') || 'other';
   wrap.draggable = editMode;
@@ -490,19 +636,21 @@ function createBtnEl(button, sectionId) {
   copyBtn.dataset.preview = vis === 'private'
     ? `🔒 Privado\n\n${previewText(wrap.dataset.text)}`
     : previewText(wrap.dataset.text);
-  copyBtn.title = vis === 'private'
-    ? `🔒 Privado\n\n${wrap.dataset.text || ''}`
-    : (wrap.dataset.text || '');
+  const nativeTitle = vis === 'private' ? `🔒 Privado\n\n${wrap.dataset.text || ''}` : (wrap.dataset.text || '');
+  if (!textPreviewEnabled || nativeTitle.length > 220) copyBtn.title = nativeTitle;
   copyBtn.innerHTML = `${visIcon ? `<span>${visIcon}</span>` : ''}<span class="btn-label">${escapeHtml(button.name || '')}</span>`;
   copyBtn.onclick = () => doCopy(wrap.dataset.text || '', copyBtn);
 
-  let tipTimer;
   copyBtn.addEventListener('mouseenter', () => {
-    tipTimer = setTimeout(() => copyBtn.classList.add('show-tip'), 700);
+    if (!textPreviewEnabled) return;
+    hideButtonPreview();
+    textPreviewSource = copyBtn;
+    textPreviewTimer = setTimeout(() => {
+      if (textPreviewSource === copyBtn) showButtonPreview(copyBtn);
+    }, 700);
   });
   copyBtn.addEventListener('mouseleave', () => {
-    clearTimeout(tipTimer);
-    copyBtn.classList.remove('show-tip');
+    hideButtonPreview();
   });
 
   const editBtn = document.createElement('button');
@@ -704,6 +852,7 @@ function collapseAllSectionsAfterSearchClear() {
 }
 
 function doSearch(options = {}) {
+  hideButtonPreview();
   const { collapseOnClear = false } = options;
   const raw = (document.getElementById('searchInput')?.value || '').trim();
   const q = normalizeSearchText(raw);
@@ -715,6 +864,20 @@ function doSearch(options = {}) {
     } else {
       showAllSearchResults();
     }
+    return;
+  }
+
+  const quotedTextQuery = raw.length >= 2 && raw.startsWith('"') && raw.endsWith('"')
+    ? raw.slice(1, -1).trim()
+    : null;
+  if (quotedTextQuery !== null) {
+    if (!quotedTextQuery) {
+      setNoResultsMessage(null);
+      return;
+    }
+    searchButtons(normalizeSearchText(quotedTextQuery), 'text');
+    updateToggleSectionsBtnLabel();
+    setNoResultsMessage(quotedTextQuery);
     return;
   }
 
@@ -767,11 +930,13 @@ function searchButtons(query, type) {
 
     const matchName = (button.dataset.name || '').includes(query);
     const matchTag = (button.dataset.tag || '').includes(query);
+    const matchText = type === 'text' && normalizeSearchText(button.dataset.text || '').includes(query);
 
     let show = false;
     if (type === 'all') show = matchName || matchTag;
     if (type === 'name') show = matchName;
     if (type === 'tag') show = matchTag;
+    if (type === 'text') show = matchText;
 
     button.classList.toggle('search-hidden', !show);
   });
@@ -976,7 +1141,7 @@ function openEditBtn(sectionId, btnId) {
 function saveBtn() {
   const name = document.getElementById('bName').value.trim();
   const text = document.getElementById('bText').value.trim();
-  const tag = document.getElementById('bTag').value.trim();
+  const tag = normalizeTag(document.getElementById('bTag').value);
   const vis = document.getElementById('bVis').value || 'other';
 
   if (!name || !text) {
@@ -989,8 +1154,9 @@ function saveBtn() {
     return;
   }
 
-  if (tag && !tags.includes(tag.toLowerCase())) {
-    tags.push(tag.toLowerCase());
+  if (tag && !tags.includes(tag)) {
+    tags.push(tag);
+    tags.sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base', numeric: true }));
     updateTagDatalist();
   }
 
@@ -1018,7 +1184,7 @@ function saveBtn() {
     }
     const oldTag = old.dataset.tag;
     old.replaceWith(createBtnEl(button, currentSectionId));
-    if (oldTag && oldTag !== normalizeSearchText(tag)) removeTagIfOrphan(oldTag);
+    if (oldTag && oldTag !== tag) removeTagIfOrphan(oldTag);
     notify('Botão atualizado!');
   } else {
     body.appendChild(createBtnEl(button, currentSectionId));
@@ -1106,7 +1272,7 @@ async function renameTag(oldTag) {
   const newNameRaw = await promptDialog(`Novo nome para a tag "${oldTag}":`, oldTag, { title: '✏️ Renomear Tag' });
   if (newNameRaw === null) return;
 
-  const newTag = newNameRaw.trim().toLowerCase();
+  const newTag = normalizeTag(newNameRaw);
   if (!newTag || newTag === oldTag) return;
 
   const collides = tags.includes(newTag);
@@ -1124,6 +1290,7 @@ async function renameTag(oldTag) {
   const oldIndex = tags.indexOf(oldTag);
   if (oldIndex !== -1) tags.splice(oldIndex, 1);
   if (!tags.includes(newTag)) tags.push(newTag);
+  tags.sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base', numeric: true }));
 
   updateTagDatalist();
   doSearch();
@@ -1175,10 +1342,11 @@ function removeTagIfOrphan(tag) {
 
 function addTag() {
   const input = document.getElementById('newTagInput');
-  const value = input.value.trim().toLowerCase();
+  const value = normalizeTag(input.value);
   if (!value || tags.includes(value)) return;
 
   tags.push(value);
+  tags.sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base', numeric: true }));
   renderTagList();
   updateTagDatalist();
   input.value = '';
@@ -1240,10 +1408,19 @@ async function exportData() {
 }
 
 function normalizeImportedData(parsed) {
+  const normalizedTags = [];
+  const addNormalizedTag = value => {
+    const tag = normalizeTag(value);
+    if (tag && !normalizedTags.includes(tag)) normalizedTags.push(tag);
+    return tag;
+  };
+
   const base = {
-    tags: Array.isArray(parsed.tags) ? parsed.tags.map(tag => String(tag).toLowerCase()) : [],
+    tags: normalizedTags,
     sections: []
   };
+
+  if (Array.isArray(parsed.tags)) parsed.tags.forEach(addNormalizedTag);
 
   const sourceSections = Array.isArray(parsed.sections)
     ? parsed.sections
@@ -1273,10 +1450,15 @@ function normalizeImportedData(parsed) {
           id: String(button.id || ('b' + Date.now() + buttonIndex)),
           name: sanitizeText(button.name ?? button.btnName ?? ''),
           text: sanitizeText(button.text),
-          tag: sanitizeText(button.tag || ''),
+          tag: addNormalizedTag(button.tag || ''),
           vis: ['public', 'private', 'other'].includes(button.vis) ? button.vis : 'other'
         }))
       : []
+  }));
+
+  normalizedTags.sort((left, right) => left.localeCompare(right, 'pt-BR', {
+    sensitivity: 'base',
+    numeric: true
   }));
 
   return base;
@@ -1376,14 +1558,18 @@ async function importData() {
 }
 
 async function clearAll() {
-  const ok = await confirmDialog('Limpar TODOS os dados? Esta ação não pode ser desfeita.', { title: '🗑️ Limpar Tudo', danger: true, confirmText: 'Limpar tudo' });
+  const ok = await confirmDialog('Limpar TODOS os dados e preferências locais do Blû? Os botões e seções poderão ser recuperados com Ctrl+Z enquanto esta página permanecer aberta; as preferências continuarão limpas.', { title: '🗑️ Limpar Tudo', danger: true, confirmText: 'Limpar tudo' });
   if (!ok) return;
 
+  const stateBeforeClear = JSON.stringify(collectState());
+  const exportedStateBeforeClear = lastExportedComparableState;
   pushHistory();
+  clearUndoSnapshot = { stateString: stateBeforeClear, exportedComparableState: exportedStateBeforeClear };
   restoreState({ tags: [], sections: [] });
   notify('Tudo limpo!');
-  updateUnsavedChangesUI();
-  try { localStorage.clear(); } catch (_) {}
+  markCurrentStateAsExported();
+  clearBluLocalStorage();
+  applyTheme(!!systemThemeQuery?.matches);
 }
 
 /* ------------------ dnd.js ------------------ */
@@ -1401,6 +1587,8 @@ function onDragStart(event) {
     event.preventDefault();
     return;
   }
+
+  hideButtonPreview();
 
   dragEl = this;
   this.classList.add('dragging');
@@ -1699,6 +1887,299 @@ function applyButtonReorderControls() {
   });
 }
 
+/* ------------------ diagnostics + context menus ------------------ */
+
+function openTagModal(tab = 'manage') {
+  openModal('tagModal');
+  setTagModalTab(tab);
+}
+
+function setTagModalTab(tab) {
+  const diagnostic = tab === 'diagnostic';
+  document.getElementById('tagManagePanel').hidden = diagnostic;
+  document.getElementById('tagDiagnosticPanel').hidden = !diagnostic;
+  document.getElementById('tagManageTab').classList.toggle('active', !diagnostic);
+  document.getElementById('tagDiagnosticTab').classList.toggle('active', diagnostic);
+  if (diagnostic) renderTagDiagnostics();
+  else renderTagList();
+}
+
+function makeDiagnosticGroup(title, messages, actionLabel, action) {
+  const group = document.createElement('section');
+  group.className = 'diagnostic-group';
+  const heading = document.createElement('h3');
+  heading.textContent = title;
+  group.appendChild(heading);
+  if (messages.length) {
+    const list = document.createElement('ul');
+    messages.forEach(message => {
+      const item = document.createElement('li');
+      item.textContent = message;
+      list.appendChild(item);
+    });
+    group.appendChild(list);
+  }
+  if (actionLabel && action) {
+    const actions = document.createElement('div');
+    actions.className = 'diagnostic-actions';
+    const button = document.createElement('button');
+    button.className = 'mbtn primary';
+    button.textContent = actionLabel;
+    button.onclick = action;
+    actions.appendChild(button);
+    group.appendChild(actions);
+  }
+  return group;
+}
+
+function getTagDiagnosticData() {
+  const usage = getTagUsageMap();
+  const nonCanonical = tags.filter(tag => normalizeTag(tag) !== tag);
+  const empty = tags.filter(tag => !usage[tag]);
+  const listed = new Set(tags);
+  const missing = [...new Set([...document.querySelectorAll('.btn-wrap')]
+    .map(button => normalizeTag(button.dataset.tag))
+    .filter(tag => tag && !listed.has(tag)))];
+  const canonicalGroups = new Map();
+  tags.forEach(tag => {
+    const canonical = normalizeTag(tag);
+    if (!canonicalGroups.has(canonical)) canonicalGroups.set(canonical, []);
+    canonicalGroups.get(canonical).push(tag);
+  });
+  const conflicts = [...canonicalGroups.values()].filter(group => group.length > 1);
+  return { nonCanonical, empty, missing, conflicts };
+}
+
+function renderTagDiagnostics() {
+  const summary = document.getElementById('tagDiagnosticSummary');
+  const issues = document.getElementById('tagDiagnosticIssues');
+  const data = getTagDiagnosticData();
+  const issueCount = data.nonCanonical.length + data.empty.length + data.missing.length + data.conflicts.length;
+  summary.textContent = issueCount ? `${issueCount} ponto(s) encontrado(s) em ${tags.length} tag(s).` : `Tudo certo: ${tags.length} tag(s) verificadas.`;
+  issues.replaceChildren();
+  if (!issueCount) return;
+  const repairMessages = [
+    ...data.nonCanonical.map(tag => `Normalizar “${tag}” para “${normalizeTag(tag)}”.`),
+    ...data.missing.map(tag => `Registrar a tag “${tag}” encontrada em um botão.`),
+    ...data.conflicts.map(group => `Mesclar duplicatas: ${group.join(', ')}.`)
+  ];
+  if (repairMessages.length) issues.appendChild(makeDiagnosticGroup('Correções automáticas', repairMessages, 'Corrigir Tags', repairTagIntegrity));
+  if (data.empty.length) issues.appendChild(makeDiagnosticGroup('Tags vazias', data.empty, 'Limpar vazias', async () => {
+    await clearEmptyTags();
+    renderTagDiagnostics();
+  }));
+}
+
+async function repairTagIntegrity() {
+  const ok = await confirmDialog('Normalizar tags, remover duplicatas e reparar associações ausentes?', { title: 'Corrigir Tags', confirmText: 'Corrigir' });
+  if (!ok) return;
+  pushHistory();
+  restoreState(normalizeImportedData(collectState()));
+  renderTagDiagnostics();
+  notify('Tags corrigidas!');
+}
+
+let activeJsonModalTab = 'diagnostic';
+let jsonIntegritySequence = 0;
+
+function openJsonModal(tab = 'diagnostic') {
+  openModal('jsonModal');
+  setJsonModalTab(tab);
+}
+
+function setJsonModalTab(tab) {
+  activeJsonModalTab = tab === 'view' ? 'view' : 'diagnostic';
+  const viewing = activeJsonModalTab === 'view';
+  document.getElementById('jsonDiagnosticPanel').hidden = viewing;
+  document.getElementById('jsonViewPanel').hidden = !viewing;
+  document.getElementById('jsonDiagnosticTab').classList.toggle('active', !viewing);
+  document.getElementById('jsonViewTab').classList.toggle('active', viewing);
+  if (viewing) refreshJsonView();
+  else renderJsonDiagnostics();
+}
+
+function getJsonDiagnostics(state = collectState()) {
+  const issues = [];
+  const ids = new Set();
+  const validVis = new Set(['public', 'private', 'other']);
+  state.sections.forEach((section, sectionIndex) => {
+    if (!String(section.name || '').trim()) issues.push(`Seção ${sectionIndex + 1} está sem nome.`);
+    if (!section.id || ids.has(String(section.id))) issues.push(`Seção “${section.name || sectionIndex + 1}” possui ID ausente ou duplicado.`);
+    ids.add(String(section.id));
+    section.buttons.forEach((button, buttonIndex) => {
+      const label = button.name || `Botão ${buttonIndex + 1}`;
+      if (!button.id || ids.has(String(button.id))) issues.push(`“${label}” possui ID ausente ou duplicado.`);
+      ids.add(String(button.id));
+      if (!String(button.name || '').trim()) issues.push(`Um botão da seção “${section.name}” está sem nome.`);
+      if (!String(button.text || '').trim()) issues.push(`“${label}” está sem texto para copiar.`);
+      if (!validVis.has(button.vis)) issues.push(`“${label}” possui visibilidade inválida: ${button.vis}.`);
+      if (normalizeTag(button.tag) !== button.tag) issues.push(`“${label}” possui tag não normalizada.`);
+    });
+  });
+  return issues;
+}
+
+function renderJsonDiagnostics() {
+  const state = collectState();
+  const issues = getJsonDiagnostics(state);
+  const buttonCount = state.sections.reduce((sum, section) => sum + section.buttons.length, 0);
+  document.getElementById('jsonDiagnosticSummary').textContent = issues.length
+    ? `${issues.length} problema(s) em ${state.sections.length} seção(ões), ${buttonCount} botão(ões) e ${state.tags.length} tag(s).`
+    : `JSON íntegro: ${state.sections.length} seção(ões), ${buttonCount} botão(ões) e ${state.tags.length} tag(s).`;
+  const wrap = document.getElementById('jsonDiagnosticIssues');
+  wrap.replaceChildren();
+  if (issues.length) wrap.appendChild(makeDiagnosticGroup('Problemas encontrados', issues, 'Corrigir automaticamente', repairJsonIntegrity));
+}
+
+async function repairJsonIntegrity() {
+  const ok = await confirmDialog('Corrigir IDs, visibilidades e tags com segurança?', { title: 'Corrigir JSON', confirmText: 'Corrigir' });
+  if (!ok) return;
+  const state = normalizeImportedData(collectState());
+  const usedIds = new Set();
+  state.sections.forEach(section => {
+    if (!section.id || usedIds.has(section.id)) section.id = `s${Date.now().toString(36)}-${++jsonIntegritySequence}`;
+    usedIds.add(section.id);
+    section.buttons.forEach(button => {
+      if (!button.id || usedIds.has(button.id)) button.id = `b${Date.now().toString(36)}-${++jsonIntegritySequence}`;
+      usedIds.add(button.id);
+      if (!['public', 'private', 'other'].includes(button.vis)) button.vis = 'other';
+    });
+  });
+  pushHistory();
+  restoreState(state);
+  renderJsonDiagnostics();
+  notify('JSON corrigido!');
+}
+
+function refreshJsonView() {
+  document.getElementById('jsonViewText').value = JSON.stringify(collectState(), null, 2);
+}
+
+async function copyJsonView() {
+  refreshJsonView();
+  await copyToClipboard(document.getElementById('jsonViewText').value);
+  notify('JSON copiado!');
+}
+
+let viewedButtonText = '';
+let contextIdSequence = 0;
+
+function createContextMenuItem(label, icon, action, options = {}) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = `context-menu-item${options.danger ? ' danger' : ''}`;
+  button.disabled = !!options.disabled;
+  button.innerHTML = `${iconSvg(icon)}<span>${escapeHtml(label)}</span>`;
+  button.onclick = () => { if (!button.disabled) { closeContextMenu(); action(); } };
+  return button;
+}
+
+function createContextMenuSeparator() {
+  const separator = document.createElement('div');
+  separator.className = 'context-menu-separator';
+  return separator;
+}
+
+function openContextMenu(items, x, y) {
+  const menu = document.getElementById('contextMenu');
+  menu.replaceChildren(...items);
+  menu.hidden = false;
+  menu.style.visibility = 'hidden';
+  const rect = menu.getBoundingClientRect();
+  menu.style.left = `${Math.min(Math.max(x, 8), innerWidth - rect.width - 8)}px`;
+  menu.style.top = `${Math.min(Math.max(y, 8), innerHeight - rect.height - 8)}px`;
+  menu.style.visibility = 'visible';
+}
+
+function closeContextMenu() {
+  const menu = document.getElementById('contextMenu');
+  if (menu) menu.hidden = true;
+}
+
+function getContextButtonData(wrap) {
+  return { id: wrap.dataset.id, name: wrap.querySelector('.btn-label')?.textContent || '', text: wrap.dataset.text || '', tag: wrap.dataset.tag || '', vis: wrap.dataset.vis || 'other' };
+}
+
+function viewContextButton(wrap) {
+  const data = getContextButtonData(wrap);
+  viewedButtonText = data.text;
+  document.getElementById('buttonViewTitle').textContent = data.name;
+  document.getElementById('buttonViewMeta').textContent = `${data.tag || 'Sem tag'} · ${data.vis}`;
+  document.getElementById('buttonViewText').textContent = data.text;
+  openModal('buttonViewModal');
+}
+
+async function copyViewedButtonText() { await copyToClipboard(viewedButtonText); notify('Texto copiado!'); }
+
+function makeContextId(prefix) { return `${prefix}${Date.now().toString(36)}-${++contextIdSequence}`; }
+
+function duplicateContextButton(wrap) {
+  const section = wrap.closest('.section-wrap');
+  const data = getContextButtonData(wrap);
+  const copy = { ...data, id: makeContextId('b'), name: `${data.name} — Cópia` };
+  pushHistory();
+  wrap.after(createBtnEl(copy, section.dataset.id));
+  updateSectionCount(section.dataset.id);
+  applyButtonReorderControls();
+  doSearch();
+  updateUnsavedChangesUI();
+  notify('Botão duplicado!');
+}
+
+function duplicateContextSection(section) {
+  const duplicate = {
+    id: makeContextId('s'),
+    name: `${section.querySelector('.section-title')?.textContent || 'Seção'} — Cópia`,
+    collapsed: section.classList.contains('collapsed'),
+    buttons: [...section.querySelectorAll('.btn-wrap')].map(wrap => ({ ...getContextButtonData(wrap), id: makeContextId('b') }))
+  };
+  pushHistory();
+  const rendered = renderSection(duplicate, document.getElementById('sections'));
+  section.after(rendered);
+  applyButtonReorderControls();
+  doSearch();
+  updateToggleSectionsBtnLabel();
+  updateUnsavedChangesUI();
+  notify('Seção duplicada!');
+}
+
+document.addEventListener('contextmenu', event => {
+  const button = event.target.closest('.btn-wrap');
+  if (button) {
+    event.preventDefault();
+    hideButtonPreview();
+    const sectionId = button.closest('.section-wrap')?.dataset.id;
+    openContextMenu([
+      createContextMenuItem('Copiar texto', 'copy', async () => { await copyToClipboard(button.dataset.text || ''); notify('Texto copiado!'); }),
+      createContextMenuItem('Visualizar botão', 'eye', () => viewContextButton(button)),
+      createContextMenuSeparator(),
+      createContextMenuItem('Editar botão', 'pencil', () => openEditBtn(sectionId, button.dataset.id)),
+      createContextMenuItem('Duplicar botão', 'copy_plus', () => duplicateContextButton(button)),
+      createContextMenuSeparator(),
+      createContextMenuItem('Excluir botão', 'trash_2', () => deleteBtn(sectionId, button.dataset.id), { danger: true })
+    ], event.clientX, event.clientY);
+    return;
+  }
+  const section = event.target.closest('.section-wrap');
+  if (!section) return;
+  event.preventDefault();
+  const header = section.querySelector('.section-head');
+  openContextMenu([
+    createContextMenuItem('Adicionar botão', 'folder_plus', () => openAddBtn(section.dataset.id)),
+    createContextMenuItem('Renomear seção', 'pencil', () => renameSection(section.dataset.id)),
+    createContextMenuItem('Duplicar seção', 'copy_plus', () => duplicateContextSection(section)),
+    createContextMenuSeparator(),
+    createContextMenuItem('Mover para cima', 'arrow_up', () => moveSectionUp(header), { disabled: !section.previousElementSibling }),
+    createContextMenuItem('Mover para baixo', 'arrow_down', () => moveSectionDown(header), { disabled: !section.nextElementSibling }),
+    createContextMenuSeparator(),
+    createContextMenuItem('Excluir seção', 'trash_2', () => deleteSection(section.dataset.id), { danger: true })
+  ], event.clientX, event.clientY);
+});
+
+document.addEventListener('pointerdown', event => { if (!event.target.closest('#contextMenu')) closeContextMenu(); });
+window.addEventListener('scroll', closeContextMenu, true);
+window.addEventListener('resize', closeContextMenu);
+
 /* ------------------ app.js ------------------ */
 // ==========================================================
 // Inicialização e funcionalidades gerais do app
@@ -1760,7 +2241,8 @@ if (shiftBtnInit) {
 
 function init() {
   const saved = loadPersistedState();
-  const data = saved && Array.isArray(saved.sections) ? saved : getDemoState();
+  const sourceData = saved && Array.isArray(saved.sections) ? saved : getDemoState();
+  const data = normalizeImportedData(sourceData);
 
   tags = Array.isArray(data.tags) ? [...data.tags] : [];
   renderAll(Array.isArray(data.sections) ? data.sections : []);
@@ -1781,7 +2263,7 @@ function toggleEditMode() {
   if (button) button.classList.toggle('active', editMode);
 
   // Remover previews visíveis ao alternar para modo edição
-  document.querySelectorAll('.copy-btn.show-tip').forEach(b => b.classList.remove('show-tip'));
+  hideButtonPreview();
 
 // Atualiza visibilidade/estado do botão Modo Organização (visível, habilitado apenas com editMode ON)
 const shiftBtn = document.getElementById('shiftLockBtn');
@@ -1814,10 +2296,9 @@ if (shiftBtn) {
 function toggleTheme() {
   const dark = document.body.classList.toggle('dark');
   applyThemeButtonUI(dark);
-  try { localStorage.setItem(THEME_STORAGE_KEY, dark ? 'dark' : 'light'); } catch (_) { }
+  setSetting('theme', dark ? 'dark' : 'light');
 }
 
-const THEME_STORAGE_KEY = 'blu:theme';
 const systemThemeQuery = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
 
 function applyThemeButtonUI(dark) {
@@ -1834,8 +2315,7 @@ function applyTheme(dark) {
 }
 
 function initTheme() {
-  let stored = null;
-  try { stored = localStorage.getItem(THEME_STORAGE_KEY); } catch (_) { }
+  const stored = getSetting('theme');
 
   if (stored === 'dark' || stored === 'light') {
     applyTheme(stored === 'dark');
@@ -1844,14 +2324,96 @@ function initTheme() {
   }
 
   systemThemeQuery?.addEventListener('change', event => {
-    let currentStored = null;
-    try { currentStored = localStorage.getItem(THEME_STORAGE_KEY); } catch (_) { }
+    const currentStored = getSetting('theme');
     if (currentStored !== 'dark' && currentStored !== 'light') applyTheme(event.matches);
   });
 }
 
 function toggleMenu() {
   document.getElementById('menuOverlay').classList.toggle('open');
+}
+
+function createSprinklrSubmenu(name, label, icon, buttons) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'menu-submenu';
+
+  const toggle = document.createElement('button');
+  toggle.type = 'button';
+  toggle.className = 'menu-submenu-toggle';
+  toggle.dataset.submenu = name;
+  toggle.setAttribute('aria-expanded', 'false');
+  toggle.setAttribute('aria-controls', `submenu-${name}`);
+  toggle.innerHTML = `${iconSvg(icon)}<span class="menu-btn-label">${escapeHtml(label)}</span>${iconSvg('chevron_down', 'chevron-icon')}`;
+  toggle.onclick = () => toggleSubmenu(name);
+
+  const body = document.createElement('div');
+  body.className = 'menu-submenu-body';
+  body.id = `submenu-${name}`;
+  buttons.filter(Boolean).forEach(button => body.appendChild(button));
+  wrapper.append(toggle, body);
+  return wrapper;
+}
+
+function toggleSubmenu(name) {
+  const body = document.getElementById(`submenu-${name}`);
+  const toggle = document.querySelector(`.menu-submenu-toggle[data-submenu="${name}"]`);
+  if (!body || !toggle) return;
+  const opening = !body.classList.contains('open');
+
+  document.querySelectorAll('.menu-submenu-body.open').forEach(otherBody => {
+    otherBody.classList.remove('open');
+    const otherName = otherBody.id.replace('submenu-', '');
+    const otherToggle = document.querySelector(`.menu-submenu-toggle[data-submenu="${otherName}"]`);
+    otherToggle?.classList.remove('open');
+    otherToggle?.setAttribute('aria-expanded', 'false');
+  });
+
+  body.classList.toggle('open', opening);
+  toggle.classList.toggle('open', opening);
+  toggle.setAttribute('aria-expanded', String(opening));
+}
+
+function upgradeSprinklrMenu() {
+  const overlay = document.getElementById('menuOverlay');
+  if (!overlay || overlay.dataset.organized === 'true') return;
+
+  const findByOnclick = value => [...overlay.querySelectorAll('.menu-btn')]
+    .find(button => button.getAttribute('onclick') === value);
+  const dangerGroup = overlay.querySelector('.menu-btn-danger')?.closest('.menu-group');
+
+  const submenus = [
+    createSprinklrSubmenu('dados', 'Dados', 'download', [
+      document.getElementById('exportBtn'),
+      findByOnclick("openModal('importModal')")
+    ]),
+    createSprinklrSubmenu('aparencia', 'Aparência', 'palette', [
+      document.getElementById('toggleSectionsBtn'),
+      document.getElementById('themeBtn'),
+      document.getElementById('textPreviewBtn')
+    ]),
+    createSprinklrSubmenu('ferramentas', 'Ferramentas', 'wrench', [
+      findByOnclick("openModal('shortcutsModal')"),
+      findByOnclick("openJsonModal('diagnostic')"),
+      findByOnclick("openTagModal('diagnostic')")
+    ]),
+    createSprinklrSubmenu('janela', 'Janela', 'app_window', [
+      findByOnclick('openPopout()'),
+      findByOnclick('openPopoutBlank()')
+    ])
+  ];
+
+  overlay.querySelectorAll('.menu-sep').forEach(separator => separator.remove());
+  overlay.querySelectorAll('.menu-group').forEach(group => {
+    if (group !== dangerGroup && !group.children.length) group.remove();
+  });
+
+  const fragment = document.createDocumentFragment();
+  submenus.forEach(submenu => fragment.appendChild(submenu));
+  const separator = document.createElement('div');
+  separator.className = 'menu-sep';
+  fragment.appendChild(separator);
+  overlay.insertBefore(fragment, dangerGroup || null);
+  overlay.dataset.organized = 'true';
 }
 
 function openPopout() {
@@ -1971,7 +2533,8 @@ document.addEventListener('keydown', event => {
   }
 
   if (event.key === 'Escape') {
-    ['btnModal', 'sectionModal', 'tagModal', 'importModal', 'dialogModal', 'shortcutsModal'].forEach(closeModal);
+    ['btnModal', 'sectionModal', 'tagModal', 'importModal', 'dialogModal', 'shortcutsModal', 'jsonModal', 'buttonViewModal'].forEach(closeModal);
+    closeContextMenu();
     document.getElementById('menuOverlay').classList.remove('open');
   }
 
@@ -1989,7 +2552,10 @@ document.querySelectorAll('.modal-bg').forEach(background => {
 
 setupDialogEvents();
 setupVersionBadgeHover();
+migrateLegacySettings();
 initTheme();
+initTextPreviewPreference();
+upgradeSprinklrMenu();
 init();
 
 /* End of bundle.js */
