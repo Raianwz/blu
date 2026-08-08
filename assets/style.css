@@ -1321,7 +1321,8 @@ body.edit-mode .btn-del {
 #debugEntryCount { color: #8f99aa; font-size: 11px; }
 .debug-panel-actions { display: flex; gap: 6px; }
 
-.debug-panel-actions button {
+.debug-panel-actions button,
+.debug-panel-actions select {
   padding: 5px 9px;
   color: #cbd5e1;
   background: #1a1f2a;
@@ -1330,7 +1331,23 @@ body.edit-mode .btn-del {
   cursor: pointer;
 }
 
-.debug-panel-actions button:hover { color: white; border-color: #667eea; }
+.debug-panel-actions button:hover,
+.debug-panel-actions select:hover { color: white; border-color: #667eea; }
+
+.debug-panel-actions select { font-size: 12px; }
+
+.debug-panel-actions .debug-window-control {
+  width: 30px;
+  padding-inline: 0;
+  font-size: 17px;
+  line-height: 1;
+}
+
+.debug-panel-actions .debug-close-btn:hover {
+  color: white;
+  background: #dc2626;
+  border-color: #dc2626;
+}
 
 #debugLog {
   flex: 1;
@@ -1357,17 +1374,29 @@ body.edit-mode .btn-del {
 
 body.debug-mode-open { padding-bottom: var(--debug-panel-height); }
 body.debug-mode-open #menuOverlay { z-index: 2300; }
+body.debug-mode-open #contextMenu { z-index: 2400; }
 body.debug-mode-open #appVersion,
 body.debug-mode-open #notifArea,
 body.debug-mode-open #backupBanner { bottom: calc(var(--debug-panel-height) + 14px); }
 
+body.debug-mode-open.debug-mode-minimized { padding-bottom: 44px; }
+body.debug-mode-minimized #debugPanel { height: 44px; }
+body.debug-mode-minimized #debugLog { display: none; }
+body.debug-mode-minimized .debug-session-action { display: none; }
+body.debug-mode-minimized #appVersion,
+body.debug-mode-minimized #notifArea,
+body.debug-mode-minimized #backupBanner { bottom: 58px; }
+
 @media (max-width: 560px) {
   :root { --debug-panel-height: clamp(230px, 38vh, 360px); }
   .debug-panel-header { align-items: flex-start; padding: 8px 10px; }
+  body:not(.debug-mode-minimized) .debug-panel-header { flex-wrap: wrap; }
   .debug-panel-header > div:first-child { display: block; }
   #debugEntryCount { display: block; margin-top: 2px; }
   .debug-panel-actions { gap: 4px; }
+  body:not(.debug-mode-minimized) .debug-panel-actions { width: 100%; overflow-x: auto; }
   .debug-panel-actions button { padding: 5px 7px; font-size: 11px; }
+  .debug-panel-actions select { max-width: 92px; padding: 5px; font-size: 11px; }
   .debug-entry { display: block; padding: 6px 10px; }
   .debug-entry-meta { display: block; margin-bottom: 2px; font-size: 10px; }
 }

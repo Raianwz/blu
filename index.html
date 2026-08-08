@@ -246,9 +246,19 @@
         <span id="debugEntryCount">0 eventos nesta sessão</span>
       </div>
       <div class="debug-panel-actions">
-        <button type="button" onclick="copyDebugEntries()">Copiar</button>
-        <button type="button" onclick="clearDebugEntries()">Limpar</button>
-        <button type="button" onclick="setDebugMode(false)" aria-label="Fechar modo de depuração">Fechar</button>
+        <select id="debugLevelFilter" class="debug-session-action" onchange="setDebugLevelFilter(this.value)" title="Filtrar eventos por nível" aria-label="Filtrar eventos por nível">
+          <option value="all">Todos</option>
+          <option value="error">Erros</option>
+          <option value="warn">Avisos</option>
+          <option value="info">Informações</option>
+          <option value="log">Logs</option>
+          <option value="debug">Debug</option>
+        </select>
+        <button type="button" class="debug-session-action" onclick="copyDebugEntries()">Copiar</button>
+        <button type="button" class="debug-session-action" onclick="saveDebugReport()">Salvar</button>
+        <button type="button" class="debug-session-action" onclick="clearDebugEntries()">Limpar</button>
+        <button type="button" id="debugMinimizeBtn" class="debug-window-control" onclick="toggleDebugMinimized()" title="Minimizar" aria-label="Minimizar modo de depuração">−</button>
+        <button type="button" class="debug-window-control debug-close-btn" onclick="setDebugMode(false)" title="Fechar" aria-label="Fechar modo de depuração">×</button>
       </div>
     </div>
     <div id="debugLog" role="log" aria-live="polite" aria-relevant="additions"></div>

@@ -5,6 +5,9 @@
 const DEBUG_MAX_ENTRIES = 200;
 const debugEntries = [];
 let debugModeEnabled = false;
+let debugModeMinimized = false;
+let debugLevelFilter = 'all';
+const debugEntryElements = new WeakMap();
 
 function formatDebugValue(value) {
   if (value instanceof Error) return value.stack || `${value.name}: ${value.message}`;
@@ -27,21 +30,28 @@ function formatDebugValue(value) {
   }
 }
 
-function getDebugEntriesText() {
-  return debugEntries
+function getFilteredDebugEntries() {
+  return debugLevelFilter === 'all'
+    ? debugEntries
+    : debugEntries.filter(entry => entry.level === debugLevelFilter);
+}
+
+function getDebugEntriesText(entries = getFilteredDebugEntries()) {
+  return entries
     .map(entry => `[${entry.time}] ${entry.level.toUpperCase()} ${entry.message}`)
     .join('\n');
 }
 
 function renderDebugEntry(entry) {
   const log = document.getElementById('debugLog');
-  if (!log) return;
+  if (!log || (debugLevelFilter !== 'all' && entry.level !== debugLevelFilter)) return;
 
   const empty = log.querySelector('.debug-empty');
   if (empty) empty.remove();
 
   const line = document.createElement('div');
   line.className = `debug-entry debug-${entry.level}`;
+  debugEntryElements.set(line, entry);
   const meta = document.createElement('span');
   meta.className = 'debug-entry-meta';
   meta.textContent = `${entry.time} ${entry.level.toUpperCase()}`;
@@ -57,7 +67,11 @@ function renderDebugEntry(entry) {
 function updateDebugCount() {
   const count = document.getElementById('debugEntryCount');
   if (!count) return;
-  count.textContent = `${debugEntries.length} ${debugEntries.length === 1 ? 'evento' : 'eventos'} nesta sessão`;
+  const visibleCount = getFilteredDebugEntries().length;
+  const visibleLabel = `${visibleCount} ${visibleCount === 1 ? 'evento' : 'eventos'}`;
+  count.textContent = debugLevelFilter === 'all'
+    ? `${visibleLabel} nesta sessão`
+    : `${visibleLabel} de ${debugEntries.length}`;
 }
 
 function addDebugEntry(level, values) {
@@ -101,6 +115,16 @@ function setDebugMode(enabled) {
   const button = document.getElementById('debugModeBtn');
   if (panel) panel.hidden = !debugModeEnabled;
   document.body.classList.toggle('debug-mode-open', debugModeEnabled);
+  if (!debugModeEnabled) {
+    debugModeMinimized = false;
+    document.body.classList.remove('debug-mode-minimized');
+    const minimizeButton = document.getElementById('debugMinimizeBtn');
+    if (minimizeButton) {
+      minimizeButton.textContent = '−';
+      minimizeButton.title = 'Minimizar';
+      minimizeButton.setAttribute('aria-label', 'Minimizar modo de depuração');
+    }
+  }
 
   if (button) {
     button.classList.toggle('active', debugModeEnabled);
@@ -114,22 +138,110 @@ function toggleDebugMode() {
   setDebugMode(!debugModeEnabled);
 }
 
+function toggleDebugMinimized() {
+  if (!debugModeEnabled) return;
+  debugModeMinimized = !debugModeMinimized;
+  document.body.classList.toggle('debug-mode-minimized', debugModeMinimized);
+
+  const button = document.getElementById('debugMinimizeBtn');
+  if (button) {
+    const action = debugModeMinimized ? 'Restaurar' : 'Minimizar';
+    button.textContent = debugModeMinimized ? '□' : '−';
+    button.title = action;
+    button.setAttribute('aria-label', `${action} modo de depuração`);
+  }
+}
+
 function clearDebugEntries() {
   debugEntries.length = 0;
   renderDebugEntries();
 }
 
-async function copyDebugEntries() {
-  const text = getDebugEntriesText();
+function setDebugLevelFilter(level) {
+  const allowedLevels = new Set(['all', 'error', 'warn', 'info', 'log', 'debug']);
+  debugLevelFilter = allowedLevels.has(level) ? level : 'all';
+  const select = document.getElementById('debugLevelFilter');
+  if (select && select.value !== debugLevelFilter) select.value = debugLevelFilter;
+  renderDebugEntries();
+}
+
+async function copyDebugText(text, successMessage) {
   if (!text) return;
   try {
     if (typeof copyToClipboard === 'function') await copyToClipboard(text);
     else await navigator.clipboard.writeText(text);
-    if (typeof notify === 'function') notify('Relatório de depuração copiado!');
+    if (typeof notify === 'function') notify(successMessage);
   } catch (_) {
     addDebugEntry('error', ['Não foi possível copiar o relatório de depuração.']);
   }
 }
+
+async function copyDebugEntries() {
+  const text = getDebugEntriesText();
+  await copyDebugText(text, 'Relatório de depuração copiado!');
+}
+
+function buildDebugReport() {
+  const version = document.getElementById('appVersion')?.textContent.trim() || 'Blû';
+  const filterLabels = {
+    all: 'Todos', error: 'Erros', warn: 'Avisos', info: 'Informações', log: 'Logs', debug: 'Debug'
+  };
+  const header = [
+    'RELATÓRIO DE DEPURAÇÃO — BLÛ',
+    `Gerado em: ${new Date().toLocaleString('pt-BR')}`,
+    `Versão: ${version}`,
+    `Origem: ${window.location.origin}`,
+    `Navegador: ${navigator.userAgent}`,
+    `Filtro: ${filterLabels[debugLevelFilter] || debugLevelFilter}`,
+    `Eventos exibidos: ${getFilteredDebugEntries().length} de ${debugEntries.length}`,
+    '—'.repeat(72)
+  ].join('\n');
+  return `${header}\n${getDebugEntriesText() || 'Nenhum evento registrado.'}\n`;
+}
+
+function saveDebugReport() {
+  const report = buildDebugReport();
+  const blob = new Blob([report], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  link.href = url;
+  link.download = `blu-debug-${timestamp}.txt`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  if (typeof notify === 'function') notify('Relatório de depuração salvo!');
+}
+
+document.addEventListener('contextmenu', event => {
+  const log = event.target.closest('#debugLog');
+  if (!log || typeof openContextMenu !== 'function') return;
+  event.preventDefault();
+
+  const entryElement = event.target.closest('.debug-entry');
+  const entry = entryElement ? debugEntryElements.get(entryElement) : null;
+  const items = [];
+
+  if (entry) {
+    items.push(
+      createContextMenuItem('Copiar mensagem', 'copy', () => copyDebugText(entry.message, 'Mensagem copiada!')),
+      createContextMenuItem('Copiar registro completo', 'copy', () => copyDebugText(getDebugEntriesText([entry]), 'Registro copiado!')),
+      createContextMenuSeparator(),
+      createContextMenuItem(`Mostrar apenas ${entry.level.toUpperCase()}`, 'eye', () => setDebugLevelFilter(entry.level)),
+      createContextMenuSeparator()
+    );
+  }
+
+  items.push(
+    createContextMenuItem('Copiar console', 'copy', copyDebugEntries, { disabled: !getFilteredDebugEntries().length }),
+    createContextMenuItem('Salvar relatório como…', 'download', saveDebugReport),
+    createContextMenuSeparator(),
+    createContextMenuItem('Limpar console', 'trash_2', clearDebugEntries, { danger: true, disabled: !debugEntries.length })
+  );
+
+  openContextMenu(items, event.clientX, event.clientY, entryElement || log);
+});
 
 ['log', 'info', 'warn', 'error', 'debug'].forEach(level => {
   const original = console[level].bind(console);

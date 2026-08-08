@@ -472,10 +472,21 @@ function formatTimeRemaining(msRemaining) {
   return `${minutes} minuto${minutes === 1 ? '' : 's'}`;
 }
 
+function getUtf8ByteLength(value) {
+  return new TextEncoder().encode(String(value || '')).byteLength;
+}
+
+function formatFileSize(bytes) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(bytes < 10 * 1024 ? 1 : 0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 function buildShareCountsHtml(state) {
   const sectionCount = state.sections.length;
   const buttonCount = state.sections.reduce((sum, s) => sum + s.buttons.length, 0);
   const tagCount = state.tags.length;
+  const jsonBytes = getUtf8ByteLength(JSON.stringify(state));
   const privateCount = state.sections.reduce(
     (sum, s) => sum + s.buttons.filter(b => b.vis === 'private').length,
     0
@@ -486,6 +497,7 @@ function buildShareCountsHtml(state) {
       <span>${iconSvg('folder_plus')} ${sectionCount} seç${sectionCount === 1 ? 'ão' : 'ões'}</span>
       <span>${iconSvg('tag')} ${tagCount} tag${tagCount === 1 ? '' : 's'}</span>
       <span>${iconSvg('share')} ${buttonCount} botã${buttonCount === 1 ? 'o' : 'o'}${buttonCount === 1 ? '' : 's'}</span>
+      <span title="Tamanho do JSON antes da criptografia">JSON: ${formatFileSize(jsonBytes)}</span>
     </div>
   `;
 
@@ -564,10 +576,26 @@ function openShareModal() {
 async function shareData() {
   const state = collectState();
   const jsonString = JSON.stringify(state);
+  const jsonBytes = getUtf8ByteLength(jsonString);
+
+  console.info('[Compartilhamento] Preparando dados.', {
+    jsonBytes,
+    jsonSize: formatFileSize(jsonBytes),
+    sections: state.sections.length,
+    buttons: state.sections.reduce((sum, section) => sum + section.buttons.length, 0),
+    tags: state.tags.length
+  });
 
   let encryptedPayload;
   try {
     encryptedPayload = await encryptJsonString(jsonString);
+    const payloadBytes = getUtf8ByteLength(encryptedPayload);
+    console.info('[Compartilhamento] Payload criptografado.', {
+      payloadBytes,
+      payloadSize: formatFileSize(payloadBytes),
+      apiLimitBytes: 200 * 1024,
+      apiLimitSize: '200 KB'
+    });
   } catch (error) {
     console.error('Erro ao criptografar para compartilhamento:', error);
     notify('Não foi possível preparar o compartilhamento (criptografia indisponível neste navegador).', 'err');
@@ -578,21 +606,29 @@ async function shareData() {
   if (confirmBtn) confirmBtn.disabled = true;
 
   try {
+    console.info('[Compartilhamento] Enviando payload para /api/share.');
     const res = await fetch('/api/share', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ data: encryptedPayload })
     });
 
-    if (res.status === 429) {
-      const body = await res.json().catch(() => ({}));
-      notify(body.message || 'Muitos compartilhamentos recentes. Tente novamente mais tarde.', 'err');
-      return;
+    const responseBody = await res.json().catch(() => ({}));
+    console.info('[Compartilhamento] Resposta da API.', {
+      status: res.status,
+      ok: res.ok,
+      error: responseBody.error || null,
+      message: responseBody.message || null
+    });
+
+    if (!res.ok) {
+      const requestError = new Error(`HTTP ${res.status}${responseBody.error ? ` (${responseBody.error})` : ''}`);
+      requestError.userMessage = responseBody.message || '';
+      throw requestError;
     }
 
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-
-    const { id, expiresInSeconds } = await res.json();
+    const { id, expiresInSeconds } = responseBody;
+    if (!id || !expiresInSeconds) throw new Error('Resposta da API incompleta.');
     const url = `${window.location.origin}/share/${id}`;
 
     saveLastShareRecord({
@@ -601,10 +637,12 @@ async function shareData() {
       expiresAt: Date.now() + expiresInSeconds * 1000
     });
 
+    console.info('[Compartilhamento] Link criado com sucesso.', { expiresInSeconds });
+
     openShareModal(); // reabre já mostrando o link recém-criado (Estado 2)
   } catch (error) {
     console.error('Erro ao compartilhar:', error);
-    notify('Não foi possível criar o link de compartilhamento.', 'err');
+    notify(error.userMessage || 'Não foi possível criar o link de compartilhamento.', 'err');
   } finally {
     if (confirmBtn) confirmBtn.disabled = false;
   }
