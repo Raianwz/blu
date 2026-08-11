@@ -795,6 +795,11 @@ body.edit-mode .btn-del {
   color: var(--text2);
 }
 
+.mbtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 
 #appVersion {
   position: fixed;

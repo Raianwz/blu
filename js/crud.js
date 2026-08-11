@@ -592,7 +592,7 @@ function openShareModal() {
 
     footerEl.innerHTML = '';
     const cancelBtn = document.createElement('button');
-    cancelBtn.className = 'mbtn secondary';
+    cancelBtn.className = `mbtn ${sizeInfo.exceedsLimit ? 'primary' : 'secondary'}`;
     cancelBtn.textContent = 'Cancelar';
     cancelBtn.onclick = () => closeModal('shareModal');
 
@@ -601,7 +601,11 @@ function openShareModal() {
     confirmBtn.id = 'confirmShareBtn';
     confirmBtn.textContent = 'Compartilhar';
     confirmBtn.onclick = () => shareData();
-    if (sizeInfo.exceedsLimit) confirmBtn.title = 'O payload ultrapassa o limite de 600 KB';
+    if (sizeInfo.exceedsLimit) {
+      confirmBtn.disabled = true;
+      confirmBtn.title = 'O payload ultrapassa o limite de 600 KB';
+      confirmBtn.setAttribute('aria-label', 'Compartilhamento indisponível: payload acima do limite de 600 KB');
+    }
 
     footerEl.append(cancelBtn, confirmBtn);
   }
