@@ -1271,11 +1271,26 @@ body.edit-mode .btn-del {
 }
 
 .json-view-actions .mbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
   width: 100%;
   min-width: 0;
   min-height: 36px;
   padding-inline: 10px;
   white-space: nowrap;
+}
+
+.json-view-actions .menu-icon {
+  flex: 0 0 auto;
+  width: 15px;
+  height: 15px;
+}
+
+.json-view-actions .json-compact-action {
+  border-color: rgba(102, 126, 234, .65);
+  color: var(--accent1);
 }
 
 .json-modal > .modal-footer {
