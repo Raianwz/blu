@@ -124,41 +124,101 @@ function createJsonIssueGroup(title, issueList) {
   return section;
 }
 
+function getUnknownJsonFields(state = collectState()) {
+  const unknown = [];
+  const inspect = (value, allowedKeys, path) => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return;
+    Object.keys(value).forEach(key => {
+      if (!allowedKeys.includes(key)) unknown.push(`${path}.${key}`);
+    });
+  };
+
+  inspect(state, ['tags', 'sections'], 'raiz');
+  (state.sections || []).forEach((section, sectionIndex) => {
+    inspect(section, ['id', 'name', 'collapsed', 'buttons'], `sections[${sectionIndex}]`);
+    (section.buttons || []).forEach((button, buttonIndex) => {
+      inspect(button, ['id', 'name', 'text', 'tag', 'vis'], `sections[${sectionIndex}].buttons[${buttonIndex}]`);
+    });
+  });
+  return unknown;
+}
+
+function getJsonReconstruction(state = collectState()) {
+  const unknownFields = getUnknownJsonFields(state);
+  const normalized = normalizeImportedData(state);
+  const { state: rebuilt, changes: repairChanges } = getSafelyRepairedJsonState(normalized);
+  return {
+    state: rebuilt,
+    unknownFields,
+    repairChanges,
+    changed: JSON.stringify(state) !== JSON.stringify(rebuilt)
+  };
+}
+
+function createJsonToolButton({ label, description, icon, action, disabled = false, advanced = false }) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = `json-tool-action${advanced ? ' advanced' : ''}`;
+  button.disabled = disabled;
+  button.innerHTML = `${iconSvg(icon)}<span><strong>${escapeHtml(label)}</strong><small>${escapeHtml(description)}</small></span>`;
+  button.onclick = action;
+  return button;
+}
+
 function renderJsonDiagnostics() {
   const summary = document.getElementById('jsonDiagnosticSummary');
   const issuesWrap = document.getElementById('jsonDiagnosticIssues');
   if (!summary || !issuesWrap) return;
 
   const diagnostics = getJsonDiagnostics();
+  const optimization = getJsonOptimization(diagnostics.state);
+  const reconstruction = getJsonReconstruction(diagnostics.state);
   const { sections, buttons, tags: tagCount } = diagnostics.counts;
+
   summary.className = `json-diagnostic-summary ${diagnostics.issues.length ? 'warning' : 'ok'}`;
-  summary.innerHTML = `<strong>${sections}</strong> seção(ões) • <strong>${buttons}</strong> botão(ões) • <strong>${tagCount}</strong> tag(s)<br>${diagnostics.issues.length ? `${diagnostics.issues.length} problema(s) encontrado(s).` : 'Estrutura verificada — tudo certo!'}`;
+  summary.innerHTML = `<strong>${sections}</strong> seção(ões) · <strong>${buttons}</strong> botão(ões) · <strong>${tagCount}</strong> tag(s)<br>${diagnostics.issues.length ? `${diagnostics.issues.length} problema(s) encontrado(s).` : 'Estrutura verificada — tudo certo!'}`;
   issuesWrap.innerHTML = '';
 
-  const optimization = getJsonOptimization(diagnostics.state);
-  const optimizationCard = document.createElement('div');
-  optimizationCard.className = 'json-diagnostic-repair json-optimization-card';
-  const optimizationDescription = document.createElement('span');
-  optimizationDescription.textContent = `JSON formatado: ${formatFileSize(optimization.formattedBytes)} · compacto: ${formatFileSize(optimization.compactBytes)}${optimization.removedOrphanTags ? ` · ${optimization.removedOrphanTags} tag(s) sem uso removível(is)` : ''}.`;
-  const optimizationButton = document.createElement('button');
-  optimizationButton.className = 'mbtn ghost';
-  optimizationButton.textContent = 'Otimizar JSON';
-  optimizationButton.onclick = optimizeJsonData;
-  optimizationCard.append(optimizationDescription, optimizationButton);
-  issuesWrap.appendChild(optimizationCard);
+  const toolbox = document.createElement('section');
+  toolbox.className = 'json-toolbox';
+  toolbox.innerHTML = '<div class="json-toolbox-heading"><strong>Manutenção do JSON</strong><span>Ações compatíveis com Desfazer</span></div>';
 
-  if (diagnostics.repairableCount > 0) {
-    const actions = document.createElement('div');
-    actions.className = 'json-diagnostic-repair';
-    const description = document.createElement('span');
-    description.textContent = `${diagnostics.repairableCount} correção(ões) segura(s) disponível(is).`;
-    const button = document.createElement('button');
-    button.className = 'mbtn primary';
-    button.textContent = 'Corrigir automaticamente';
-    button.onclick = repairJsonIntegrity;
-    actions.append(description, button);
-    issuesWrap.appendChild(actions);
-  }
+  const safeLabel = document.createElement('div');
+  safeLabel.className = 'json-toolbox-label';
+  safeLabel.textContent = 'Ações seguras';
+  const safeGrid = document.createElement('div');
+  safeGrid.className = 'json-tool-grid';
+  safeGrid.append(
+    createJsonToolButton({
+      label: 'Corrigir',
+      description: diagnostics.repairableCount ? `${diagnostics.repairableCount} ajuste(s) disponível(is)` : 'Nenhum problema reparável',
+      icon: 'wrench', action: repairJsonIntegrity, disabled: diagnostics.repairableCount === 0
+    }),
+    createJsonToolButton({
+      label: 'Otimizar',
+      description: optimization.changed ? `${formatFileSize(optimization.compactBytes)} após otimização` : 'Estrutura já otimizada',
+      icon: 'unfold_vertical', action: optimizeJsonData, disabled: !optimization.changed
+    }),
+    createJsonToolButton({
+      label: 'Copiar relatório', description: 'Resumo técnico sem o conteúdo',
+      icon: 'copy', action: copyJsonDiagnosticReport
+    })
+  );
+
+  const advancedLabel = document.createElement('div');
+  advancedLabel.className = 'json-toolbox-label advanced';
+  advancedLabel.textContent = 'Ação avançada';
+  const advancedGrid = document.createElement('div');
+  advancedGrid.className = 'json-tool-grid advanced';
+  advancedGrid.appendChild(createJsonToolButton({
+    label: 'Reconstruir estrutura',
+    description: reconstruction.unknownFields.length
+      ? `${reconstruction.unknownFields.length} campo(s) extra(s) serão removidos`
+      : reconstruction.changed ? 'Recria o esquema oficial do Blû' : 'Nenhum campo desconhecido',
+    icon: 'file_check', action: rebuildJsonStructure, disabled: !reconstruction.changed, advanced: true
+  }));
+  toolbox.append(safeLabel, safeGrid, advancedLabel, advancedGrid);
+  issuesWrap.appendChild(toolbox);
 
   const groups = [
     ['IDs', diagnostics.issues.filter(issue => issue.kind === 'id')],
@@ -305,6 +365,57 @@ async function repairJsonIntegrity() {
   renderJsonDiagnostics();
   refreshJsonView();
   notify('JSON corrigido!');
+}
+
+async function rebuildJsonStructure() {
+  const reconstruction = getJsonReconstruction();
+  if (!reconstruction.changed) {
+    notify('O JSON já usa apenas a estrutura oficial do Blû');
+    return;
+  }
+
+  const removedText = reconstruction.unknownFields.length
+    ? `${reconstruction.unknownFields.length} campo(s) desconhecido(s) serão removido(s).`
+    : 'A estrutura será recriada usando somente os campos reconhecidos pelo Blû.';
+  const ok = await confirmDialog(
+    `${removedText}\n\nEssa limpeza preserva seções, botões, textos, tags e visibilidade. Você poderá desfazer com Ctrl+Z.`,
+    { title: 'Reconstruir estrutura', danger: true, confirmText: 'Reconstruir' }
+  );
+  if (!ok) return;
+
+  pushHistory();
+  restoreState(reconstruction.state);
+  renderJsonDiagnostics();
+  refreshJsonView();
+  notify('Estrutura JSON reconstruída!');
+}
+
+async function copyJsonDiagnosticReport() {
+  const diagnostics = getJsonDiagnostics();
+  const optimization = getJsonOptimization(diagnostics.state);
+  const unknownFields = getUnknownJsonFields(diagnostics.state);
+  const formattedBytes = getUtf8ByteLength(JSON.stringify(diagnostics.state, null, 2));
+  const lines = [
+    'Blû — Diagnóstico JSON',
+    `Seções: ${diagnostics.counts.sections}`,
+    `Botões: ${diagnostics.counts.buttons}`,
+    `Tags: ${diagnostics.counts.tags}`,
+    `Tamanho formatado: ${formatFileSize(formattedBytes)}`,
+    `Tamanho compacto: ${formatFileSize(optimization.compactBytes)}`,
+    `Problemas: ${diagnostics.issues.length}`,
+    `Correções seguras: ${diagnostics.repairableCount}`,
+    `Campos desconhecidos: ${unknownFields.length}`
+  ];
+  diagnostics.issues.forEach(issue => lines.push(`- ${issue.message}`));
+  unknownFields.forEach(path => lines.push(`- Campo extra: ${path}`));
+
+  try {
+    await copyToClipboard(lines.join('\n'));
+    notify('Relatório do JSON copiado!');
+  } catch (error) {
+    console.error('Erro ao copiar diagnóstico JSON:', error);
+    notify('Não foi possível copiar o relatório', 'err');
+  }
 }
 
 function refreshJsonView() {

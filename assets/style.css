@@ -1076,6 +1076,111 @@ body.edit-mode .btn-del {
   padding-right: 2px;
 }
 
+.json-toolbox {
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface2);
+}
+
+.json-toolbox-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 11px;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.json-toolbox-heading span,
+.json-toolbox-label {
+  color: var(--text2);
+  font-size: 10.5px;
+}
+
+.json-toolbox-label {
+  margin: 9px 0 6px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.json-toolbox-label.advanced {
+  margin-top: 13px;
+}
+
+.json-tool-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.json-tool-grid.advanced {
+  grid-template-columns: 1fr;
+}
+
+.json-tool-action {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+  padding: 9px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.json-tool-action:hover:not(:disabled) {
+  border-color: var(--accent1);
+  background: rgba(102, 126, 234, 0.08);
+}
+
+.json-tool-action.advanced:hover:not(:disabled) {
+  border-color: rgba(245, 158, 11, .65);
+  background: rgba(245, 158, 11, .08);
+}
+
+.json-tool-action:disabled {
+  opacity: .48;
+  cursor: not-allowed;
+}
+
+.json-tool-action .menu-icon {
+  flex: 0 0 auto;
+  width: 17px;
+  height: 17px;
+  margin-top: 1px;
+  color: var(--accent1);
+}
+
+.json-tool-action.advanced .menu-icon {
+  color: var(--yellow);
+}
+
+.json-tool-action span {
+  min-width: 0;
+}
+
+.json-tool-action strong,
+.json-tool-action small {
+  display: block;
+}
+
+.json-tool-action strong {
+  margin-bottom: 3px;
+  font-size: 11.5px;
+}
+
+.json-tool-action small {
+  color: var(--text2);
+  font-size: 9.5px;
+  line-height: 1.35;
+}
+
 .json-diagnostic-repair,
 .json-diagnostic-section {
   padding: 11px 12px;
@@ -1207,6 +1312,15 @@ body.edit-mode .btn-del {
 
   .json-view-actions {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .json-tool-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .json-toolbox-heading {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 
