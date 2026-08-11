@@ -445,6 +445,7 @@ async function exportData() {
 // expirou, os dados mudaram, ou a pessoa pedir explicitamente.
 
 const LAST_SHARE_KEY = 'blu:lastShare';
+const SHARE_MAX_PAYLOAD_BYTES = 600 * 1024;
 
 function getLastShareRecord() {
   try {
@@ -482,11 +483,36 @@ function formatFileSize(bytes) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+function estimateEncryptedPayloadBytes(jsonString) {
+  const plainBytes = getUtf8ByteLength(jsonString);
+  const encryptedBytes = plainBytes + 16; // tag de autenticação do AES-GCM
+  const encryptedBase64Length = 4 * Math.ceil(encryptedBytes / 3);
+  const estimatedPayload = JSON.stringify({
+    blu_encrypted: true,
+    alg: 'AES-GCM-256',
+    iv: 'A'.repeat(16),
+    data: 'A'.repeat(encryptedBase64Length)
+  });
+  return getUtf8ByteLength(estimatedPayload);
+}
+
+function getShareSizeInfo(state) {
+  const jsonString = JSON.stringify(state);
+  const jsonBytes = getUtf8ByteLength(jsonString);
+  const payloadBytes = estimateEncryptedPayloadBytes(jsonString);
+  return {
+    jsonBytes,
+    payloadBytes,
+    exceedsLimit: payloadBytes > SHARE_MAX_PAYLOAD_BYTES,
+    usagePercent: Math.round((payloadBytes / SHARE_MAX_PAYLOAD_BYTES) * 100)
+  };
+}
+
 function buildShareCountsHtml(state) {
   const sectionCount = state.sections.length;
   const buttonCount = state.sections.reduce((sum, s) => sum + s.buttons.length, 0);
   const tagCount = state.tags.length;
-  const jsonBytes = getUtf8ByteLength(JSON.stringify(state));
+  const sizeInfo = getShareSizeInfo(state);
   const privateCount = state.sections.reduce(
     (sum, s) => sum + s.buttons.filter(b => b.vis === 'private').length,
     0
@@ -497,7 +523,17 @@ function buildShareCountsHtml(state) {
       <span>${iconSvg('folder_plus')} ${sectionCount} seç${sectionCount === 1 ? 'ão' : 'ões'}</span>
       <span>${iconSvg('tag')} ${tagCount} tag${tagCount === 1 ? '' : 's'}</span>
       <span>${iconSvg('share')} ${buttonCount} botã${buttonCount === 1 ? 'o' : 'o'}${buttonCount === 1 ? '' : 's'}</span>
-      <span title="Tamanho do JSON antes da criptografia">JSON: ${formatFileSize(jsonBytes)}</span>
+      <span title="Tamanho do JSON antes da criptografia">JSON: ${formatFileSize(sizeInfo.jsonBytes)}</span>
+    </div>
+    <div class="share-size-check ${sizeInfo.exceedsLimit ? 'limit-exceeded' : sizeInfo.usagePercent >= 85 ? 'near-limit' : ''}">
+      <div class="share-size-label">
+        <span>Payload estimado</span>
+        <strong>${formatFileSize(sizeInfo.payloadBytes)} / ${formatFileSize(SHARE_MAX_PAYLOAD_BYTES)}</strong>
+      </div>
+      <div class="share-size-track" aria-label="${sizeInfo.usagePercent}% do limite de compartilhamento utilizado">
+        <span style="width:${Math.min(sizeInfo.usagePercent, 100)}%"></span>
+      </div>
+      ${sizeInfo.exceedsLimit ? '<p>O conteúdo ultrapassa o limite e não poderá ser compartilhado.</p>' : ''}
     </div>
   `;
 
@@ -513,6 +549,7 @@ function buildShareCountsHtml(state) {
 // registro do último compartilhamento salvo).
 function openShareModal() {
   const state = collectState();
+  const sizeInfo = getShareSizeInfo(state);
   const currentComparable = getComparableStateString();
   const lastShare = getLastShareRecord();
   const stillValid = !!(lastShare && lastShare.comparableState === currentComparable && lastShare.expiresAt > Date.now());
@@ -538,6 +575,7 @@ function openShareModal() {
     regenBtn.className = 'mbtn secondary';
     regenBtn.textContent = 'Gerar novo link mesmo assim';
     regenBtn.onclick = () => shareData();
+    if (sizeInfo.exceedsLimit) regenBtn.title = 'O payload ultrapassa o limite de 600 KB';
 
     const copyBtn = document.createElement('button');
     copyBtn.className = 'mbtn primary';
@@ -563,6 +601,7 @@ function openShareModal() {
     confirmBtn.id = 'confirmShareBtn';
     confirmBtn.textContent = 'Compartilhar';
     confirmBtn.onclick = () => shareData();
+    if (sizeInfo.exceedsLimit) confirmBtn.title = 'O payload ultrapassa o limite de 600 KB';
 
     footerEl.append(cancelBtn, confirmBtn);
   }
@@ -577,6 +616,16 @@ async function shareData() {
   const state = collectState();
   const jsonString = JSON.stringify(state);
   const jsonBytes = getUtf8ByteLength(jsonString);
+  const estimatedPayloadBytes = estimateEncryptedPayloadBytes(jsonString);
+
+  if (estimatedPayloadBytes > SHARE_MAX_PAYLOAD_BYTES) {
+    notify(`O compartilhamento tem cerca de ${formatFileSize(estimatedPayloadBytes)} e excede o limite de ${formatFileSize(SHARE_MAX_PAYLOAD_BYTES)}.`, 'err');
+    console.warn('[Compartilhamento] Payload acima do limite antes da criptografia.', {
+      estimatedPayloadBytes,
+      limitBytes: SHARE_MAX_PAYLOAD_BYTES
+    });
+    return;
+  }
 
   console.info('[Compartilhamento] Preparando dados.', {
     jsonBytes,
@@ -587,18 +636,28 @@ async function shareData() {
   });
 
   let encryptedPayload;
+  let payloadBytes = 0;
   try {
     encryptedPayload = await encryptJsonString(jsonString);
-    const payloadBytes = getUtf8ByteLength(encryptedPayload);
+    payloadBytes = getUtf8ByteLength(encryptedPayload);
     console.info('[Compartilhamento] Payload criptografado.', {
       payloadBytes,
       payloadSize: formatFileSize(payloadBytes),
-      apiLimitBytes: 600 * 1024,
-      apiLimitSize: '600 KB'
+      apiLimitBytes: SHARE_MAX_PAYLOAD_BYTES,
+      apiLimitSize: formatFileSize(SHARE_MAX_PAYLOAD_BYTES)
     });
   } catch (error) {
     console.error('Erro ao criptografar para compartilhamento:', error);
     notify('Não foi possível preparar o compartilhamento (criptografia indisponível neste navegador).', 'err');
+    return;
+  }
+
+  if (payloadBytes > SHARE_MAX_PAYLOAD_BYTES) {
+    notify(`O compartilhamento tem ${formatFileSize(payloadBytes)} e excede o limite de ${formatFileSize(SHARE_MAX_PAYLOAD_BYTES)}.`, 'err');
+    console.warn('[Compartilhamento] Payload criptografado acima do limite.', {
+      payloadBytes,
+      limitBytes: SHARE_MAX_PAYLOAD_BYTES
+    });
     return;
   }
 

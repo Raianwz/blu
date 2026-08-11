@@ -1847,6 +1847,32 @@ kbd {
   height: 14px;
 }
 
+.share-size-check {
+  margin-bottom: 12px;
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface2);
+}
+
+.share-size-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+  color: var(--text2);
+  font-size: 11.5px;
+}
+
+.share-size-label strong { color: var(--text); }
+.share-size-track { height: 5px; overflow: hidden; border-radius: 99px; background: var(--border); }
+.share-size-track span { display: block; height: 100%; border-radius: inherit; background: var(--accent1); transition: width .2s ease; }
+.share-size-check.near-limit { border-color: rgba(245, 158, 11, .55); }
+.share-size-check.near-limit .share-size-track span { background: var(--yellow); }
+.share-size-check.limit-exceeded { border-color: rgba(239, 68, 68, .65); background: rgba(239, 68, 68, .08); }
+.share-size-check.limit-exceeded .share-size-track span { background: var(--red); }
+.share-size-check p { margin: 7px 0 0; color: var(--red); font-size: 11.5px; }
+
 .share-warning {
   display: flex;
   align-items: center;
