@@ -204,7 +204,8 @@
   <div class="modal-bg" id="shortcutsModal">
     <div class="modal">
       <h2>&#9000;&#65039; Atalhos de teclado</h2>
-      <table class="shortcuts-table">
+      <div class="shortcuts-scroll" tabindex="0" role="region" aria-label="Lista de atalhos de teclado">
+        <table class="shortcuts-table">
         <tbody>
           <tr><td><kbd>/</kbd></td><td>Foca a busca</td></tr>
           <tr><td><kbd>&quot;texto&quot;</kbd></td><td>Busca diretamente no conteúdo dos botões</td></tr>
@@ -222,7 +223,8 @@
           <tr><td><kbd>?</kbd></td><td>Este painel de atalhos</td></tr>
           <tr><td>Botão direito</td><td>Abre ações do botão ou da seção</td></tr>
         </tbody>
-      </table>
+        </table>
+      </div>
       <div class="modal-footer"><button class="mbtn primary" onclick="closeModal('shortcutsModal')">Fechar</button></div>
     </div>
   </div>
