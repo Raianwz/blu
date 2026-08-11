@@ -593,8 +593,8 @@ async function shareData() {
     console.info('[Compartilhamento] Payload criptografado.', {
       payloadBytes,
       payloadSize: formatFileSize(payloadBytes),
-      apiLimitBytes: 200 * 1024,
-      apiLimitSize: '200 KB'
+      apiLimitBytes: 600 * 1024,
+      apiLimitSize: '600 KB'
     });
   } catch (error) {
     console.error('Erro ao criptografar para compartilhamento:', error);

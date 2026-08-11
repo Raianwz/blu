@@ -115,7 +115,7 @@
         importBtn.onclick = () => importShare(normalized);
 
         const cancelLink = document.createElement('a');
-        cancelLink.href = '/index.html';
+        cancelLink.href = '/';
         cancelLink.className = 'mbtn secondary';
         cancelLink.textContent = 'Ir para o Blû sem importar';
 
@@ -137,7 +137,7 @@
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
         notify('Importado! Redirecionando…');
-        setTimeout(() => { window.location.href = '/index.html'; }, 700);
+        setTimeout(() => { window.location.replace('/'); }, 700);
       } catch (error) {
         console.error('Erro ao salvar localmente:', error);
         notify('Não foi possível salvar localmente neste navegador.', 'err');

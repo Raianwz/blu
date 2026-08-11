@@ -13,7 +13,7 @@ const createRatelimit = new Ratelimit({
 });
 
 const TTL_SECONDS = 60 * 60 * 24 * 3; // 3 dias
-const MAX_PAYLOAD_BYTES = 200 * 1024; // 200 KB
+const MAX_PAYLOAD_BYTES = 600 * 1024; // 600 KB
 const ID_LENGTH = 10;
 const ID_ALPHABET = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
