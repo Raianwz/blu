@@ -1105,6 +1105,13 @@ body.edit-mode .btn-del {
   margin-top: 10px;
 }
 
+.json-view-meta {
+  margin-top: 8px;
+  color: var(--text2);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
 @media (max-width: 520px) {
   .json-diagnostic-repair {
     align-items: stretch;

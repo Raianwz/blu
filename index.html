@@ -175,9 +175,11 @@
       </div>
       <div id="jsonViewPanel" class="json-modal-panel" role="tabpanel" aria-labelledby="jsonViewTab" hidden>
         <textarea id="jsonViewText" class="json-view-text" readonly spellcheck="false" aria-label="JSON atual do Blû"></textarea>
+        <div id="jsonViewMeta" class="json-view-meta"></div>
         <div class="json-view-actions">
           <button class="mbtn ghost" type="button" onclick="refreshJsonView()">Atualizar</button>
           <button class="mbtn ghost" type="button" onclick="copyJsonView()">Copiar JSON</button>
+          <button class="mbtn ghost" type="button" onclick="copyOptimizedJson()">Copiar compacto</button>
           <button class="mbtn primary" type="button" onclick="exportData()">Exportar</button>
         </div>
       </div>

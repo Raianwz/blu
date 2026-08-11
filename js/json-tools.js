@@ -133,6 +133,18 @@ function renderJsonDiagnostics() {
   summary.innerHTML = `<strong>${sections}</strong> seção(ões) • <strong>${buttons}</strong> botão(ões) • <strong>${tagCount}</strong> tag(s)<br>${diagnostics.issues.length ? `${diagnostics.issues.length} problema(s) encontrado(s).` : 'Estrutura verificada — tudo certo!'}`;
   issuesWrap.innerHTML = '';
 
+  const optimization = getJsonOptimization(diagnostics.state);
+  const optimizationCard = document.createElement('div');
+  optimizationCard.className = 'json-diagnostic-repair json-optimization-card';
+  const optimizationDescription = document.createElement('span');
+  optimizationDescription.textContent = `JSON formatado: ${formatFileSize(optimization.formattedBytes)} · compacto: ${formatFileSize(optimization.compactBytes)}${optimization.removedOrphanTags ? ` · ${optimization.removedOrphanTags} tag(s) sem uso removível(is)` : ''}.`;
+  const optimizationButton = document.createElement('button');
+  optimizationButton.className = 'mbtn ghost';
+  optimizationButton.textContent = 'Otimizar JSON';
+  optimizationButton.onclick = optimizeJsonData;
+  optimizationCard.append(optimizationDescription, optimizationButton);
+  issuesWrap.appendChild(optimizationCard);
+
   if (diagnostics.repairableCount > 0) {
     const actions = document.createElement('div');
     actions.className = 'json-diagnostic-repair';
@@ -221,6 +233,57 @@ function getSafelyRepairedJsonState(state) {
   return { state: repaired, changes };
 }
 
+function getJsonOptimization(state = collectState()) {
+  const original = JSON.parse(JSON.stringify(state));
+  const { state: repaired, changes: repairChanges } = getSafelyRepairedJsonState(original);
+  const usedTags = new Set();
+  repaired.sections.forEach(section => {
+    section.buttons.forEach(button => {
+      if (button.tag) usedTags.add(button.tag);
+    });
+  });
+
+  const tagCountBefore = repaired.tags.length;
+  repaired.tags = repaired.tags
+    .filter(tag => usedTags.has(tag))
+    .sort((left, right) => left.localeCompare(right, 'pt-BR', { sensitivity: 'base', numeric: true }));
+
+  const formattedJson = JSON.stringify(original, null, 2);
+  const compactJson = JSON.stringify(repaired);
+  return {
+    state: repaired,
+    compactJson,
+    formattedBytes: getUtf8ByteLength(formattedJson),
+    compactBytes: getUtf8ByteLength(compactJson),
+    repairChanges,
+    removedOrphanTags: tagCountBefore - repaired.tags.length,
+    changed: JSON.stringify(original) !== compactJson
+  };
+}
+
+async function optimizeJsonData() {
+  const optimization = getJsonOptimization();
+  if (!optimization.changed) {
+    notify('Os dados já estão estruturalmente otimizados');
+    return;
+  }
+
+  const details = [];
+  if (optimization.repairChanges) details.push(`${optimization.repairChanges} correção(ões) estrutural(is)`);
+  if (optimization.removedOrphanTags) details.push(`${optimization.removedOrphanTags} tag(s) sem uso`);
+  const ok = await confirmDialog(
+    `Aplicar a otimização segura?\n\n${details.join(' · ')}\n\nTags apenas parecidas não serão mescladas e os textos, incluindo suas quebras de linha, não serão alterados.`,
+    { title: 'Otimizar JSON', confirmText: 'Otimizar' }
+  );
+  if (!ok) return;
+
+  pushHistory();
+  restoreState(optimization.state);
+  renderJsonDiagnostics();
+  refreshJsonView();
+  notify('JSON otimizado!');
+}
+
 async function repairJsonIntegrity() {
   const { state, changes } = getSafelyRepairedJsonState(collectState());
   if (!changes) {
@@ -244,7 +307,17 @@ async function repairJsonIntegrity() {
 
 function refreshJsonView() {
   const textarea = document.getElementById('jsonViewText');
-  if (textarea) textarea.value = JSON.stringify(collectState(), null, 2);
+  const meta = document.getElementById('jsonViewMeta');
+  const state = collectState();
+  const formattedJson = JSON.stringify(state, null, 2);
+  const optimization = getJsonOptimization(state);
+  if (textarea) textarea.value = formattedJson;
+  if (meta) {
+    const formattedBytes = getUtf8ByteLength(formattedJson);
+    const savedBytes = Math.max(0, formattedBytes - optimization.compactBytes);
+    const savedPercent = formattedBytes ? Math.round((savedBytes / formattedBytes) * 100) : 0;
+    meta.textContent = `Tamanho formatado: ${formatFileSize(formattedBytes)} · Compacto: ${formatFileSize(optimization.compactBytes)} · Economia: ${formatFileSize(savedBytes)} (${savedPercent}%)`;
+  }
 }
 
 async function copyJsonView() {
@@ -256,5 +329,16 @@ async function copyJsonView() {
   } catch (error) {
     console.error('Erro ao copiar JSON:', error);
     notify('Não foi possível copiar o JSON', 'err');
+  }
+}
+
+async function copyOptimizedJson() {
+  const optimization = getJsonOptimization();
+  try {
+    await copyToClipboard(optimization.compactJson);
+    notify(`JSON compacto copiado (${formatFileSize(optimization.compactBytes)})!`);
+  } catch (error) {
+    console.error('Erro ao copiar JSON compacto:', error);
+    notify('Não foi possível copiar o JSON compacto', 'err');
   }
 }
