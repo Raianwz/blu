@@ -18,7 +18,9 @@ function setJsonModalTab(tab) {
   const diagnosticPanel = document.getElementById('jsonDiagnosticPanel');
   const viewPanel = document.getElementById('jsonViewPanel');
   const title = document.getElementById('jsonModalTitle');
+  const modal = document.querySelector('#jsonModal .json-modal');
 
+  modal?.classList.toggle('view-active', isView);
   diagnosticTab?.classList.toggle('active', !isView);
   viewTab?.classList.toggle('active', isView);
   diagnosticTab?.setAttribute('aria-selected', String(!isView));
