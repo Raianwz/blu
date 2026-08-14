@@ -1690,11 +1690,17 @@ body.debug-mode-minimized #backupBanner { bottom: 58px; }
     right: 12px;
     bottom: 14px;
     left: 12px;
+    align-items: flex-end;
   }
 
   .notif {
-    width: 100%;
+    width: fit-content;
+    max-width: 100%;
     box-sizing: border-box;
+  }
+
+  .notif.has-action {
+    width: min(100%, 360px);
   }
 }
 
@@ -1884,6 +1890,10 @@ body.shift-locked .btn-wrap.blu-button-shift-row .copy-btn {
   transform: translateX(-50%) translateY(0);
   opacity: 1;
   pointer-events: auto;
+}
+
+body.backup-banner-visible #notifArea {
+  bottom: var(--notif-backup-bottom);
 }
 
 .backup-banner-icon {

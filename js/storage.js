@@ -247,6 +247,19 @@ window.addEventListener('beforeunload', event => {
 
 let backupBannerDismissedFor = '';
 
+function syncBackupBannerNotificationOffset() {
+  const banner = document.getElementById('backupBanner');
+  if (!banner?.classList.contains('show')) {
+    document.body.classList.remove('backup-banner-visible');
+    document.body.style.removeProperty('--notif-backup-bottom');
+    return;
+  }
+
+  const bannerBottom = Number.parseFloat(getComputedStyle(banner).bottom) || 0;
+  document.body.style.setProperty('--notif-backup-bottom', `${Math.ceil(bannerBottom + banner.offsetHeight + 10)}px`);
+  document.body.classList.add('backup-banner-visible');
+}
+
 function evaluateBackupBanner(dirty) {
   const banner = document.getElementById('backupBanner');
   if (!banner) return;
@@ -254,11 +267,15 @@ function evaluateBackupBanner(dirty) {
   const current = getComparableStateString();
   if (!dirty || backupBannerDismissedFor === current) {
     banner.classList.remove('show');
+    syncBackupBannerNotificationOffset();
     return;
   }
 
   banner.classList.add('show');
+  requestAnimationFrame(syncBackupBannerNotificationOffset);
 }
+
+window.addEventListener('resize', syncBackupBannerNotificationOffset);
 
 function dismissBackupBanner() {
   backupBannerDismissedFor = getComparableStateString();

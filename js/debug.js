@@ -132,6 +132,9 @@ function setDebugMode(enabled) {
     if (label) label.textContent = `Modo de Depuração: ${debugModeEnabled ? 'ON' : 'OFF'}`;
   }
   if (debugModeEnabled) renderDebugEntries();
+  requestAnimationFrame(() => {
+    if (typeof syncBackupBannerNotificationOffset === 'function') syncBackupBannerNotificationOffset();
+  });
 }
 
 function toggleDebugMode() {
@@ -150,6 +153,9 @@ function toggleDebugMinimized() {
     button.title = action;
     button.setAttribute('aria-label', `${action} modo de depuração`);
   }
+  requestAnimationFrame(() => {
+    if (typeof syncBackupBannerNotificationOffset === 'function') syncBackupBannerNotificationOffset();
+  });
 }
 
 function clearDebugEntries() {
