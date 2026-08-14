@@ -1319,14 +1319,16 @@ body.edit-mode .btn-del {
   line-height: 1.4;
 }
 
-@media (max-width: 520px) {
+@media (max-width: 675px) {
+  .json-view-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 521px) {
   .json-diagnostic-repair {
     align-items: stretch;
     flex-direction: column;
-  }
-
-  .json-view-actions {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .json-tool-grid {
