@@ -479,6 +479,7 @@ function finishPointerDrag(cancelled = false) {
     document.querySelectorAll('.section-body').forEach(body => updateSectionCount(body.dataset.section));
     applyButtonReorderControls();
     updateUnsavedChangesUI();
+    notifyUndo(type === 'button' ? 'Botão movido!' : 'Seção movida!');
   }
   setTimeout(() => { suppressPointerClick = false; }, 0);
 }

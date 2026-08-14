@@ -136,7 +136,7 @@ function duplicateContextButton(buttonWrap) {
   applyButtonReorderControls();
   doSearch();
   updateUnsavedChangesUI();
-  notify('Botão duplicado!');
+  notifyUndo('Botão duplicado!');
 }
 
 function duplicateContextSection(section) {
@@ -159,7 +159,7 @@ function duplicateContextSection(section) {
   doSearch();
   updateToggleSectionsBtnLabel();
   updateUnsavedChangesUI();
-  notify('Seção duplicada!');
+  notifyUndo('Seção duplicada!');
 }
 
 function getButtonContextMenuItems(buttonWrap) {

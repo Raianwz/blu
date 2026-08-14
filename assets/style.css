@@ -1653,6 +1653,10 @@ body.debug-mode-minimized #backupBanner { bottom: 58px; }
 }
 
 .notif {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
   background: var(--green);
   color: white;
   padding: 12px 20px;
@@ -1661,6 +1665,37 @@ body.debug-mode-minimized #backupBanner { bottom: 58px; }
   font-weight: 500;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
   animation: slideIn 0.25s ease;
+}
+
+.notif-action {
+  min-height: 34px;
+  padding: 6px 11px;
+  border: 1px solid rgba(255, 255, 255, .55);
+  border-radius: 6px;
+  background: rgba(0, 0, 0, .16);
+  color: white;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.notif-action:hover,
+.notif-action:focus-visible {
+  background: rgba(0, 0, 0, .28);
+  outline: none;
+}
+
+@media (max-width: 560px) {
+  #notifArea {
+    right: 12px;
+    bottom: 14px;
+    left: 12px;
+  }
+
+  .notif {
+    width: 100%;
+    box-sizing: border-box;
+  }
 }
 
 .notif.err {

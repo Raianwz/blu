@@ -297,6 +297,7 @@ function restoreState(state) {
 
 function undoLastAction() {
   if (history.length === 0) return;
+  document.querySelectorAll('#notifArea .notif.has-action').forEach(element => element.remove());
 
   try {
     const currentStateString = JSON.stringify(collectState());
@@ -323,6 +324,7 @@ function undoLastAction() {
 
 function redoLastAction() {
   if (redoStack.length === 0) return;
+  document.querySelectorAll('#notifArea .notif.has-action').forEach(element => element.remove());
 
   try {
     const currentStateString = JSON.stringify(collectState());

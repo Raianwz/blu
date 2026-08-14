@@ -98,7 +98,7 @@ async function deleteSection(sectionId) {
   pushHistory();
   wrap.remove();
   affectedTags.forEach(removeTagIfOrphan);
-  notify('Seção removida!');
+  notifyUndo('Seção removida!');
   updateToggleSectionsBtnLabel();
   updateUnsavedChangesUI();
 }
@@ -210,7 +210,7 @@ async function deleteBtn(sectionId, btnId) {
   target.remove();
   if (removedTag) removeTagIfOrphan(removedTag);
   updateSectionCount(sectionId);
-  notify('Botão removido!');
+  notifyUndo('Botão removido!');
   doSearch();
   updateUnsavedChangesUI();
 }
@@ -831,7 +831,7 @@ async function clearAll() {
     exportedComparableState: exportedStateBeforeClear
   };
   restoreState({ tags: [], sections: [] });
-  notify('Tudo limpo!');
+  notifyUndo('Tudo limpo!');
 
   // Trata o estado vazio como a nova "baseline" — não há nada de fato para
   // fazer backup logo após limpar tudo, então não faz sentido o banner de

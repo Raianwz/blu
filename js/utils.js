@@ -50,13 +50,40 @@ function isTypingField(element) {
   return tag === 'input' || tag === 'textarea' || tag === 'select' || element.isContentEditable;
 }
 
-function notify(msg, type = 'ok') {
+function notify(msg, type = 'ok', options = {}) {
   const area = document.getElementById('notifArea');
   const element = document.createElement('div');
-  element.className = 'notif' + (type === 'err' ? ' err' : '');
-  element.textContent = msg;
+  element.className = 'notif' + (type === 'err' ? ' err' : '') + (options.action ? ' has-action' : '');
+  const message = document.createElement('span');
+  message.textContent = msg;
+  element.appendChild(message);
+
+  let timer;
+  if (options.action) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'notif-action';
+    button.textContent = options.action.label;
+    button.title = options.action.title || options.action.label;
+    button.onclick = () => {
+      clearTimeout(timer);
+      element.remove();
+      options.action.run();
+    };
+    element.appendChild(button);
+  }
+
   area.appendChild(element);
-  setTimeout(() => element.remove(), 3000);
+  timer = setTimeout(() => element.remove(), options.duration || (options.action ? 6000 : 3000));
+  return element;
+}
+
+function notifyUndo(msg) {
+  document.querySelectorAll('#notifArea .notif.has-action').forEach(element => element.remove());
+  return notify(msg, 'ok', {
+    duration: 6500,
+    action: { label: 'Desfazer', title: 'Desfazer última ação — Ctrl + Z', run: undoLastAction }
+  });
 }
 const ICONS = {
   copy: `<rect width="14" height="14" x="8" y="8" rx="2" ry="2" /> <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />`,
