@@ -388,3 +388,144 @@ function applyButtonReorderControls() {
     else disableButtonReorder(buttonWrap);
   });
 }
+
+// --- Pointer drag para touch/pen ------------------------------------
+// No mobile, o drag só começa após uma pressão curta e somente no Modo
+// Organização. Assim, rolar a página e tocar para copiar continuam seguros.
+
+let pointerDragCandidate = null;
+let pointerDragState = null;
+let pointerDragTimer = null;
+let suppressPointerClick = false;
+
+function clearPointerDragCandidate() {
+  clearTimeout(pointerDragTimer);
+  pointerDragTimer = null;
+  pointerDragCandidate = null;
+}
+
+function beginPointerDrag(candidate) {
+  if (!candidate?.element?.isConnected) return;
+  pointerDragState = candidate;
+  pointerDragCandidate = null;
+  suppressPointerClick = true;
+  hideButtonPreview();
+  candidate.element.classList.add('dragging', 'pointer-dragging');
+
+  if (candidate.type === 'button') {
+    dragEl = candidate.element;
+    placeholder = document.createElement('div');
+    placeholder.className = 'drag-placeholder';
+  } else {
+    draggingSectionEl = candidate.element;
+    isDraggingSection = true;
+  }
+
+  try { navigator.vibrate?.(18); } catch (_) {}
+}
+
+function updatePointerButtonDrag(x, y) {
+  const target = document.elementFromPoint(x, y);
+  const body = target?.closest('.section-body');
+  if (!body || !dragEl || !placeholder) return;
+  const targetButton = target.closest('.btn-wrap:not(.dragging)');
+  if (!targetButton) {
+    body.appendChild(placeholder);
+    return;
+  }
+  const rect = targetButton.getBoundingClientRect();
+  const insertAfter = y > rect.top + rect.height / 2
+    || (y >= rect.top && y <= rect.bottom && x > rect.left + rect.width / 2);
+  body.insertBefore(placeholder, insertAfter ? targetButton.nextSibling : targetButton);
+}
+
+function updatePointerSectionDrag(x, y) {
+  const target = document.elementFromPoint(x, y)?.closest('.section-wrap');
+  if (!target || target === draggingSectionEl) return;
+  const rect = target.getBoundingClientRect();
+  const ph = getSectionPlaceholder();
+  if (y < rect.top + rect.height / 2) target.before(ph);
+  else target.after(ph);
+}
+
+function finishPointerDrag(cancelled = false) {
+  if (!pointerDragState) return;
+  const { type, element } = pointerDragState;
+  let moved = false;
+
+  if (!cancelled && type === 'button' && placeholder?.parentNode) {
+    pushHistory();
+    placeholder.parentNode.insertBefore(element, placeholder);
+    moved = true;
+  } else if (!cancelled && type === 'section') {
+    const ph = document.querySelector('.section-drag-placeholder');
+    if (ph?.parentNode) {
+      pushHistory();
+      ph.parentNode.insertBefore(element, ph);
+      moved = true;
+    }
+  }
+
+  element.classList.remove('dragging', 'pointer-dragging');
+  placeholder?.remove();
+  sectionPlaceholderEl?.remove();
+  dragEl = null;
+  placeholder = null;
+  draggingSectionEl = null;
+  isDraggingSection = false;
+  pointerDragState = null;
+
+  if (moved) {
+    document.querySelectorAll('.section-body').forEach(body => updateSectionCount(body.dataset.section));
+    applyButtonReorderControls();
+    updateUnsavedChangesUI();
+  }
+  setTimeout(() => { suppressPointerClick = false; }, 0);
+}
+
+document.addEventListener('pointerdown', event => {
+  if (event.pointerType === 'mouse' || !editMode || event.button !== 0) return;
+  if (event.target.closest('.btn-edit, .btn-del, .blu-btn-move-horizontal, .section-move-controls, .section-collapse-btn, .section-add-btn')) return;
+
+  const button = event.target.closest('.btn-wrap');
+  const section = event.target.closest('.section-wrap');
+  if (!button && (!section || !shiftLocked)) return;
+  const element = button || section;
+
+  pointerDragCandidate = {
+    id: event.pointerId,
+    type: button ? 'button' : 'section',
+    element,
+    x: event.clientX,
+    y: event.clientY
+  };
+  pointerDragTimer = setTimeout(() => beginPointerDrag(pointerDragCandidate), 320);
+}, true);
+
+document.addEventListener('pointermove', event => {
+  if (pointerDragCandidate?.id === event.pointerId) {
+    const distance = Math.hypot(event.clientX - pointerDragCandidate.x, event.clientY - pointerDragCandidate.y);
+    if (distance > 10) clearPointerDragCandidate();
+    return;
+  }
+  if (!pointerDragState || pointerDragState.id !== event.pointerId) return;
+  event.preventDefault();
+  if (pointerDragState.type === 'button') updatePointerButtonDrag(event.clientX, event.clientY);
+  else updatePointerSectionDrag(event.clientX, event.clientY);
+}, { capture: true, passive: false });
+
+document.addEventListener('pointerup', event => {
+  if (pointerDragCandidate?.id === event.pointerId) clearPointerDragCandidate();
+  if (pointerDragState?.id === event.pointerId) finishPointerDrag(false);
+}, true);
+
+document.addEventListener('pointercancel', event => {
+  if (pointerDragCandidate?.id === event.pointerId) clearPointerDragCandidate();
+  if (pointerDragState?.id === event.pointerId) finishPointerDrag(true);
+}, true);
+
+document.addEventListener('click', event => {
+  if (!suppressPointerClick) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+}, true);

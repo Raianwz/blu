@@ -62,11 +62,11 @@ function getTextPreviewEl() {
   return textPreviewEl;
 }
 
-function showButtonPreview(button) {
+function showButtonPreview(button, force = false) {
   if (
     !textPreviewEnabled
     || !button.isConnected
-    || !button.matches(':hover')
+    || (!force && !button.matches(':hover'))
     || !button.dataset.preview
     || button.closest('.search-hidden')
     || document.querySelector('.btn-wrap.dragging')
@@ -108,6 +108,11 @@ function hideButtonPreview() {
 
 window.addEventListener('scroll', hideButtonPreview, true);
 window.addEventListener('resize', hideButtonPreview);
+document.addEventListener('pointerdown', event => {
+  if (textPreviewEl?.classList.contains('show') && !event.target.closest('.copy-btn')) {
+    hideButtonPreview();
+  }
+}, true);
 
 function renderAll(sectionsData) {
   const container = document.getElementById('sections');
@@ -184,6 +189,43 @@ function createBtnEl(button, sectionId) {
   copyBtn.addEventListener('mouseleave', () => {
     hideButtonPreview();
   });
+
+  let touchPreviewStart = null;
+  let touchPreviewShown = false;
+  copyBtn.addEventListener('pointerdown', event => {
+    if (event.pointerType === 'mouse' || editMode || !textPreviewEnabled) return;
+    touchPreviewShown = false;
+    touchPreviewStart = { id: event.pointerId, x: event.clientX, y: event.clientY };
+    clearTimeout(textPreviewTimer);
+    textPreviewTimer = setTimeout(() => {
+      if (!touchPreviewStart || touchPreviewStart.id !== event.pointerId) return;
+      textPreviewSource = copyBtn;
+      touchPreviewShown = true;
+      showButtonPreview(copyBtn, true);
+    }, 450);
+  });
+  copyBtn.addEventListener('pointermove', event => {
+    if (!touchPreviewStart || touchPreviewStart.id !== event.pointerId) return;
+    if (Math.hypot(event.clientX - touchPreviewStart.x, event.clientY - touchPreviewStart.y) > 10) {
+      touchPreviewStart = null;
+      clearTimeout(textPreviewTimer);
+    }
+  });
+  copyBtn.addEventListener('pointerup', event => {
+    if (touchPreviewStart?.id === event.pointerId) touchPreviewStart = null;
+    clearTimeout(textPreviewTimer);
+  });
+  copyBtn.addEventListener('pointercancel', () => {
+    touchPreviewStart = null;
+    touchPreviewShown = false;
+    hideButtonPreview();
+  });
+  copyBtn.addEventListener('click', event => {
+    if (!touchPreviewShown) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    touchPreviewShown = false;
+  }, true);
 
   const editBtn = document.createElement('button');
   editBtn.className = 'btn-edit';

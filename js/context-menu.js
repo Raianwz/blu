@@ -199,6 +199,15 @@ function getSectionContextMenuItems(section) {
 
 document.addEventListener('contextmenu', event => {
   const buttonWrap = event.target.closest('.btn-wrap');
+  const isTouchReorderGesture = ['touch', 'pen'].includes(event.pointerType)
+    && editMode
+    && (buttonWrap || (shiftLocked && event.target.closest('.section-wrap')));
+  if (isTouchReorderGesture) {
+    event.preventDefault();
+    closeContextMenu();
+    return;
+  }
+
   if (buttonWrap) {
     event.preventDefault();
     hideButtonPreview();

@@ -486,6 +486,32 @@ body.edit-mode .btn-wrap.dragging {
   cursor: grabbing;
 }
 
+.pointer-dragging {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+@media (pointer: coarse) {
+  .copy-btn,
+  .section-head button,
+  .blu-btn-move-horizontal {
+    min-height: 40px;
+  }
+
+  body.edit-mode .btn-wrap,
+  body.shift-locked .section-head {
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  body.edit-mode .copy-btn,
+  body.shift-locked .section-head {
+    touch-action: pan-y;
+  }
+}
+
 @keyframes shake {
 
   0%,
