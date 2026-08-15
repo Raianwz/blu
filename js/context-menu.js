@@ -3,6 +3,7 @@
 // ==========================================================
 
 let viewedButtonText = '';
+let viewedButtonId = '';
 let contextIdSequence = 0;
 
 function createContextMenuItem(label, icon, action, options = {}) {
@@ -87,6 +88,7 @@ function getContextButtonData(buttonWrap) {
 async function copyContextButtonText(buttonWrap) {
   try {
     await copyToClipboard(buttonWrap.dataset.text || '');
+    recordButtonCopy(buttonWrap.dataset.id);
     notify('Texto copiado!');
   } catch (error) {
     console.error('Erro ao copiar pelo menu de contexto:', error);
@@ -96,12 +98,14 @@ async function copyContextButtonText(buttonWrap) {
 
 function viewContextButton(buttonWrap) {
   const data = getContextButtonData(buttonWrap);
+  recordUserActivity('viewed', data.id);
   const title = document.getElementById('buttonViewTitle');
   const meta = document.getElementById('buttonViewMeta');
   const text = document.getElementById('buttonViewText');
   const visibilityLabels = { public: '🌎 Público', private: '🔒 Privado', other: 'Outro' };
 
   viewedButtonText = data.text;
+  viewedButtonId = data.id;
   title.textContent = `👁️ ${data.name}`;
   meta.textContent = [data.tag ? `Tag: ${data.tag}` : 'Sem tag', visibilityLabels[data.vis] || 'Outro'].join(' • ');
   text.textContent = data.text;
@@ -111,6 +115,7 @@ function viewContextButton(buttonWrap) {
 async function copyViewedButtonText() {
   try {
     await copyToClipboard(viewedButtonText);
+    recordButtonCopy(viewedButtonId);
     notify('Texto copiado!');
   } catch (error) {
     console.error('Erro ao copiar visualização:', error);
@@ -132,6 +137,7 @@ function duplicateContextButton(buttonWrap) {
 
   pushHistory();
   buttonWrap.after(createBtnEl(duplicate, section.dataset.id));
+  recordUserActivity('created', duplicate.id);
   updateSectionCount(section.dataset.id);
   applyButtonReorderControls();
   doSearch();
@@ -155,6 +161,7 @@ function duplicateContextSection(section) {
   pushHistory();
   const duplicatedSection = renderSection(duplicate, document.getElementById('sections'));
   section.after(duplicatedSection);
+  duplicate.buttons.forEach(button => recordUserActivity('created', button.id));
   applyButtonReorderControls();
   doSearch();
   updateToggleSectionsBtnLabel();
@@ -170,6 +177,7 @@ function getButtonContextMenuItems(buttonWrap) {
   return [
     createContextMenuItem('Copiar texto', 'copy', () => copyContextButtonText(buttonWrap)),
     createContextMenuItem('Visualizar botão', 'eye', () => viewContextButton(buttonWrap)),
+    createContextMenuItem(isFavoriteButton(buttonId) ? 'Remover dos favoritos' : 'Adicionar aos favoritos', 'star', () => toggleFavoriteButton(buttonId)),
     createContextMenuSeparator(),
     createContextMenuItem('Editar botão', 'pencil', () => openEditBtn(sectionId, buttonId)),
     createContextMenuItem('Duplicar botão', 'copy_plus', () => duplicateContextButton(buttonWrap)),

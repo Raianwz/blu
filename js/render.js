@@ -278,6 +278,7 @@ async function doCopy(text, btn) {
   try {
     btn.disabled = true;
     await copyToClipboard(text);
+    recordButtonCopy(btn.closest('.btn-wrap')?.dataset.id);
     btn.innerHTML = '✓ Copiado!';
     btn.classList.add('copied');
     notify('Copiado!');

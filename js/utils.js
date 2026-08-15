@@ -106,6 +106,7 @@ function notifyUndo(msg) {
   });
 }
 const ICONS = {
+  star: `<path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z" />`,
   undo: `<path d="M9 14 4 9l5-5" /> <path d="M4 9h9a7 7 0 1 1 0 14h-3" />`,
   redo: `<path d="m15 14 5-5-5-5" /> <path d="M20 9h-9a7 7 0 1 0 0 14h3" />`,
   copy: `<rect width="14" height="14" x="8" y="8" rx="2" ry="2" /> <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />`,

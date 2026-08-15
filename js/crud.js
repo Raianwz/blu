@@ -94,10 +94,12 @@ async function deleteSection(sectionId) {
       .map(button => button.dataset.tag)
       .filter(Boolean)
   );
-
   pushHistory();
+  const removedButtons = [...wrap.querySelectorAll('.btn-wrap')];
+  removedButtons.forEach(button => recordUserActivity('deleted', button.dataset.id));
   wrap.remove();
   affectedTags.forEach(removeTagIfOrphan);
+  pruneUserData();
   mobileHaptic('danger');
   notifyUndo('Seção removida!');
   updateToggleSectionsBtnLabel();
@@ -181,10 +183,12 @@ function saveBtn() {
     }
     const oldTag = old.dataset.tag;
     old.replaceWith(createBtnEl(button, currentSectionId));
+    recordUserActivity('edited', currentBtnId);
     if (oldTag && oldTag !== tag) removeTagIfOrphan(oldTag);
     notify('Botão atualizado!');
   } else {
     body.appendChild(createBtnEl(button, currentSectionId));
+    recordUserActivity('created', button.id);
     notify('Botão adicionado!');
   }
 
@@ -208,7 +212,9 @@ async function deleteBtn(sectionId, btnId) {
   const removedTag = target.dataset.tag;
 
   pushHistory();
+  recordUserActivity('deleted', btnId);
   target.remove();
+  removeButtonUserData(btnId);
   if (removedTag) removeTagIfOrphan(removedTag);
   updateSectionCount(sectionId);
   mobileHaptic('danger');
@@ -805,13 +811,40 @@ async function importData() {
       }
     }
 
-    if (!parsed.sections && !parsed.categories) throw new Error('Formato inválido: esperado "sections" ou "categories"');
+    if (parsed.format === 'blu-userdata') {
+      if (Number(parsed.version) > USERDATA_FORMAT_VERSION) throw new Error('backup de dados pessoais criado por uma versão mais nova');
+      const ok = await confirmDialog('Isso substituirá os favoritos e as estatísticas locais. Seus botões não serão alterados. Continuar?', { title: '📥 Importar dados pessoais', danger: true, confirmText: 'Importar' });
+      if (!ok) return;
+      replaceUserData(parsed.userdata, getCurrentButtonIds());
+      closeModal('importModal');
+      clearImportSource();
+      notify('Estatísticas e favoritos importados!');
+      return;
+    }
+
+    if (parsed.format === 'blu-appdata') {
+      if (Number(parsed.version) > USERDATA_FORMAT_VERSION) throw new Error('backup completo criado por uma versão mais nova');
+      if (!parsed.data?.sections && !parsed.data?.categories) throw new Error('backup completo sem dados de botões válidos');
+      const ok = await confirmDialog('Isso substituirá os botões, favoritos e estatísticas atuais. Os botões poderão ser recuperados com Ctrl+Z; os dados pessoais não. Continuar?', { title: '📥 Importar backup do Blû', danger: true, confirmText: 'Importar' });
+      if (!ok) return;
+      pushHistory();
+      restoreState(normalizeImportedData(parsed.data));
+      replaceUserData(parsed.userdata, getCurrentButtonIds());
+      markCurrentStateAsExported();
+      closeModal('importModal');
+      clearImportSource();
+      notify('Dados, estatísticas e favoritos importados!');
+      return;
+    }
+
+    if (!parsed.sections && !parsed.categories) throw new Error('Formato inválido: esperado "sections", "categories" ou um backup do Blû');
 
     const ok = await confirmDialog('Isso substituirá todos os dados atuais. Continuar?', { title: '📥 Importar JSON', danger: true, confirmText: 'Importar' });
     if (!ok) return;
 
     pushHistory();
     restoreState(normalizeImportedData(parsed));
+    pruneUserData();
     markCurrentStateAsExported();
     closeModal('importModal');
     clearImportSource();
@@ -844,6 +877,7 @@ async function clearAll() {
   // ferramentas hospedadas na mesma origem. Num próximo F5, o demo e as
   // preferências padrão voltam.
   clearBluLocalStorage();
+  resetUserData();
 
   // Reflete imediatamente os padrões na interface sem recriar as
   // preferências que acabaram de ser removidas.

@@ -311,7 +311,7 @@ document.addEventListener('keydown', event => {
   }
 
   if (event.key === 'Escape') {
-    ['btnModal', 'sectionModal', 'tagModal', 'importModal', 'dialogModal', 'shortcutsModal', 'shareModal', 'buttonViewModal', 'jsonModal'].forEach(closeModal);
+    ['btnModal', 'sectionModal', 'tagModal', 'importModal', 'dialogModal', 'shortcutsModal', 'shareModal', 'buttonViewModal', 'jsonModal', 'favoritesModal', 'statisticsModal'].forEach(closeModal);
     document.getElementById('menuOverlay').classList.remove('open');
   }
 
@@ -336,4 +336,6 @@ initTextPreviewPreference();
 initSearchGuidance();
 registerServiceWorker();
 init();
+pruneUserData();
+initContentDashboard();
 initQuickActions();
