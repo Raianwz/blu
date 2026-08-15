@@ -362,7 +362,7 @@ body {
 }
 
 .content-view-switcher {
-  position: fixed;
+  position: absolute;
   top: 48px;
   left: 50%;
   z-index: 498;
