@@ -173,6 +173,7 @@ function toggleOrganizeMode() {
   if (!editMode) return; // botão fica desabilitado nesse caso; defesa extra
   shiftLocked = !shiftLocked;
   updateShiftMode();
+  mobileHaptic('toggle');
   notify(shiftLocked ? 'Modo Organização ativado' : 'Modo Organização desativado');
 }
 
@@ -423,7 +424,7 @@ function beginPointerDrag(candidate) {
     isDraggingSection = true;
   }
 
-  try { navigator.vibrate?.(18); } catch (_) {}
+  mobileHaptic('dragStart');
 }
 
 function updatePointerButtonDrag(x, y) {
@@ -481,6 +482,7 @@ function finishPointerDrag(cancelled = false) {
     document.querySelectorAll('.section-body').forEach(body => updateSectionCount(body.dataset.section));
     applyButtonReorderControls();
     updateUnsavedChangesUI();
+    mobileHaptic('success');
     notifyUndo(type === 'button' ? 'Botão movido!' : 'Seção movida!');
   }
   setTimeout(() => { suppressPointerClick = false; }, 0);

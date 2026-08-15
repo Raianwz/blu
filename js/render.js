@@ -299,6 +299,7 @@ async function copyToClipboard(text) {
 
   if (navigator.clipboard && window.isSecureContext) {
     await navigator.clipboard.writeText(text);
+    mobileHaptic('tap');
     return;
   }
 
@@ -319,6 +320,7 @@ async function copyToClipboard(text) {
   document.body.removeChild(textArea);
 
   if (!success) throw new Error('Não foi possível copiar o texto');
+  mobileHaptic('tap');
 }
 
 // --- Expandir/recolher seções -------------------------------

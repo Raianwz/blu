@@ -336,6 +336,7 @@ function undoLastAction() {
     const previousState = JSON.parse(previousStateString);
     restoreState(previousState);
     if (typeof updateQuickActionsUI === 'function') updateQuickActionsUI();
+    mobileHaptic('success');
     notify('Desfeito!');
   } catch (error) {
     console.error('Erro ao desfazer:', error);
@@ -365,6 +366,7 @@ function redoLastAction() {
     const nextState = JSON.parse(nextStateString);
     restoreState(nextState);
     if (typeof updateQuickActionsUI === 'function') updateQuickActionsUI();
+    mobileHaptic('success');
     notify('Refeito!');
   } catch (error) {
     console.error('Erro ao refazer:', error);

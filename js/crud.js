@@ -98,6 +98,7 @@ async function deleteSection(sectionId) {
   pushHistory();
   wrap.remove();
   affectedTags.forEach(removeTagIfOrphan);
+  mobileHaptic('danger');
   notifyUndo('Seção removida!');
   updateToggleSectionsBtnLabel();
   updateUnsavedChangesUI();
@@ -210,6 +211,7 @@ async function deleteBtn(sectionId, btnId) {
   target.remove();
   if (removedTag) removeTagIfOrphan(removedTag);
   updateSectionCount(sectionId);
+  mobileHaptic('danger');
   notifyUndo('Botão removido!');
   doSearch();
   updateUnsavedChangesUI();

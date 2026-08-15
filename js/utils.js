@@ -50,6 +50,26 @@ function isTypingField(element) {
   return tag === 'input' || tag === 'textarea' || tag === 'select' || element.isContentEditable;
 }
 
+const mobileHapticsMedia = window.matchMedia('(max-width: 760px) and (pointer: coarse)');
+const MOBILE_HAPTIC_PATTERNS = {
+  tap: 12,
+  toggle: 18,
+  dragStart: 22,
+  success: [12, 28, 12],
+  danger: [28, 38, 28]
+};
+
+// Melhoria progressiva: navegadores sem Vibration API simplesmente ignoram.
+function mobileHaptic(type = 'tap') {
+  if (!mobileHapticsMedia.matches || typeof navigator.vibrate !== 'function') return false;
+  const pattern = MOBILE_HAPTIC_PATTERNS[type] || MOBILE_HAPTIC_PATTERNS.tap;
+  try {
+    return navigator.vibrate(pattern);
+  } catch (_) {
+    return false;
+  }
+}
+
 function notify(msg, type = 'ok', options = {}) {
   const area = document.getElementById('notifArea');
   const element = document.createElement('div');
