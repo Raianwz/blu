@@ -95,11 +95,19 @@ function renderFavoritesShelf() {
   if (!shelf || !list || !count) return;
   const entries = userData.favorites.map(getButtonInfo).filter(Boolean);
   const collapsed = isFavoritesShelfCollapsed();
-  shelf.hidden = !isFavoritesShelfEnabled() || entries.length === 0 || activeContentView !== 'home';
+  const searchActive = !!document.getElementById('searchInput')?.value.trim();
+  shelf.hidden = !isFavoritesShelfEnabled() || entries.length === 0 || activeContentView !== 'home' || searchActive;
   shelf.classList.toggle('collapsed', collapsed);
   shelf.querySelector('.favorites-shelf-head')?.setAttribute('aria-expanded', String(!collapsed));
   count.textContent = entries.length;
   list.replaceChildren(...entries.map(info => createFavoriteCard(info)));
+}
+
+function updateFavoritesShelfSearchState(searching) {
+  const shelf = document.getElementById('favoritesShelf');
+  if (!shelf) return;
+  if (searching) shelf.hidden = true;
+  else renderFavoritesShelf();
 }
 
 function createUsageRow(info, stats) {

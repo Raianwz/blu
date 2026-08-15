@@ -154,6 +154,7 @@ function doSearch(options = {}) {
   const raw = document.getElementById('searchInput').value.trim();
   const q = normalizeSearchText(raw);
   const type = document.getElementById('searchType').value;
+  if (typeof updateFavoritesShelfSearchState === 'function') updateFavoritesShelfSearchState(!!raw);
 
   if (!raw) {
     if (collapseOnClear) {
