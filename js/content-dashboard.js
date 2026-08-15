@@ -68,14 +68,15 @@ function toggleFavoritesShelfCollapsed() {
 
 function createFavoriteCard(info, removable = false) {
   const card = document.createElement('div');
-  card.className = 'favorite-card';
+  card.className = `favorite-card vis-${info.vis}`;
   card.dataset.favoriteId = info.id;
   const copy = document.createElement('button');
   copy.type = 'button';
   copy.className = 'favorite-card-copy';
-  copy.innerHTML = `<strong>${escapeHtml(info.name)}</strong><small>${escapeHtml(info.section)}</small>`;
-  copy.title = `Copiar ${info.name} • ${info.section}`;
+  const visibilityIcon = info.vis === 'public' ? '🌎' : info.vis === 'private' ? '🔒' : '';
+  copy.innerHTML = `<strong>${visibilityIcon ? `<span>${visibilityIcon}</span> ` : ''}${escapeHtml(info.name)}</strong><small>${escapeHtml(info.section)}</small>`;
   copy.onclick = () => copyUserDataButton(info.id);
+  bindButtonTextPreview(copy, info.text, info.vis);
   card.appendChild(copy);
   if (removable || editMode) {
     const remove = document.createElement('button');

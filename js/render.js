@@ -16,13 +16,14 @@ function updateTextPreviewButtonUI() {
 
 function getCopyButtonTitle(button) {
   const wrap = button.closest('.btn-wrap');
-  const text = wrap?.dataset.text || '';
+  const text = button.dataset.fullText || wrap?.dataset.text || '';
   if (!text) return '';
-  return wrap?.dataset.vis === 'private' ? `🔒 Privado\n\n${text}` : text;
+  const visibility = button.dataset.vis || wrap?.dataset.vis;
+  return visibility === 'private' ? `🔒 Privado\n\n${text}` : text;
 }
 
 function syncCopyButtonTitles() {
-  document.querySelectorAll('.copy-btn').forEach(button => {
+  document.querySelectorAll('.copy-btn, .favorite-card-copy').forEach(button => {
     if (textPreviewEnabled) {
       button.removeAttribute('title');
     } else {
@@ -106,10 +107,70 @@ function hideButtonPreview() {
   textPreviewEl?.classList.remove('show');
 }
 
+function bindButtonTextPreview(button, text, visibility = 'other') {
+  button.dataset.fullText = text || '';
+  button.dataset.vis = visibility;
+  button.dataset.preview = visibility === 'private'
+    ? `🔒 Privado\n\n${previewText(text)}`
+    : previewText(text);
+
+  if (!textPreviewEnabled) {
+    const title = getCopyButtonTitle(button);
+    if (title) button.title = title;
+  }
+
+  button.addEventListener('mouseenter', () => {
+    if (!textPreviewEnabled) return;
+    hideButtonPreview();
+    textPreviewSource = button;
+    textPreviewTimer = setTimeout(() => {
+      if (textPreviewSource === button) showButtonPreview(button);
+    }, 700);
+  });
+  button.addEventListener('mouseleave', hideButtonPreview);
+
+  let touchPreviewStart = null;
+  let touchPreviewShown = false;
+  button.addEventListener('pointerdown', event => {
+    if (event.pointerType === 'mouse' || editMode || !textPreviewEnabled) return;
+    touchPreviewShown = false;
+    touchPreviewStart = { id: event.pointerId, x: event.clientX, y: event.clientY };
+    clearTimeout(textPreviewTimer);
+    textPreviewTimer = setTimeout(() => {
+      if (!touchPreviewStart || touchPreviewStart.id !== event.pointerId) return;
+      textPreviewSource = button;
+      touchPreviewShown = true;
+      showButtonPreview(button, true);
+    }, 450);
+  });
+  button.addEventListener('pointermove', event => {
+    if (!touchPreviewStart || touchPreviewStart.id !== event.pointerId) return;
+    if (Math.hypot(event.clientX - touchPreviewStart.x, event.clientY - touchPreviewStart.y) > 10) {
+      touchPreviewStart = null;
+      clearTimeout(textPreviewTimer);
+    }
+  });
+  button.addEventListener('pointerup', event => {
+    if (touchPreviewStart?.id === event.pointerId) touchPreviewStart = null;
+    clearTimeout(textPreviewTimer);
+  });
+  button.addEventListener('pointercancel', () => {
+    touchPreviewStart = null;
+    touchPreviewShown = false;
+    hideButtonPreview();
+  });
+  button.addEventListener('click', event => {
+    if (!touchPreviewShown) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    touchPreviewShown = false;
+  }, true);
+}
+
 window.addEventListener('scroll', hideButtonPreview, true);
 window.addEventListener('resize', hideButtonPreview);
 document.addEventListener('pointerdown', event => {
-  if (textPreviewEl?.classList.contains('show') && !event.target.closest('.copy-btn')) {
+  if (textPreviewEl?.classList.contains('show') && !event.target.closest('.copy-btn, .favorite-card-copy')) {
     hideButtonPreview();
   }
 }, true);
@@ -169,63 +230,9 @@ function createBtnEl(button, sectionId) {
 
   const copyBtn = document.createElement('button');
   copyBtn.className = `copy-btn ${visClass}`;
-  copyBtn.dataset.preview = vis === 'private'
-    ? `🔒 Privado\n\n${previewText(wrap.dataset.text)}`
-    : previewText(wrap.dataset.text);
-  if (!textPreviewEnabled && wrap.dataset.text) {
-    copyBtn.title = vis === 'private' ? `🔒 Privado\n\n${wrap.dataset.text}` : wrap.dataset.text;
-  }
   copyBtn.innerHTML = `${visIcon ? `<span>${visIcon}</span>` : ''}<span class="btn-label">${escapeHtml(button.name || '')}</span>`;
   copyBtn.onclick = () => doCopy(wrap.dataset.text || '', copyBtn);
-
-  copyBtn.addEventListener('mouseenter', () => {
-    if (!textPreviewEnabled) return;
-    hideButtonPreview();
-    textPreviewSource = copyBtn;
-    textPreviewTimer = setTimeout(() => {
-      if (textPreviewSource === copyBtn) showButtonPreview(copyBtn);
-    }, 700);
-  });
-  copyBtn.addEventListener('mouseleave', () => {
-    hideButtonPreview();
-  });
-
-  let touchPreviewStart = null;
-  let touchPreviewShown = false;
-  copyBtn.addEventListener('pointerdown', event => {
-    if (event.pointerType === 'mouse' || editMode || !textPreviewEnabled) return;
-    touchPreviewShown = false;
-    touchPreviewStart = { id: event.pointerId, x: event.clientX, y: event.clientY };
-    clearTimeout(textPreviewTimer);
-    textPreviewTimer = setTimeout(() => {
-      if (!touchPreviewStart || touchPreviewStart.id !== event.pointerId) return;
-      textPreviewSource = copyBtn;
-      touchPreviewShown = true;
-      showButtonPreview(copyBtn, true);
-    }, 450);
-  });
-  copyBtn.addEventListener('pointermove', event => {
-    if (!touchPreviewStart || touchPreviewStart.id !== event.pointerId) return;
-    if (Math.hypot(event.clientX - touchPreviewStart.x, event.clientY - touchPreviewStart.y) > 10) {
-      touchPreviewStart = null;
-      clearTimeout(textPreviewTimer);
-    }
-  });
-  copyBtn.addEventListener('pointerup', event => {
-    if (touchPreviewStart?.id === event.pointerId) touchPreviewStart = null;
-    clearTimeout(textPreviewTimer);
-  });
-  copyBtn.addEventListener('pointercancel', () => {
-    touchPreviewStart = null;
-    touchPreviewShown = false;
-    hideButtonPreview();
-  });
-  copyBtn.addEventListener('click', event => {
-    if (!touchPreviewShown) return;
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    touchPreviewShown = false;
-  }, true);
+  bindButtonTextPreview(copyBtn, wrap.dataset.text, vis);
 
   const editBtn = document.createElement('button');
   editBtn.className = 'btn-edit';

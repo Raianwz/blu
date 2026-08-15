@@ -458,13 +458,25 @@ body.content-dashboard-enabled .content-dashboard {
 .favorite-card {
   position: relative;
   display: flex;
-  min-width: 190px;
-  max-width: 280px;
+  min-width: 180px;
+  max-width: 250px;
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: 10px;
-  background: var(--surface2);
+  color: white;
   box-shadow: 0 1px 4px var(--shadow);
+}
+
+.favorite-card.vis-public {
+  background: linear-gradient(135deg, var(--btn-public-1), var(--btn-public-2));
+}
+
+.favorite-card.vis-private {
+  background: linear-gradient(135deg, var(--btn-private-1), var(--btn-private-2));
+}
+
+.favorite-card.vis-other {
+  background: linear-gradient(135deg, var(--btn-default-1), var(--btn-default-2));
 }
 
 .favorite-card-copy {
@@ -477,7 +489,7 @@ body.content-dashboard-enabled .content-dashboard {
   padding: 10px 12px;
   border: 0;
   background: transparent;
-  color: var(--text);
+  color: white;
   cursor: pointer;
   text-align: left;
 }
@@ -491,16 +503,16 @@ body.content-dashboard-enabled .content-dashboard {
 }
 
 .favorite-card-copy small {
-  color: var(--text2);
+  color: rgba(255, 255, 255, .82);
   font-size: 11px;
 }
 
 .favorite-card-remove {
   width: 34px;
   border: 0;
-  border-left: 1px solid var(--border);
-  background: transparent;
-  color: var(--red);
+  border-left: 1px solid rgba(255, 255, 255, .2);
+  background: rgba(20, 22, 32, .24);
+  color: #fff;
   cursor: pointer;
   font-size: 18px;
 }
