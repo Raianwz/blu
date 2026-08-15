@@ -2,6 +2,100 @@
 // Pesquisa (nome, tag, @seção)
 // ==========================================================
 
+const SEARCH_ALL_PLACEHOLDERS = [
+  'Pesquisar...',
+  'Pesquisar por nome',
+  'Pesquisar por tag ou grupo',
+  'Pesquisar por @seção',
+  'Pesquisar por "texto"',
+  'Pesquisar por nome ou tag'
+];
+const SEARCH_TYPE_PLACEHOLDERS = {
+  name: 'Pesquisar por nome...',
+  tag: 'Pesquisar por tag ou grupo...',
+  category: 'Pesquisar por seção...',
+  text: 'Pesquisar no conteúdo dos botões...'
+};
+const desktopSearchGuidanceMedia = window.matchMedia('(min-width: 761px) and (hover: hover) and (pointer: fine)');
+const reducedMotionMedia = window.matchMedia('(prefers-reduced-motion: reduce)');
+let searchPlaceholderIndex = 0;
+let searchPlaceholderTimer = null;
+let searchPlaceholderSwapTimer = null;
+
+function stopSearchPlaceholderRotation() {
+  clearInterval(searchPlaceholderTimer);
+  clearTimeout(searchPlaceholderSwapTimer);
+  searchPlaceholderTimer = null;
+  searchPlaceholderSwapTimer = null;
+  document.getElementById('searchInput')?.classList.remove('search-placeholder-changing');
+}
+
+function setSearchPlaceholder(text, animate = false) {
+  const input = document.getElementById('searchInput');
+  if (!input) return;
+  clearTimeout(searchPlaceholderSwapTimer);
+
+  if (!animate) {
+    input.classList.remove('search-placeholder-changing');
+    input.placeholder = text;
+    return;
+  }
+
+  input.classList.add('search-placeholder-changing');
+  searchPlaceholderSwapTimer = setTimeout(() => {
+    input.placeholder = text;
+    input.classList.remove('search-placeholder-changing');
+    searchPlaceholderSwapTimer = null;
+  }, 150);
+}
+
+function updateSearchGuidance() {
+  const input = document.getElementById('searchInput');
+  const type = document.getElementById('searchType')?.value || 'all';
+  if (!input) return;
+
+  stopSearchPlaceholderRotation();
+
+  if (type !== 'all') {
+    setSearchPlaceholder(SEARCH_TYPE_PLACEHOLDERS[type] || 'Pesquisar...');
+    return;
+  }
+
+  if (!desktopSearchGuidanceMedia.matches) {
+    setSearchPlaceholder('Pesquisar...');
+    return;
+  }
+
+  if (reducedMotionMedia.matches) {
+    setSearchPlaceholder('Pesquisar por nome, tag, @seção ou "texto"...');
+    return;
+  }
+
+  setSearchPlaceholder(SEARCH_ALL_PLACEHOLDERS[searchPlaceholderIndex]);
+  if (input.matches(':focus') || input.value) return;
+
+  searchPlaceholderTimer = setInterval(() => {
+    searchPlaceholderIndex = (searchPlaceholderIndex + 1) % SEARCH_ALL_PLACEHOLDERS.length;
+    setSearchPlaceholder(SEARCH_ALL_PLACEHOLDERS[searchPlaceholderIndex], true);
+  }, 2800);
+}
+
+function initSearchGuidance() {
+  const input = document.getElementById('searchInput');
+  const type = document.getElementById('searchType');
+  if (!input || !type) return;
+
+  input.addEventListener('focus', stopSearchPlaceholderRotation);
+  input.addEventListener('blur', updateSearchGuidance);
+  input.addEventListener('input', () => {
+    if (input.value) stopSearchPlaceholderRotation();
+  });
+  type.addEventListener('change', updateSearchGuidance);
+  desktopSearchGuidanceMedia.addEventListener('change', updateSearchGuidance);
+  reducedMotionMedia.addEventListener('change', updateSearchGuidance);
+  updateSearchGuidance();
+}
+
 function getQuotedTextQuery(raw) {
   if (raw.length < 2 || !raw.startsWith('"') || !raw.endsWith('"')) return null;
   return raw.slice(1, -1).trim();

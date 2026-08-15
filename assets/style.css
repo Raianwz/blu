@@ -126,6 +126,15 @@ body {
   border-color: var(--accent1);
 }
 
+#searchInput::placeholder {
+  opacity: 1;
+  transition: opacity .15s ease;
+}
+
+#searchInput.search-placeholder-changing::placeholder {
+  opacity: 0;
+}
+
 #searchType {
   padding: 6px 10px;
   border: 1.5px solid var(--border);

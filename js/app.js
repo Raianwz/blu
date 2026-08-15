@@ -333,6 +333,7 @@ migrateLegacySettings();
 initTheme();
 initDragPreviewPreference();
 initTextPreviewPreference();
+initSearchGuidance();
 registerServiceWorker();
 init();
 initQuickActions();
