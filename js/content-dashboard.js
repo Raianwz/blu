@@ -69,6 +69,7 @@ function toggleFavoritesShelfCollapsed() {
 function createFavoriteCard(info, removable = false) {
   const card = document.createElement('div');
   card.className = 'favorite-card';
+  card.dataset.favoriteId = info.id;
   const copy = document.createElement('button');
   copy.type = 'button';
   copy.className = 'favorite-card-copy';
@@ -76,7 +77,7 @@ function createFavoriteCard(info, removable = false) {
   copy.title = `Copiar ${info.name} • ${info.section}`;
   copy.onclick = () => copyUserDataButton(info.id);
   card.appendChild(copy);
-  if (removable) {
+  if (removable || editMode) {
     const remove = document.createElement('button');
     remove.type = 'button';
     remove.className = 'favorite-card-remove';
@@ -192,3 +193,19 @@ function initContentDashboard() {
   showContentView('home');
   renderUserDataPanels();
 }
+
+document.addEventListener('contextmenu', event => {
+  const card = event.target.closest('.favorite-card');
+  if (!card) return;
+  const buttonId = card.dataset.favoriteId;
+  const info = getButtonInfo(buttonId);
+  if (!info) return;
+  event.preventDefault();
+  const sourceButton = document.querySelector(`.btn-wrap[data-id="${cssEscape(buttonId)}"]`);
+  openContextMenu([
+    createContextMenuItem('Copiar texto', 'copy', () => copyUserDataButton(buttonId)),
+    createContextMenuItem('Visualizar botão', 'eye', () => viewContextButton(sourceButton)),
+    createContextMenuSeparator(),
+    createContextMenuItem('Remover dos favoritos', 'star', () => toggleFavoriteButton(buttonId), { danger: true })
+  ], event.clientX, event.clientY, card);
+});

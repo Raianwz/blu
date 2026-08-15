@@ -79,6 +79,7 @@ function toggleEditMode() {
   button.classList.toggle('active', editMode);
 
   updateShiftMode();
+  renderFavoritesShelf();
   notify(editMode ? 'Modo edição ativado' : 'Modo edição desativado');
 }
 
