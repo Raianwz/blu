@@ -1745,6 +1745,12 @@ body.debug-mode-minimized #backupBanner { bottom: 58px; }
     flex-direction: row-reverse;
   }
 
+  body:has(.modal-bg.open) .quick-actions,
+  body:has(.modal-bg.open) #backupBanner,
+  body:has(.modal-bg.open) #notifArea {
+    z-index: 799;
+  }
+
   .quick-action-items {
     display: flex;
     width: max-content;
