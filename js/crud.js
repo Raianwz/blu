@@ -878,6 +878,9 @@ async function clearAll() {
   // preferências padrão voltam.
   clearBluLocalStorage();
   resetUserData();
+  updateContentPreferenceButtons();
+  updateContentViewSwitcher();
+  renderFavoritesShelf();
 
   // Reflete imediatamente os padrões na interface sem recriar as
   // preferências que acabaram de ser removidas.

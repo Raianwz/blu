@@ -16,18 +16,28 @@ function isFavoritesShelfCollapsed() {
   return getSetting('favoritesShelfCollapsed', 'off') === 'on';
 }
 
+function isFavoriteContextMenuEnabled() {
+  return getSetting('favoriteContextMenu', 'on') !== 'off';
+}
+
 function updateContentPreferenceButtons() {
   const shelfButton = document.getElementById('favoritesShelfBtn');
   const dashboardButton = document.getElementById('contentDashboardBtn');
+  const contextButton = document.getElementById('favoriteContextMenuBtn');
   const shelfEnabled = isFavoritesShelfEnabled();
   const dashboardEnabled = isContentDashboardEnabled();
   if (shelfButton) {
     shelfButton.classList.toggle('active', shelfEnabled);
-    shelfButton.querySelector('.menu-btn-label').textContent = `Favoritos no Início: ${shelfEnabled ? 'ON' : 'OFF'}`;
+    shelfButton.querySelector('.menu-btn-label').textContent = `Exibir Favoritos: ${shelfEnabled ? 'ON' : 'OFF'}`;
   }
   if (dashboardButton) {
     dashboardButton.classList.toggle('active', dashboardEnabled);
-    dashboardButton.querySelector('.menu-btn-label').textContent = `Painel de Conteúdo: ${dashboardEnabled ? 'ON' : 'OFF'}`;
+    dashboardButton.querySelector('.menu-btn-label').textContent = `Aba de Estatísticas: ${dashboardEnabled ? 'ON' : 'OFF'}`;
+  }
+  if (contextButton) {
+    const enabled = isFavoriteContextMenuEnabled();
+    contextButton.classList.toggle('active', enabled);
+    contextButton.querySelector('.menu-btn-label').textContent = `Favoritar pelo Menu: ${enabled ? 'ON' : 'OFF'}`;
   }
 }
 
@@ -43,6 +53,11 @@ function toggleContentDashboardPreference() {
   if (!enabled) showContentView('home');
   updateContentPreferenceButtons();
   updateContentViewSwitcher();
+}
+
+function toggleFavoriteContextMenuPreference() {
+  setSetting('favoriteContextMenu', isFavoriteContextMenuEnabled() ? 'off' : 'on');
+  updateContentPreferenceButtons();
 }
 
 function toggleFavoritesShelfCollapsed() {
@@ -147,9 +162,7 @@ function renderContentDashboard() {
 function updateContentViewSwitcher() {
   const enabled = isContentDashboardEnabled();
   const switcher = document.getElementById('contentViewSwitcher');
-  const contentMenu = document.querySelector('[data-submenu="conteudo"]')?.closest('.menu-submenu');
   if (switcher) switcher.hidden = !enabled;
-  if (contentMenu) contentMenu.hidden = !enabled;
   document.body.classList.toggle('content-dashboard-enabled', enabled);
 }
 

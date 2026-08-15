@@ -174,16 +174,21 @@ function getButtonContextMenuItems(buttonWrap) {
   const sectionId = section?.dataset.id;
   const buttonId = buttonWrap.dataset.id;
 
-  return [
+  const items = [
     createContextMenuItem('Copiar texto', 'copy', () => copyContextButtonText(buttonWrap)),
     createContextMenuItem('Visualizar botão', 'eye', () => viewContextButton(buttonWrap)),
-    createContextMenuItem(isFavoriteButton(buttonId) ? 'Remover dos favoritos' : 'Adicionar aos favoritos', 'star', () => toggleFavoriteButton(buttonId)),
     createContextMenuSeparator(),
     createContextMenuItem('Editar botão', 'pencil', () => openEditBtn(sectionId, buttonId)),
-    createContextMenuItem('Duplicar botão', 'copy_plus', () => duplicateContextButton(buttonWrap)),
+    createContextMenuItem('Duplicar botão', 'copy_plus', () => duplicateContextButton(buttonWrap))
+  ];
+  if (isFavoriteContextMenuEnabled()) {
+    items.push(createContextMenuItem(isFavoriteButton(buttonId) ? 'Remover dos favoritos' : 'Adicionar aos favoritos', 'star', () => toggleFavoriteButton(buttonId)));
+  }
+  items.push(
     createContextMenuSeparator(),
     createContextMenuItem('Excluir botão', 'trash_2', () => deleteBtn(sectionId, buttonId), { danger: true })
-  ];
+  );
+  return items;
 }
 
 function getSectionContextMenuItems(section) {

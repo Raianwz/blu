@@ -32,7 +32,7 @@
 
   <nav id="contentViewSwitcher" class="content-view-switcher" aria-label="Alternar visualização" hidden>
     <button id="homeViewBtn" class="active" type="button" onclick="showContentView('home')">Início</button>
-    <button id="dashboardViewBtn" type="button" onclick="showContentView('dashboard')">Conteúdo</button>
+    <button id="dashboardViewBtn" type="button" onclick="showContentView('dashboard')">Estatísticas</button>
   </nav>
 
   <div id="menuOverlay">
@@ -45,13 +45,6 @@
     </div>
 
     <div class="menu-sep"></div>
-
-    <div class="menu-submenu">
-      <button class="menu-submenu-toggle" type="button" data-submenu="conteudo" onclick="toggleSubmenu('conteudo')" aria-expanded="false" aria-controls="submenu-conteudo"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.21 15.89A10 10 0 1 1 8.11 2.99" /><path d="M22 12A10 10 0 0 0 12 2v10z" /></svg><span class="menu-btn-label">Conteúdo</span><svg class="menu-icon chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg></button>
-      <div class="menu-submenu-body" id="submenu-conteudo">
-        <button class="menu-btn" onclick="showContentView('dashboard')" title="Abrir favoritos, estatísticas e backups"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6" /><path d="M16 13H8" /><path d="M16 17H8" /><path d="M10 9H8" /></svg><span class="menu-btn-label">Painel</span></button>
-      </div>
-    </div>
 
     <div class="menu-submenu">
       <button class="menu-submenu-toggle" type="button" data-submenu="dados" onclick="toggleSubmenu('dados')" aria-expanded="false" aria-controls="submenu-dados"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3" /> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /> <path d="m7 10 5 5 5-5" /></svg><span class="menu-btn-label">Dados</span><span class="menu-btn-dot" id="dadosSubmenuDot" aria-hidden="true"></span><svg class="menu-icon chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg></button>
@@ -69,8 +62,9 @@
         <button class="menu-btn" id="textPreviewBtn" onclick="toggleTextPreview()" title="Ativar/desativar a prévia do texto ao passar o mouse"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" /><circle cx="12" cy="12" r="3" /></svg><span class="menu-btn-label">Prévia de Texto: ON</span></button>
         <button class="menu-btn" id="dragPreviewBtn" onclick="toggleDragPreview()" title="Mostrar uma prévia de onde o item vai cair ao arrastar"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /> <circle cx="12" cy="12" r="6" /> <circle cx="12" cy="12" r="2" /></svg><span class="menu-btn-label">Mostrar Destino: OFF</span></button>
         <button class="menu-btn" id="hideVersionBtn" onclick="toggleVersionVisibility()" title="Esconde a marca/versão no canto da tela (não fica salvo — volta ao recarregar a página)"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49" /> <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242" /> <path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143" /> <path d="m2 2 20 20" /></svg><span class="menu-btn-label">Ocultar Marca/Versão: OFF</span></button>
-        <button class="menu-btn" id="favoritesShelfBtn" onclick="toggleFavoritesShelfPreference()" title="Mostrar favoritos no topo da tela inicial"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z" /></svg><span class="menu-btn-label">Favoritos no Início: ON</span></button>
-        <button class="menu-btn" id="contentDashboardBtn" onclick="toggleContentDashboardPreference()" title="Habilitar a página secundária de conteúdo"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.21 15.89A10 10 0 1 1 8.11 2.99" /><path d="M22 12A10 10 0 0 0 12 2v10z" /></svg><span class="menu-btn-label">Painel de Conteúdo: ON</span></button>
+        <button class="menu-btn" id="favoritesShelfBtn" onclick="toggleFavoritesShelfPreference()" title="Mostrar favoritos no topo da tela inicial"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z" /></svg><span class="menu-btn-label">Exibir Favoritos: ON</span></button>
+        <button class="menu-btn" id="contentDashboardBtn" onclick="toggleContentDashboardPreference()" title="Habilitar a página secundária de estatísticas"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.21 15.89A10 10 0 1 1 8.11 2.99" /><path d="M22 12A10 10 0 0 0 12 2v10z" /></svg><span class="menu-btn-label">Aba de Estatísticas: ON</span></button>
+        <button class="menu-btn" id="favoriteContextMenuBtn" onclick="toggleFavoriteContextMenuPreference()" title="Mostrar a ação de favoritar no menu de contexto dos botões"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h.01" /><path d="M3 18h.01" /><path d="M3 6h.01" /><path d="M8 12h13" /><path d="M8 18h13" /><path d="M8 6h13" /></svg><span class="menu-btn-label">Favoritar pelo Menu: ON</span></button>
       </div>
     </div>
 
@@ -260,7 +254,7 @@
 
   <main id="contentDashboard" class="content-dashboard" hidden>
     <header class="content-dashboard-header">
-      <div><span class="content-dashboard-kicker">Dados locais</span><h1>Painel de Conteúdo</h1></div>
+      <div><span class="content-dashboard-kicker">Dados locais</span><h1>Métricas do Blû</h1></div>
       <button class="mbtn ghost" type="button" onclick="showContentView('home')">Voltar ao início</button>
     </header>
     <div id="dashboardMetricCards" class="dashboard-metric-cards"></div>
