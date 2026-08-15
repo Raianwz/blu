@@ -1708,6 +1708,139 @@ body.debug-mode-minimized #backupBanner { bottom: 58px; }
   background: var(--red);
 }
 
+/* Ações rápidas: ocultas por padrão e liberadas somente em mobile touch. */
+.quick-actions {
+  display: none;
+}
+
+.quick-actions[hidden] {
+  display: none !important;
+}
+
+@media (max-width: 760px) and (pointer: coarse) {
+  .quick-actions {
+    position: fixed;
+    right: 14px;
+    bottom: var(--quick-actions-bottom, calc(16px + env(safe-area-inset-bottom, 0px)));
+    z-index: 2050;
+    display: flex;
+    width: 52px;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    transition: right .3s ease, bottom .3s ease;
+  }
+
+  .quick-actions.opposite-side {
+    right: calc(100vw - 66px);
+    align-items: flex-start;
+  }
+
+  .quick-actions.opposite-side .quick-action-items {
+    align-items: flex-start;
+    transform-origin: bottom left;
+  }
+
+  .quick-actions.opposite-side .quick-action-item {
+    flex-direction: row-reverse;
+  }
+
+  .quick-action-items {
+    display: flex;
+    width: max-content;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    opacity: 0;
+    transform: translateY(10px) scale(.96);
+    transform-origin: bottom right;
+    pointer-events: none;
+    transition: opacity .18s ease, transform .18s ease;
+  }
+
+  .quick-actions.open .quick-action-items {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+  }
+
+  .quick-actions-toggle,
+  .quick-action-item {
+    border: 1px solid rgba(255, 255, 255, .16);
+    color: white;
+    box-shadow: 0 6px 18px var(--shadow);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .quick-actions-toggle {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    padding: 0;
+    border-radius: 50%;
+    background: var(--accent1);
+    transition: transform .18s ease, filter .18s ease;
+  }
+
+  .quick-actions.open .quick-actions-toggle {
+    transform: rotate(42deg);
+  }
+
+  .quick-actions-toggle .menu-icon {
+    width: 23px;
+    height: 23px;
+  }
+
+  .quick-action-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    min-height: 42px;
+    padding: 5px 6px 5px 12px;
+    border-radius: 22px;
+    background: var(--surface);
+    color: var(--text);
+  }
+
+  .quick-action-label {
+    font-size: 12px;
+    font-weight: 650;
+    white-space: nowrap;
+  }
+
+  .quick-action-icon {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--surface2);
+    color: var(--text);
+  }
+
+  .quick-action-icon .menu-icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  .quick-action-item.active {
+    border-color: var(--accent1);
+    color: var(--accent1);
+  }
+
+  .quick-action-item.active .quick-action-icon {
+    background: rgba(102, 126, 234, .14);
+    color: var(--accent1);
+  }
+
+  .quick-action-item:disabled {
+    opacity: .42;
+    cursor: not-allowed;
+  }
+}
+
 @keyframes slideIn {
   from {
     transform: translateX(120%);

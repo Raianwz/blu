@@ -252,12 +252,14 @@ function syncBackupBannerNotificationOffset() {
   if (!banner?.classList.contains('show')) {
     document.body.classList.remove('backup-banner-visible');
     document.body.style.removeProperty('--notif-backup-bottom');
+    if (typeof updateQuickActionsPosition === 'function') updateQuickActionsPosition();
     return;
   }
 
   const bannerBottom = Number.parseFloat(getComputedStyle(banner).bottom) || 0;
   document.body.style.setProperty('--notif-backup-bottom', `${Math.ceil(bannerBottom + banner.offsetHeight + 10)}px`);
   document.body.classList.add('backup-banner-visible');
+  if (typeof updateQuickActionsPosition === 'function') updateQuickActionsPosition();
 }
 
 function evaluateBackupBanner(dirty) {
@@ -291,6 +293,7 @@ function pushHistory() {
   // Qualquer nova ação manual invalida o histórico de refazer.
   redoStack = [];
   clearRedoSnapshot = null;
+  if (typeof updateQuickActionsUI === 'function') updateQuickActionsUI();
 }
 
 function pushRedoState(stateString) {
@@ -332,6 +335,7 @@ function undoLastAction() {
 
     const previousState = JSON.parse(previousStateString);
     restoreState(previousState);
+    if (typeof updateQuickActionsUI === 'function') updateQuickActionsUI();
     notify('Desfeito!');
   } catch (error) {
     console.error('Erro ao desfazer:', error);
@@ -360,6 +364,7 @@ function redoLastAction() {
 
     const nextState = JSON.parse(nextStateString);
     restoreState(nextState);
+    if (typeof updateQuickActionsUI === 'function') updateQuickActionsUI();
     notify('Refeito!');
   } catch (error) {
     console.error('Erro ao refazer:', error);

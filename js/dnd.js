@@ -142,6 +142,7 @@ function updateShiftMode() {
     document.body.classList.remove('shift-mode', 'shift-locked');
     applyButtonReorderControls();
     updateOrganizeModeButtonUI();
+    if (typeof updateQuickActionsUI === 'function') updateQuickActionsUI();
     return;
   }
 
@@ -149,6 +150,7 @@ function updateShiftMode() {
   document.body.classList.toggle('shift-locked', shiftLocked);
   applyButtonReorderControls();
   updateOrganizeModeButtonUI();
+  if (typeof updateQuickActionsUI === 'function') updateQuickActionsUI();
 }
 
 // Ponto único que reflete shiftLocked no botão do menu — chamado sempre

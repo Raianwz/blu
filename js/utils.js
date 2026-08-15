@@ -86,6 +86,8 @@ function notifyUndo(msg) {
   });
 }
 const ICONS = {
+  undo: `<path d="M9 14 4 9l5-5" /> <path d="M4 9h9a7 7 0 1 1 0 14h-3" />`,
+  redo: `<path d="m15 14 5-5-5-5" /> <path d="M20 9h-9a7 7 0 1 0 0 14h3" />`,
   copy: `<rect width="14" height="14" x="8" y="8" rx="2" ry="2" /> <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />`,
   copy_plus: `<rect width="14" height="14" x="8" y="8" rx="2" ry="2" /> <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /> <path d="M15 15h6" /> <path d="M18 12v6" />`,
   eye: `<path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" /> <circle cx="12" cy="12" r="3" />`,

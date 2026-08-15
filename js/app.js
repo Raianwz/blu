@@ -335,3 +335,4 @@ initDragPreviewPreference();
 initTextPreviewPreference();
 registerServiceWorker();
 init();
+initQuickActions();
