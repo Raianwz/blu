@@ -5,11 +5,11 @@
 let activeContentView = 'home';
 
 function isFavoritesShelfEnabled() {
-  return getSetting('favoritesShelf', 'on') !== 'off';
+  return getSetting('favoritesShelf', 'off') === 'on';
 }
 
 function isContentDashboardEnabled() {
-  return getSetting('contentDashboard', 'on') !== 'off';
+  return getSetting('contentDashboard', 'off') === 'on';
 }
 
 function isFavoritesShelfCollapsed() {
@@ -17,7 +17,7 @@ function isFavoritesShelfCollapsed() {
 }
 
 function isFavoriteContextMenuEnabled() {
-  return getSetting('favoriteContextMenu', 'on') !== 'off';
+  return getSetting('favoriteContextMenu', 'off') === 'on';
 }
 
 function updateContentPreferenceButtons() {
