@@ -108,6 +108,39 @@ function toggleTheme() {
   setSetting('theme', dark ? 'dark' : 'light');
 }
 
+async function resetPreferences() {
+  const ok = await confirmDialog(
+    'As configurações de aparência e comportamento voltarão ao padrão. Seus botões, seções, favoritos e estatísticas não serão alterados.',
+    { title: '↺ Redefinir Preferências', confirmText: 'Redefinir' }
+  );
+  if (!ok) return;
+
+  if (!clearBluPreferences()) {
+    notify('Não foi possível redefinir as preferências', 'err');
+    return;
+  }
+
+  applyTheme(!!systemThemeQuery?.matches);
+  applyTextPreviewState(true);
+  dragPreviewEnabled = false;
+  applyDragPreviewState();
+
+  versionHidden = false;
+  document.getElementById('appVersion')?.classList.remove('version-hidden');
+  const hideVersionButton = document.getElementById('hideVersionBtn');
+  if (hideVersionButton) {
+    hideVersionButton.classList.remove('active');
+    hideVersionButton.querySelector('.menu-btn-label').textContent = 'Ocultar Marca/Versão: OFF';
+  }
+
+  updateContentPreferenceButtons();
+  updateContentViewSwitcher();
+  showContentView('home');
+  renderFavoritesShelf();
+  document.getElementById('menuOverlay')?.classList.remove('open');
+  notify('Preferências redefinidas');
+}
+
 const systemThemeQuery = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
 
 function applyThemeButtonUI(dark) {

@@ -44,6 +44,16 @@ function setSetting(name, value) {
   } catch (_) {}
 }
 
+function clearBluPreferences() {
+  try {
+    localStorage.removeItem(SETTINGS_STORAGE_KEY);
+    ['blu:theme', 'blu:dragPreview', 'blu:textPreview'].forEach(key => localStorage.removeItem(key));
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
 function migrateLegacySettings() {
   const legacyKeys = {
     theme: 'blu:theme',
