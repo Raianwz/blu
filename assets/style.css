@@ -553,16 +553,37 @@ body.content-dashboard-enabled .content-dashboard {
   box-shadow: 0 2px 8px var(--shadow);
 }
 
-.dashboard-period-tabs {
+.dashboard-period-selector {
   display: grid;
-  grid-template-columns: repeat(5, minmax(72px, 1fr));
-  gap: 4px;
-  padding: 4px;
-  border-radius: 9px;
-  background: var(--surface2);
+  grid-template-columns: auto minmax(180px, 320px);
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-.dashboard-period-tabs button,
+.dashboard-period-selector span {
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.dashboard-period-selector select {
+  width: 100%;
+  padding: 8px 34px 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  outline: none;
+  background: var(--surface2);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+}
+
+.dashboard-period-selector select:focus {
+  border-color: var(--accent1);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent1) 20%, transparent);
+}
+
 .dashboard-period-navigator button {
   padding: 7px 10px;
   border: 1px solid transparent;
@@ -571,11 +592,6 @@ body.content-dashboard-enabled .content-dashboard {
   color: var(--text2);
   cursor: pointer;
   font-weight: 650;
-}
-
-.dashboard-period-tabs button.active {
-  background: var(--accent1);
-  color: #fff;
 }
 
 .dashboard-period-navigator {
@@ -720,16 +736,9 @@ body.content-dashboard-enabled .content-dashboard {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .dashboard-period-tabs {
-    display: flex;
-    overflow-x: auto;
-    scrollbar-width: thin;
-    scrollbar-color: var(--tag-scroll-thumb) transparent;
-  }
-
-  .dashboard-period-tabs button {
-    min-width: 78px;
-    flex: 1 0 auto;
+  .dashboard-period-selector {
+    grid-template-columns: 1fr;
+    gap: 6px;
   }
 
   .dashboard-period-navigator {

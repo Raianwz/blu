@@ -89,9 +89,8 @@ function getMetricComparison(current, previous) {
 }
 
 function updateDashboardPeriodControls(range = null) {
-  document.querySelectorAll('.dashboard-period-tabs [data-period]').forEach(button => {
-    button.classList.toggle('active', button.dataset.period === dashboardPeriod);
-  });
+  const select = document.getElementById('dashboardPeriodSelect');
+  if (select) select.value = dashboardPeriod;
   const navigator = document.getElementById('dashboardPeriodNavigator');
   const hint = document.getElementById('dashboardPeriodHint');
   if (!navigator || !hint) return;
@@ -103,6 +102,15 @@ function updateDashboardPeriodControls(range = null) {
   if (isTotal || !range) return;
   document.getElementById('dashboardPeriodLabel').textContent = formatDashboardPeriod(range);
   document.getElementById('dashboardNextPeriodBtn').disabled = range.end > startOfLocalDay(new Date());
+  const currentButton = document.getElementById('dashboardCurrentPeriodBtn');
+  if (currentButton) {
+    currentButton.textContent = {
+      year: 'Ano atual',
+      month: 'Mês atual',
+      week: 'Semana atual',
+      day: 'Hoje'
+    }[dashboardPeriod];
+  }
 }
 
 function setDashboardPeriod(period) {
