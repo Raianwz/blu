@@ -3,8 +3,56 @@
 // ==========================================================
 
 const USERDATA_STORAGE_KEY = 'blu:userdata';
-const USERDATA_FORMAT_VERSION = 1;
+const USERDATA_FORMAT_VERSION = 2;
+const DAILY_METRICS_EPOCH = '2026-08-17';
+const USER_ACTIVITY_TYPES = ['created', 'deleted', 'edited', 'copied', 'viewed'];
 let userData = loadUserData();
+
+function getLocalDateKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function isValidDateKey(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value || '')) return false;
+  const [year, month, day] = value.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+  return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
+}
+
+function sanitizeMetricCounters(source, types = USER_ACTIVITY_TYPES) {
+  const counters = {};
+  types.forEach(type => {
+    counters[type] = Math.max(0, Math.floor(Number(source?.[type]) || 0));
+  });
+  return counters;
+}
+
+function sanitizeDailyMetrics(source) {
+  const history = source && typeof source === 'object' && !Array.isArray(source) ? source : {};
+  const startedAt = isValidDateKey(history.startedAt) ? history.startedAt : DAILY_METRICS_EPOCH;
+  const days = {};
+  if (history.days && typeof history.days === 'object' && !Array.isArray(history.days)) {
+    Object.entries(history.days).forEach(([date, entry]) => {
+      if (!isValidDateKey(date) || !entry || typeof entry !== 'object' || Array.isArray(entry)) return;
+      const activity = sanitizeMetricCounters(entry.activity);
+      const buttons = {};
+      if (entry.buttons && typeof entry.buttons === 'object' && !Array.isArray(entry.buttons)) {
+        Object.entries(entry.buttons).forEach(([id, metrics]) => {
+          if (!id) return;
+          const counters = sanitizeMetricCounters(metrics);
+          if (Object.values(counters).some(Boolean)) buttons[String(id)] = counters;
+        });
+      }
+      if (Object.values(activity).some(Boolean) || Object.keys(buttons).length) {
+        days[date] = { activity, buttons };
+      }
+    });
+  }
+  return { startedAt, days };
+}
 
 function sanitizeUserData(source) {
   const value = source && typeof source === 'object' && !Array.isArray(source) ? source : {};
@@ -27,10 +75,16 @@ function sanitizeUserData(source) {
   }
   const activitySource = value.activity && typeof value.activity === 'object' ? value.activity : {};
   const activity = {};
-  ['created', 'deleted', 'edited', 'copied', 'viewed'].forEach(type => {
+  USER_ACTIVITY_TYPES.forEach(type => {
     activity[type] = Math.max(0, Math.floor(Number(activitySource[type]) || 0));
   });
-  return { version: USERDATA_FORMAT_VERSION, favorites, stats, activity };
+  return {
+    version: USERDATA_FORMAT_VERSION,
+    favorites,
+    stats,
+    activity,
+    dailyMetrics: sanitizeDailyMetrics(value.dailyMetrics)
+  };
 }
 
 function loadUserData() {
@@ -61,7 +115,28 @@ function replaceUserData(source, validIds = null) {
 
 function resetUserData() {
   userData = sanitizeUserData({});
+  userData.dailyMetrics.startedAt = getLocalDateKey();
   renderUserDataPanels();
+}
+
+function recordDailyMetric(type, buttonId = null) {
+  if (!USER_ACTIVITY_TYPES.includes(type)) return;
+  const date = getLocalDateKey();
+  const history = userData.dailyMetrics;
+  if (!history.startedAt || date < history.startedAt) history.startedAt = date;
+  if (!history.days[date]) {
+    history.days[date] = {
+      activity: sanitizeMetricCounters({}),
+      buttons: {}
+    };
+  }
+  const day = history.days[date];
+  day.activity[type]++;
+
+  const id = String(buttonId || '');
+  if (!id) return;
+  if (!day.buttons[id]) day.buttons[id] = sanitizeMetricCounters({});
+  day.buttons[id][type]++;
 }
 
 function getCurrentButtonIds() {
@@ -114,6 +189,7 @@ function recordButtonCopy(buttonId) {
     createdAt: current.createdAt || null
   };
   userData.activity.copied++;
+  recordDailyMetric('copied', id);
   persistUserData();
   renderUserDataPanels();
 }
@@ -122,6 +198,7 @@ function recordUserActivity(type, buttonId = null) {
   if (!Object.prototype.hasOwnProperty.call(userData.activity, type)) return;
   userData.activity[type]++;
   const id = String(buttonId || '');
+  recordDailyMetric(type, id);
   if (id && type !== 'deleted') {
     const current = userData.stats[id] || {};
     userData.stats[id] = {
