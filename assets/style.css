@@ -502,6 +502,36 @@ body.content-dashboard-enabled .content-dashboard {
   white-space: nowrap;
 }
 
+.menu-setting-row {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 9px 7px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.menu-setting-row select {
+  min-width: 104px;
+  padding: 5px 26px 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  outline: none;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+}
+
+.menu-setting-row select:focus {
+  border-color: var(--accent1);
+}
+
 .favorite-card-copy small {
   color: rgba(255, 255, 255, .82);
   font-size: 11px;

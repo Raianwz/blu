@@ -102,10 +102,13 @@ function toggleVersionVisibility() {
 }
 
 function toggleTheme() {
-  const dark = document.body.classList.toggle('dark');
-  applyThemeButtonUI(dark);
-  // Escolha manual passa a valer sobre a preferência do sistema.
-  setSetting('theme', dark ? 'dark' : 'light');
+  setThemePreference(document.body.classList.contains('dark') ? 'light' : 'dark');
+}
+
+function setThemePreference(preference) {
+  const value = ['system', 'light', 'dark'].includes(preference) ? preference : 'system';
+  setSetting('theme', value);
+  applyTheme(value === 'system' ? !!systemThemeQuery?.matches : value === 'dark');
 }
 
 async function resetPreferences() {
@@ -143,32 +146,27 @@ async function resetPreferences() {
 
 const systemThemeQuery = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
 
-function applyThemeButtonUI(dark) {
-  const button = document.getElementById('themeBtn');
-  if (!button) return;
-  const icon = button.querySelector('.menu-icon');
-  if (icon) icon.innerHTML = ICONS[dark ? 'sun' : 'moon'];
-  button.querySelector('.menu-btn-label').textContent = dark ? 'Tema Claro' : 'Tema Escuro';
+function updateThemePreferenceUI() {
+  const select = document.getElementById('themeSelect');
+  if (!select) return;
+  const stored = getSetting('theme', 'system');
+  select.value = ['system', 'light', 'dark'].includes(stored) ? stored : 'system';
 }
 
 function applyTheme(dark) {
   document.body.classList.toggle('dark', dark);
-  applyThemeButtonUI(dark);
+  updateThemePreferenceUI();
 }
 
 function initTheme() {
   const stored = getSetting('theme');
 
-  if (stored === 'dark' || stored === 'light') {
-    applyTheme(stored === 'dark');
-  } else {
-    applyTheme(!!systemThemeQuery?.matches);
-  }
+  applyTheme(stored === 'dark' || stored === 'light' ? stored === 'dark' : !!systemThemeQuery?.matches);
 
   // Se o usuário nunca escolheu manualmente, acompanha mudanças do sistema em tempo real.
   systemThemeQuery?.addEventListener('change', event => {
     const currentStored = getSetting('theme');
-    if (currentStored !== 'dark' && currentStored !== 'light') applyTheme(event.matches);
+    if (currentStored === 'system' || (currentStored !== 'dark' && currentStored !== 'light')) applyTheme(event.matches);
   });
 }
 
