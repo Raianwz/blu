@@ -158,6 +158,7 @@ function updateContentPreferenceButtons() {
   const shelfButton = document.getElementById('favoritesShelfBtn');
   const dashboardButton = document.getElementById('contentDashboardBtn');
   const contextButton = document.getElementById('favoriteContextMenuBtn');
+  const contentToggle = document.querySelector('.menu-submenu-toggle[data-submenu="conteudo"]');
   const shelfEnabled = isFavoritesShelfEnabled();
   const dashboardEnabled = isContentDashboardEnabled();
   if (shelfButton) {
@@ -173,6 +174,7 @@ function updateContentPreferenceButtons() {
     contextButton.classList.toggle('active', enabled);
     contextButton.querySelector('.menu-btn-label').textContent = `Favoritar pelo Menu: ${enabled ? 'ON' : 'OFF'}`;
   }
+  contentToggle?.classList.toggle('active', shelfEnabled || dashboardEnabled || isFavoriteContextMenuEnabled());
 }
 
 function toggleFavoritesShelfPreference() {
