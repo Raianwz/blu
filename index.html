@@ -257,6 +257,22 @@
       <div><span class="content-dashboard-kicker">Dados locais</span><h1>Métricas do Blû</h1></div>
       <button class="mbtn ghost" type="button" onclick="showContentView('home')">Voltar ao início</button>
     </header>
+    <section class="dashboard-period-panel" aria-label="Período das estatísticas">
+      <div class="dashboard-period-tabs" role="group" aria-label="Agrupar estatísticas por período">
+        <button class="active" type="button" data-period="total" onclick="setDashboardPeriod('total')">Total</button>
+        <button type="button" data-period="year" onclick="setDashboardPeriod('year')">Ano</button>
+        <button type="button" data-period="month" onclick="setDashboardPeriod('month')">Mês</button>
+        <button type="button" data-period="week" onclick="setDashboardPeriod('week')">Semana</button>
+        <button type="button" data-period="day" onclick="setDashboardPeriod('day')">Dia</button>
+      </div>
+      <div id="dashboardPeriodNavigator" class="dashboard-period-navigator" hidden>
+        <button type="button" onclick="moveDashboardPeriod(-1)" title="Período anterior" aria-label="Período anterior">‹</button>
+        <strong id="dashboardPeriodLabel"></strong>
+        <button id="dashboardNextPeriodBtn" type="button" onclick="moveDashboardPeriod(1)" title="Próximo período" aria-label="Próximo período">›</button>
+        <button class="dashboard-period-current" type="button" onclick="resetDashboardPeriod()">Hoje</button>
+      </div>
+      <p id="dashboardPeriodHint" class="dashboard-period-hint">Todo o período registrado, incluindo os totais anteriores ao histórico diário.</p>
+    </section>
     <div id="dashboardMetricCards" class="dashboard-metric-cards"></div>
     <div class="content-dashboard-grid">
       <section class="dashboard-card">

@@ -3,6 +3,132 @@
 // ==========================================================
 
 let activeContentView = 'home';
+let dashboardPeriod = 'total';
+let dashboardPeriodCursor = new Date();
+const DASHBOARD_PERIODS = ['total', 'year', 'month', 'week', 'day'];
+
+function startOfLocalDay(date) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function getDashboardPeriodRange(period = dashboardPeriod, cursor = dashboardPeriodCursor) {
+  const current = startOfLocalDay(cursor);
+  let start;
+  let end;
+  if (period === 'year') {
+    start = new Date(current.getFullYear(), 0, 1);
+    end = new Date(current.getFullYear() + 1, 0, 1);
+  } else if (period === 'month') {
+    start = new Date(current.getFullYear(), current.getMonth(), 1);
+    end = new Date(current.getFullYear(), current.getMonth() + 1, 1);
+  } else if (period === 'week') {
+    const mondayOffset = (current.getDay() + 6) % 7;
+    start = new Date(current);
+    start.setDate(start.getDate() - mondayOffset);
+    end = new Date(start);
+    end.setDate(end.getDate() + 7);
+  } else {
+    start = current;
+    end = new Date(start);
+    end.setDate(end.getDate() + 1);
+  }
+  return { start, end };
+}
+
+function getPreviousDashboardPeriodRange(range) {
+  const cursor = new Date(range.start);
+  if (dashboardPeriod === 'year') cursor.setFullYear(cursor.getFullYear() - 1);
+  else if (dashboardPeriod === 'month') cursor.setMonth(cursor.getMonth() - 1);
+  else if (dashboardPeriod === 'week') cursor.setDate(cursor.getDate() - 7);
+  else cursor.setDate(cursor.getDate() - 1);
+  return getDashboardPeriodRange(dashboardPeriod, cursor);
+}
+
+function aggregateDailyMetrics(range) {
+  const activity = sanitizeMetricCounters({});
+  const buttons = {};
+  const startKey = getLocalDateKey(range.start);
+  const endKey = getLocalDateKey(range.end);
+  Object.entries(userData.dailyMetrics.days).forEach(([date, entry]) => {
+    if (date < startKey || date >= endKey) return;
+    USER_ACTIVITY_TYPES.forEach(type => {
+      activity[type] += entry.activity?.[type] || 0;
+    });
+    Object.entries(entry.buttons || {}).forEach(([id, metrics]) => {
+      if (!buttons[id]) buttons[id] = sanitizeMetricCounters({});
+      USER_ACTIVITY_TYPES.forEach(type => {
+        buttons[id][type] += metrics[type] || 0;
+      });
+    });
+  });
+  return { activity, buttons };
+}
+
+function formatDashboardPeriod(range) {
+  const dateFormat = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+  if (dashboardPeriod === 'year') return String(range.start.getFullYear());
+  if (dashboardPeriod === 'month') {
+    const value = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' }).format(range.start);
+    return value.charAt(0).toUpperCase() + value.slice(1);
+  }
+  if (dashboardPeriod === 'week') {
+    const lastDay = new Date(range.end);
+    lastDay.setDate(lastDay.getDate() - 1);
+    return `${dateFormat.format(range.start)} – ${dateFormat.format(lastDay)}`;
+  }
+  return dateFormat.format(range.start);
+}
+
+function getMetricComparison(current, previous) {
+  if (!previous) return current ? { text: 'Novo no período', className: 'positive' } : { text: 'Sem alteração', className: '' };
+  const percentage = Math.round(((current - previous) / previous) * 100);
+  return {
+    text: `${percentage > 0 ? '+' : ''}${percentage}% vs. período anterior`,
+    className: percentage > 0 ? 'positive' : percentage < 0 ? 'negative' : ''
+  };
+}
+
+function updateDashboardPeriodControls(range = null) {
+  document.querySelectorAll('.dashboard-period-tabs [data-period]').forEach(button => {
+    button.classList.toggle('active', button.dataset.period === dashboardPeriod);
+  });
+  const navigator = document.getElementById('dashboardPeriodNavigator');
+  const hint = document.getElementById('dashboardPeriodHint');
+  if (!navigator || !hint) return;
+  const isTotal = dashboardPeriod === 'total';
+  navigator.hidden = isTotal;
+  hint.textContent = isTotal
+    ? 'Todo o período registrado, incluindo os totais anteriores ao histórico diário.'
+    : `Histórico diário disponível desde ${new Date(`${userData.dailyMetrics.startedAt}T12:00:00`).toLocaleDateString('pt-BR')}.`;
+  if (isTotal || !range) return;
+  document.getElementById('dashboardPeriodLabel').textContent = formatDashboardPeriod(range);
+  document.getElementById('dashboardNextPeriodBtn').disabled = range.end > startOfLocalDay(new Date());
+}
+
+function setDashboardPeriod(period) {
+  if (!DASHBOARD_PERIODS.includes(period)) return;
+  dashboardPeriod = period;
+  dashboardPeriodCursor = new Date();
+  renderContentDashboard();
+}
+
+function moveDashboardPeriod(direction) {
+  if (dashboardPeriod === 'total' || ![-1, 1].includes(direction)) return;
+  const next = new Date(getDashboardPeriodRange().start);
+  if (dashboardPeriod === 'year') next.setFullYear(next.getFullYear() + direction);
+  else if (dashboardPeriod === 'month') next.setMonth(next.getMonth() + direction);
+  else if (dashboardPeriod === 'week') next.setDate(next.getDate() + (7 * direction));
+  else next.setDate(next.getDate() + direction);
+  const nextRange = getDashboardPeriodRange(dashboardPeriod, next);
+  if (direction > 0 && nextRange.start > startOfLocalDay(new Date())) return;
+  dashboardPeriodCursor = next;
+  renderContentDashboard();
+}
+
+function resetDashboardPeriod() {
+  dashboardPeriodCursor = new Date();
+  renderContentDashboard();
+}
 
 function isFavoritesShelfEnabled() {
   return getSetting('favoritesShelf', 'off') === 'on';
@@ -130,19 +256,26 @@ function renderContentDashboard() {
   const leastUsed = document.getElementById('dashboardLeastUsed');
   if (!metrics || !favorites || !mostUsed || !leastUsed) return;
 
-  const activity = userData.activity;
+  const range = dashboardPeriod === 'total' ? null : getDashboardPeriodRange();
+  const periodMetrics = range ? aggregateDailyMetrics(range) : null;
+  const previousMetrics = range ? aggregateDailyMetrics(getPreviousDashboardPeriodRange(range)) : null;
+  const activity = periodMetrics?.activity || userData.activity;
+  updateDashboardPeriodControls(range);
   const metricItems = [
-    ['Botões atuais', document.querySelectorAll('.btn-wrap').length],
-    ['Criados', activity.created],
-    ['Apagados', activity.deleted],
-    ['Editados', activity.edited],
-    ['Copiados', activity.copied],
-    ['Visualizados', activity.viewed]
+    ['Botões atuais', document.querySelectorAll('.btn-wrap').length, null],
+    ['Criados', activity.created, 'created'],
+    ['Apagados', activity.deleted, 'deleted'],
+    ['Editados', activity.edited, 'edited'],
+    ['Copiados', activity.copied, 'copied'],
+    ['Visualizados', activity.viewed, 'viewed']
   ];
-  metrics.replaceChildren(...metricItems.map(([label, value]) => {
+  metrics.replaceChildren(...metricItems.map(([label, value, type]) => {
     const card = document.createElement('div');
     card.className = 'dashboard-metric';
-    card.innerHTML = `<strong>${value}</strong><span>${escapeHtml(label)}</span>`;
+    const comparison = type && previousMetrics
+      ? getMetricComparison(value, previousMetrics.activity[type] || 0)
+      : null;
+    card.innerHTML = `<strong>${value}</strong><span>${escapeHtml(label)}</span>${comparison ? `<small class="${comparison.className}">${escapeHtml(comparison.text)}</small>` : ''}`;
     return card;
   }));
 
@@ -152,7 +285,11 @@ function renderContentDashboard() {
 
   const usage = [...document.querySelectorAll('.btn-wrap')].map(button => {
     const id = button.dataset.id;
-    return { info: getButtonInfo(id), stats: userData.stats[id] || { copies: 0, views: 0, edits: 0 } };
+    const dailyStats = periodMetrics?.buttons[id];
+    const stats = dailyStats
+      ? { copies: dailyStats.copied, views: dailyStats.viewed, edits: dailyStats.edited }
+      : (periodMetrics ? { copies: 0, views: 0, edits: 0 } : (userData.stats[id] || { copies: 0, views: 0, edits: 0 }));
+    return { info: getButtonInfo(id), stats };
   }).filter(entry => entry.info);
   const byCopies = (left, right) => (right.stats.copies || 0) - (left.stats.copies || 0)
     || left.info.name.localeCompare(right.info.name, 'pt-BR');

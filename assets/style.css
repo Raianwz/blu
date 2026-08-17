@@ -544,6 +544,76 @@ body.content-dashboard-enabled .content-dashboard {
   text-transform: uppercase;
 }
 
+.dashboard-period-panel {
+  margin-bottom: 18px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 2px 8px var(--shadow);
+}
+
+.dashboard-period-tabs {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(72px, 1fr));
+  gap: 4px;
+  padding: 4px;
+  border-radius: 9px;
+  background: var(--surface2);
+}
+
+.dashboard-period-tabs button,
+.dashboard-period-navigator button {
+  padding: 7px 10px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text2);
+  cursor: pointer;
+  font-weight: 650;
+}
+
+.dashboard-period-tabs button.active {
+  background: var(--accent1);
+  color: #fff;
+}
+
+.dashboard-period-navigator {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) 36px auto;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.dashboard-period-navigator[hidden] {
+  display: none;
+}
+
+.dashboard-period-navigator strong {
+  overflow: hidden;
+  color: var(--text);
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboard-period-navigator button {
+  border-color: var(--border);
+  background: var(--surface2);
+}
+
+.dashboard-period-navigator button:disabled {
+  cursor: not-allowed;
+  opacity: .4;
+}
+
+.dashboard-period-hint {
+  margin: 8px 4px 0;
+  color: var(--text2);
+  font-size: 11px;
+}
+
 .dashboard-metric-cards {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -576,6 +646,19 @@ body.content-dashboard-enabled .content-dashboard {
 .dashboard-metric span {
   color: var(--text2);
   font-size: 11px;
+}
+
+.dashboard-metric small {
+  color: var(--text2);
+  font-size: 10px;
+}
+
+.dashboard-metric small.positive {
+  color: var(--green);
+}
+
+.dashboard-metric small.negative {
+  color: var(--red);
 }
 
 .content-dashboard-grid {
@@ -635,6 +718,26 @@ body.content-dashboard-enabled .content-dashboard {
 
   .dashboard-metric-cards {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-period-tabs {
+    display: flex;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--tag-scroll-thumb) transparent;
+  }
+
+  .dashboard-period-tabs button {
+    min-width: 78px;
+    flex: 1 0 auto;
+  }
+
+  .dashboard-period-navigator {
+    grid-template-columns: 36px minmax(0, 1fr) 36px;
+  }
+
+  .dashboard-period-current {
+    grid-column: 1 / -1;
   }
 
   .favorite-card {
