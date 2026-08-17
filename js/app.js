@@ -150,7 +150,10 @@ function updateThemePreferenceUI() {
   const select = document.getElementById('themeSelect');
   if (!select) return;
   const stored = getSetting('theme', 'system');
-  select.value = ['system', 'light', 'dark'].includes(stored) ? stored : 'system';
+  const preference = ['system', 'light', 'dark'].includes(stored) ? stored : 'system';
+  select.value = preference;
+  const icon = select.closest('.menu-setting-row')?.querySelector('.menu-icon');
+  if (icon) icon.innerHTML = ICONS[{ system: 'monitor', light: 'sun', dark: 'moon' }[preference]];
 }
 
 function applyTheme(dark) {
