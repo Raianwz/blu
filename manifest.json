@@ -2,7 +2,7 @@
   "name": "Blû",
   "short_name": "Blû",
   "description": "Botões de copiar e colar organizados por seções, com busca por nome, tag ou @seção.",
-  "start_url": "/index.html",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
