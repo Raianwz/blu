@@ -94,6 +94,22 @@ function initSearchGuidance() {
   desktopSearchGuidanceMedia.addEventListener('change', updateSearchGuidance);
   reducedMotionMedia.addEventListener('change', updateSearchGuidance);
   updateSearchGuidance();
+  updateSearchClearButton();
+}
+
+function updateSearchClearButton() {
+  const input = document.getElementById('searchInput');
+  const button = document.getElementById('clearSearchBtn');
+  if (input && button) button.hidden = !input.value;
+}
+
+function clearSearch() {
+  const input = document.getElementById('searchInput');
+  if (!input) return;
+  input.value = '';
+  doSearch({ collapseOnClear: true });
+  updateSearchGuidance();
+  input.focus();
 }
 
 function getQuotedTextQuery(raw) {
@@ -116,11 +132,13 @@ function showAllSearchResults() {
 
 function setNoResultsMessage(query) {
   const msg = document.getElementById('noResultsMsg');
+  const addSectionButton = document.getElementById('addSectionBtn');
   if (!msg) return;
 
   if (!query) {
     msg.classList.remove('show');
     msg.textContent = '';
+    if (addSectionButton) addSectionButton.hidden = false;
     return;
   }
 
@@ -130,11 +148,13 @@ function setNoResultsMessage(query) {
   if (hasVisibleSection) {
     msg.classList.remove('show');
     msg.textContent = '';
+    if (addSectionButton) addSectionButton.hidden = false;
     return;
   }
 
   msg.innerHTML = `🔍 Nenhum resultado para <strong>"${escapeHtml(query)}"</strong>`;
   msg.classList.add('show');
+  if (addSectionButton) addSectionButton.hidden = true;
 }
 
 function collapseAllSectionsAfterSearchClear() {
@@ -150,6 +170,7 @@ function collapseAllSectionsAfterSearchClear() {
 
 function doSearch(options = {}) {
   hideButtonPreview();
+  updateSearchClearButton();
   const { collapseOnClear = false } = options;
   const raw = document.getElementById('searchInput').value.trim();
   const q = normalizeSearchText(raw);

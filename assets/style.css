@@ -113,7 +113,7 @@ body {
 
 #searchInput {
   width: 100%;
-  padding: 7px 12px 7px 34px;
+  padding: 7px 36px 7px 34px;
   border: 1.5px solid var(--border);
   border-radius: 8px;
   background: var(--surface2);
@@ -124,6 +124,37 @@ body {
 
 #searchInput:focus {
   border-color: var(--accent1);
+}
+
+#clearSearchBtn {
+  position: absolute;
+  right: 5px;
+  display: inline-flex;
+  width: 26px;
+  height: 26px;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text2);
+  cursor: pointer;
+}
+
+#clearSearchBtn:hover {
+  background: var(--border);
+  color: var(--text);
+}
+
+#clearSearchBtn svg {
+  width: 14px;
+  height: 14px;
+}
+
+#clearSearchBtn[hidden],
+#addSectionBtn[hidden] {
+  display: none;
 }
 
 #searchInput::placeholder {

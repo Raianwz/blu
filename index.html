@@ -20,6 +20,7 @@
     <div id="searchWrap">
       <svg class="menu-icon search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 21-4.34-4.34" /> <circle cx="11" cy="11" r="8" /></svg>
       <input title="Pesquisar por Nome/Tag, @Seção ou &quot;texto&quot;" id="searchInput" type="text" placeholder="Pesquisar..." oninput="doSearch({ collapseOnClear: true })">
+      <button id="clearSearchBtn" type="button" onclick="clearSearch()" title="Limpar pesquisa" aria-label="Limpar pesquisa" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m18 6-12 12" /><path d="m6 6 12 12" /></svg></button>
     </div>
     <select id="searchType" title="Filtrar por" onchange="doSearch()">
       <option value="all">Tudo</option>
