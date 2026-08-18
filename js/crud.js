@@ -556,6 +556,11 @@ function buildShareCountsHtml(state) {
 // prévia de criação ou o link já ativo (comparando o estado atual com o
 // registro do último compartilhamento salvo).
 function openShareModal() {
+  if (!navigator.onLine) {
+    notify('Sem conexão: o compartilhamento está indisponível.', 'err');
+    return;
+  }
+
   const state = collectState();
   const sizeInfo = getShareSizeInfo(state);
   const currentComparable = getComparableStateString();
@@ -581,8 +586,10 @@ function openShareModal() {
     footerEl.innerHTML = '';
     const regenBtn = document.createElement('button');
     regenBtn.className = 'mbtn secondary';
+    regenBtn.id = 'regenerateShareBtn';
     regenBtn.textContent = 'Gerar novo link mesmo assim';
     regenBtn.onclick = () => shareData();
+    regenBtn.dataset.payloadBlocked = String(sizeInfo.exceedsLimit);
     if (sizeInfo.exceedsLimit) regenBtn.title = 'O payload ultrapassa o limite de 600 KB';
 
     const copyBtn = document.createElement('button');
@@ -609,6 +616,7 @@ function openShareModal() {
     confirmBtn.id = 'confirmShareBtn';
     confirmBtn.textContent = 'Compartilhar';
     confirmBtn.onclick = () => shareData();
+    confirmBtn.dataset.payloadBlocked = String(sizeInfo.exceedsLimit);
     if (sizeInfo.exceedsLimit) {
       confirmBtn.disabled = true;
       confirmBtn.title = 'O payload ultrapassa o limite de 600 KB';
@@ -625,6 +633,11 @@ function openShareModal() {
 // novo link mesmo assim" dentro do modal — a decisão de reaproveitar ou
 // não já foi tomada em openShareModal() antes de chegar aqui).
 async function shareData() {
+  if (!navigator.onLine) {
+    notify('Sem conexão: conecte-se à internet para compartilhar.', 'err');
+    return;
+  }
+
   const state = collectState();
   const jsonString = JSON.stringify(state);
   const jsonBytes = getUtf8ByteLength(jsonString);
@@ -715,8 +728,47 @@ async function shareData() {
     console.error('Erro ao compartilhar:', error);
     notify(error.userMessage || 'Não foi possível criar o link de compartilhamento.', 'err');
   } finally {
-    if (confirmBtn) confirmBtn.disabled = false;
+    updateShareConnectivityUI();
   }
+}
+
+function updateShareConnectivityUI(announce = false) {
+  const online = navigator.onLine;
+  const menuButton = document.getElementById('shareBtn');
+  if (menuButton) {
+    menuButton.disabled = !online;
+    menuButton.classList.toggle('offline', !online);
+    menuButton.title = online
+      ? 'Compartilhar dados via link (expira em 3 dias)'
+      : 'Compartilhamento indisponível: sem conexão';
+    menuButton.querySelector('.menu-btn-label').textContent = online ? 'Compartilhar' : 'Compartilhar: Offline';
+  }
+
+  const confirmButton = document.getElementById('confirmShareBtn');
+  if (confirmButton) {
+    confirmButton.disabled = !online || confirmButton.dataset.payloadBlocked === 'true';
+    confirmButton.title = !online
+      ? 'Compartilhamento indisponível: sem conexão'
+      : confirmButton.dataset.payloadBlocked === 'true' ? 'O payload ultrapassa o limite de 600 KB' : '';
+  }
+
+  const regenerateButton = document.getElementById('regenerateShareBtn');
+  if (regenerateButton) {
+    regenerateButton.disabled = !online;
+    regenerateButton.title = !online
+      ? 'Compartilhamento indisponível: sem conexão'
+      : regenerateButton.dataset.payloadBlocked === 'true' ? 'O payload ultrapassa o limite de 600 KB' : '';
+  }
+
+  if (announce) {
+    notify(online ? 'Conexão restabelecida' : 'Sem conexão: compartilhamento indisponível', online ? 'ok' : 'err');
+  }
+}
+
+function initShareConnectivity() {
+  updateShareConnectivityUI();
+  window.addEventListener('online', () => updateShareConnectivityUI(true));
+  window.addEventListener('offline', () => updateShareConnectivityUI(true));
 }
 
 async function copyShareLink() {

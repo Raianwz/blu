@@ -4,7 +4,7 @@
 
 const STORAGE_KEY = 'blu:data';
 const SETTINGS_STORAGE_KEY = 'blu:settings';
-const VERSION = '1.6';
+const VERSION = '1.7';
 const BASE_TITLE = 'Blû';
 
 let editMode = false;

@@ -369,6 +369,7 @@ initTheme();
 initDragPreviewPreference();
 initTextPreviewPreference();
 initSearchGuidance();
+initShareConnectivity();
 registerServiceWorker();
 init();
 pruneUserData();

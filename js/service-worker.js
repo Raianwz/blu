@@ -13,13 +13,12 @@
 // subir a versão abaixo (CACHE_VERSION). Isso cria um cache
 // novo e descarta o antigo na ativação.
 
-const CACHE_VERSION = 'v5';
+const CACHE_VERSION = 'v6';
 const CACHE_NAME = `blu-cache-${CACHE_VERSION}`;
 
 const APP_SHELL = [
   '/',
   '/index.html',
-  '/share.html',
   '/manifest.json',
   '/assets/style.css',
   '/assets/blu.svg',
@@ -64,10 +63,21 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   const request = event.request;
+  const requestUrl = new URL(request.url);
 
   // Só GET, só same-origin — evita cachear POSTs, extensões do
   // navegador, chamadas de outros domínios, etc.
-  if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) {
+  if (request.method !== 'GET' || requestUrl.origin !== self.location.origin) {
+    return;
+  }
+
+  // Compartilhamentos dependem da API e podem expirar. Nem a página nem
+  // respostas da API devem sobreviver offline por meio do cache do PWA.
+  const networkOnly = requestUrl.pathname === '/share.html'
+    || requestUrl.pathname.startsWith('/share/')
+    || requestUrl.pathname.startsWith('/api/');
+  if (networkOnly) {
+    event.respondWith(fetch(request, { cache: 'no-store' }));
     return;
   }
 
