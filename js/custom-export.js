@@ -207,7 +207,14 @@ function buildCustomExportObject(data, config) {
   const f = config.fields; const root = {};
   if (f.has('metadata')) root.metadata = { app: 'Blû', exportedAt: new Date().toISOString(), format: config.format, scope: config.scope };
   if (f.has('globalTags')) root.tags = data.tags;
-  if (!f.has('sections')) return root;
+  // Botões sem seções formam obrigatoriamente uma lista na raiz. Assim é
+  // possível extrair somente os campos dos botões sem gerar um JSON vazio.
+  if (!f.has('sections')) {
+    if (f.has('buttons')) {
+      root.buttons = data.sections.flatMap(section => section.buttons.map(button => customExportButtonObject(button, section, config, data.favoriteIds)));
+    }
+    return root;
+  }
   if (config.structure === 'flat') {
     root.buttons = f.has('buttons') ? data.sections.flatMap(section => section.buttons.map(button => customExportButtonObject(button, section, config, data.favoriteIds))) : [];
     return root;
@@ -295,8 +302,6 @@ function updateCustomExportPreview() {
   const warnings = [];
   if (!result.content) warnings.push('Selecione ao menos um campo que produza conteúdo.');
   if (!isCustomExportImportCompatible(result.config)) warnings.push('Este arquivo é para consulta/uso externo e não representa um backup reimportável completo.');
-  const privateCount = result.data.sections.flatMap(section => section.buttons).filter(button => button.vis === 'private').length;
-  if (privateCount) warnings.push(`${privateCount} botão(ões) privado(s) será(ão) incluído(s).`);
   if (result.config.fields.has('buttonStats')) warnings.push('As estatísticas são dados pessoais locais e serão incluídas no arquivo.');
   const compatible = isCustomExportImportCompatible(result.config);
   const warningHtml = warnings.map(message => `<div class="custom-export-warning">⚠️ ${escapeHtml(message)}</div>`).join('');

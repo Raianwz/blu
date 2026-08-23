@@ -1379,7 +1379,42 @@ body.edit-mode .btn-del {
   background: var(--surface2);
   color: var(--text);
   font: 11.5px/1.5 Consolas, monospace;
-  white-space: pre;
+  overflow-x: hidden;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  box-sizing: border-box;
+  scrollbar-gutter: stable;
+  scrollbar-width: auto;
+  scrollbar-color: var(--tag-scroll-thumb) var(--tag-scroll-track);
+}
+
+#customExportPreview::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+#customExportPreview::-webkit-scrollbar-track {
+  margin: 6px 0;
+  border-radius: 8px;
+  background: var(--tag-scroll-track);
+}
+
+#customExportPreview::-webkit-scrollbar-thumb {
+  min-width: 28px;
+  min-height: 28px;
+  border: 2px solid var(--tag-scroll-thumb-border);
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(102, 126, 234, .10), rgba(118, 75, 162, .06));
+  background-color: var(--tag-scroll-thumb);
+}
+
+#customExportPreview::-webkit-scrollbar-thumb:hover {
+  background-color: var(--tag-scroll-thumb-hover);
+}
+
+#customExportPreview::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 .custom-export-summary {
