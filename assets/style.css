@@ -1220,7 +1220,15 @@ body.edit-mode .btn-del {
 }
 
 .custom-export-panel {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
   min-height: 0;
+  overflow: hidden;
+}
+
+.custom-export-panel[hidden] {
+  display: none;
 }
 
 .custom-export-top-grid,
@@ -1264,7 +1272,8 @@ body.edit-mode .btn-del {
 }
 
 .custom-export-options-scroll {
-  max-height: min(43vh, 390px);
+  flex: 1 1 auto;
+  min-height: 150px;
   overflow-y: auto;
   padding-right: 5px;
   scrollbar-width: thin;
@@ -1359,8 +1368,9 @@ body.edit-mode .btn-del {
 }
 
 #customExportPreview {
+  flex: 1 1 auto;
   width: 100%;
-  min-height: min(50vh, 430px);
+  min-height: 180px;
   resize: vertical;
   padding: 12px;
   border: 1px solid var(--border);
@@ -1385,6 +1395,10 @@ body.edit-mode .btn-del {
   flex-direction: column;
   gap: 5px;
   margin-top: 7px;
+  max-height: 96px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--tag-scroll-thumb) var(--tag-scroll-track);
 }
 
 .custom-export-warning {
@@ -1423,7 +1437,7 @@ body.edit-mode .btn-del {
   }
 
   .custom-export-options-scroll {
-    max-height: 48vh;
+    min-height: 120px;
   }
 
   .custom-export-footer {
