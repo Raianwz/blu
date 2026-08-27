@@ -177,6 +177,13 @@ function doSearch(options = {}) {
   const type = document.getElementById('searchType').value;
   if (typeof updateFavoritesShelfSearchState === 'function') updateFavoritesShelfSearchState(!!raw);
 
+  // A pesquisa atua sobre os botões da tela inicial. Se o usuário começar
+  // a digitar enquanto visualiza as estatísticas, retorna ao início antes
+  // de aplicar o filtro para que o resultado fique imediatamente visível.
+  if (raw && typeof activeContentView !== 'undefined' && activeContentView === 'dashboard') {
+    showContentView('home');
+  }
+
   if (!raw) {
     if (collapseOnClear) {
       collapseAllSectionsAfterSearchClear();
