@@ -3131,6 +3131,31 @@ body.backup-banner-visible #notifArea {
   max-width: 400px;
 }
 
+/* Confirmação de compartilhamento: importar é a ação principal; cancelar
+   continua indicando recusa sem competir visualmente com o botão azul. */
+.share-import-dialog #dialogConfirmBtn,
+.share-import-dialog #dialogConfirmBtn.danger {
+  background: var(--accent1);
+  color: #fff;
+}
+
+.share-import-dialog #dialogConfirmBtn:hover {
+  filter: brightness(1.08);
+}
+
+.share-import-dialog #dialogCancelBtn {
+  border: 1px solid color-mix(in srgb, var(--red) 32%, transparent);
+  background: color-mix(in srgb, var(--red) 9%, var(--surface2));
+  color: color-mix(in srgb, var(--red) 72%, var(--text2));
+  transition: border-color .16s ease, background .16s ease, color .16s ease;
+}
+
+.share-import-dialog #dialogCancelBtn:hover {
+  border-color: var(--red);
+  background: var(--red);
+  color: #fff;
+}
+
 #dialogMessage {
   font-size: 13.5px;
   color: var(--text2);
