@@ -3131,6 +3131,43 @@ body.backup-banner-visible #notifArea {
   max-width: 400px;
 }
 
+#dialogModal[data-variant="clear-all"] #dialogMessage {
+  color: var(--text);
+}
+
+body.dark #dialogModal[data-variant="clear-all"] #dialogMessage {
+  color: #fff;
+}
+
+#dialogModal[data-variant="clear-all"] #dialogCancelBtn {
+  background: var(--accent1);
+  color: #fff;
+}
+
+#dialogModal[data-variant="clear-all"] #dialogCancelBtn:hover {
+  filter: brightness(1.08);
+}
+
+#dialogModal[data-variant="clear-all"] #dialogConfirmBtn {
+  border: 1px solid color-mix(in srgb, var(--red) 35%, transparent);
+  background: color-mix(in srgb, var(--red) 9%, var(--surface2));
+  color: color-mix(in srgb, var(--red) 72%, var(--text2));
+  transition: border-color .16s ease, background .16s ease, color .16s ease, opacity .16s ease;
+}
+
+#dialogModal[data-variant="clear-all"] #dialogConfirmBtn:not(:disabled):hover {
+  border-color: var(--red);
+  background: var(--red);
+  color: #fff;
+}
+
+#dialogModal[data-variant="clear-all"] #dialogConfirmBtn:disabled {
+  border-color: var(--border);
+  background: var(--surface2);
+  color: var(--text2);
+  opacity: .62;
+}
+
 /* Confirmação de compartilhamento: importar é a ação principal; cancelar
    continua indicando recusa sem competir visualmente com o botão azul. */
 .share-import-dialog #dialogConfirmBtn,

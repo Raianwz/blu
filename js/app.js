@@ -364,6 +364,7 @@ document.querySelectorAll('.modal-bg').forEach(background => {
 
 setupDialogEvents();
 setupVersionBadgeHover();
+getOrCreateClientId();
 migrateLegacySettings();
 initTheme();
 initDragPreviewPreference();

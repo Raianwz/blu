@@ -934,8 +934,18 @@ async function importData() {
   }
 }
 
-async function clearAll() {
-  const ok = await confirmDialog('Limpar TODOS os dados e preferências locais do Blû? Os botões e seções poderão ser recuperados com Ctrl+Z enquanto esta página permanecer aberta; as preferências continuarão limpas.', { title: '🗑️ Limpar Tudo', danger: true, confirmText: 'Limpar tudo' });
+async function clearAll(event = null) {
+  const includeClientId = !!event?.altKey;
+  const message = includeClientId
+    ? 'Ao limpar ABSOLUTAMENTE TUDO, você NÃO PODERÁ MAIS RENOMEAR LINKS COMPARTILHADOS neste navegador e perderá INFORMAÇÕES, REGISTROS DE LINKS, ESTATÍSTICAS E TODOS OS DEMAIS DADOS LOCAIS. Os BOTÕES E SEÇÕES poderão ser recuperados com Ctrl+Z somente enquanto esta página permanecer aberta. Tem certeza?'
+    : 'Limpar TODOS OS DADOS E PREFERÊNCIAS LOCAIS do Blû? Os BOTÕES E SEÇÕES poderão ser recuperados com Ctrl+Z enquanto esta página permanecer aberta. A IDENTIDADE LOCAL usada para gerenciar links compartilhados será preservada.';
+  const ok = await confirmDialog(message, {
+    title: includeClientId ? '🗑️ Limpeza absoluta' : '🗑️ Limpar Tudo',
+    danger: true,
+    confirmText: includeClientId ? 'Limpar absolutamente tudo' : 'Limpar tudo',
+    variant: 'clear-all',
+    confirmDelay: includeClientId ? 15 : 0
+  });
   if (!ok) return;
 
   const stateBeforeClear = JSON.stringify(collectState());
@@ -956,7 +966,7 @@ async function clearAll() {
   // Limpa todo o namespace do Blû sem afetar possíveis dados de outras
   // ferramentas hospedadas na mesma origem. Num próximo F5, o demo e as
   // preferências padrão voltam.
-  clearBluLocalStorage();
+  clearBluLocalStorage({ includeClientId });
   resetUserData();
   updateContentPreferenceButtons();
   updateContentViewSwitcher();

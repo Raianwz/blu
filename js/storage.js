@@ -4,6 +4,7 @@
 
 const STORAGE_KEY = 'blu:data';
 const SETTINGS_STORAGE_KEY = 'blu:settings';
+const CLIENT_ID_STORAGE_KEY = 'blu:clientId';
 const VERSION = '1.7';
 const BASE_TITLE = 'Blû';
 
@@ -21,6 +22,21 @@ let clearRedoSnapshot = null;
 let lastExportedComparableState = '';
 
 const isPopoutWindow = !!window.opener && ['BluePopout', 'BluePopOut'].includes(window.name);
+
+function getOrCreateClientId() {
+  try {
+    const existing = localStorage.getItem(CLIENT_ID_STORAGE_KEY);
+    if (existing && existing.length >= 32) return existing;
+
+    const bytes = new Uint8Array(24);
+    crypto.getRandomValues(bytes);
+    const clientId = [...bytes].map(byte => byte.toString(16).padStart(2, '0')).join('');
+    localStorage.setItem(CLIENT_ID_STORAGE_KEY, clientId);
+    return clientId;
+  } catch (_) {
+    return '';
+  }
+}
 
 function loadSettings() {
   try {
@@ -84,10 +100,11 @@ function migrateLegacySettings() {
   } catch (_) {}
 }
 
-function clearBluLocalStorage() {
+function clearBluLocalStorage({ includeClientId = false } = {}) {
   try {
     for (let index = localStorage.length - 1; index >= 0; index--) {
       const key = localStorage.key(index);
+      if (!includeClientId && key === CLIENT_ID_STORAGE_KEY) continue;
       if (key?.startsWith('blu:')) localStorage.removeItem(key);
     }
   } catch (_) {}

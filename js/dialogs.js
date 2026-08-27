@@ -3,6 +3,7 @@
 // ==========================================================
 
 let activeDialogResolve = null;
+let activeDialogTimer = null;
 
 function getDialogEls() {
   return {
@@ -18,6 +19,8 @@ function getDialogEls() {
 
 function closeDialog(result) {
   const { bg } = getDialogEls();
+  clearInterval(activeDialogTimer);
+  activeDialogTimer = null;
   bg.classList.remove('open');
   if (activeDialogResolve) {
     const resolve = activeDialogResolve;
@@ -26,14 +29,34 @@ function closeDialog(result) {
   }
 }
 
-function openDialog({ title, message, danger = false, showInput = false, inputValue = '', confirmText = 'Confirmar', cancelText = 'Cancelar' }) {
+function openDialog({ title, message, danger = false, showInput = false, inputValue = '', confirmText = 'Confirmar', cancelText = 'Cancelar', variant = '', confirmDelay = 0 }) {
   const { bg, title: titleEl, message: messageEl, inputWrap, input, confirmBtn, cancelBtn } = getDialogEls();
 
+  clearInterval(activeDialogTimer);
+  activeDialogTimer = null;
+  bg.dataset.variant = variant;
   titleEl.textContent = title;
   messageEl.textContent = message;
   confirmBtn.textContent = confirmText;
   confirmBtn.classList.toggle('danger', danger);
+  confirmBtn.disabled = confirmDelay > 0;
   cancelBtn.textContent = cancelText;
+
+  if (confirmDelay > 0) {
+    let remaining = Math.ceil(confirmDelay);
+    confirmBtn.textContent = `${confirmText} (${remaining}s)`;
+    activeDialogTimer = setInterval(() => {
+      remaining--;
+      if (remaining > 0) {
+        confirmBtn.textContent = `${confirmText} (${remaining}s)`;
+        return;
+      }
+      clearInterval(activeDialogTimer);
+      activeDialogTimer = null;
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = confirmText;
+    }, 1000);
+  }
 
   if (showInput) {
     inputWrap.style.display = 'block';
@@ -55,8 +78,8 @@ function openDialog({ title, message, danger = false, showInput = false, inputVa
 }
 
 // Substitui confirm(): retorna Promise<boolean>
-function confirmDialog(message, { title = 'Confirmar ação', danger = false, confirmText = 'Confirmar', cancelText = 'Cancelar' } = {}) {
-  return openDialog({ title, message, danger, showInput: false, confirmText, cancelText }).then(result => result === true);
+function confirmDialog(message, { title = 'Confirmar ação', danger = false, confirmText = 'Confirmar', cancelText = 'Cancelar', variant = '', confirmDelay = 0 } = {}) {
+  return openDialog({ title, message, danger, showInput: false, confirmText, cancelText, variant, confirmDelay }).then(result => result === true);
 }
 
 // Substitui prompt(): retorna Promise<string|null>
