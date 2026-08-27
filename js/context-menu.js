@@ -138,6 +138,12 @@ function duplicateContextButton(buttonWrap) {
   pushHistory();
   buttonWrap.after(createBtnEl(duplicate, section.dataset.id));
   recordUserActivity('created', duplicate.id);
+  recordActivityEvent('duplicated', {
+    target: 'button', targetId: duplicate.id, name: duplicate.name,
+    sectionId: section.dataset.id,
+    sectionName: section.querySelector('.section-title')?.textContent || '',
+    details: { sourceId: source.id, sourceName: source.name }
+  });
   updateSectionCount(section.dataset.id);
   applyButtonReorderControls();
   doSearch();
@@ -162,6 +168,10 @@ function duplicateContextSection(section) {
   const duplicatedSection = renderSection(duplicate, document.getElementById('sections'));
   section.after(duplicatedSection);
   duplicate.buttons.forEach(button => recordUserActivity('created', button.id));
+  recordActivityEvent('duplicated', {
+    target: 'section', targetId: duplicate.id, name: duplicate.name,
+    details: { sourceName, buttonCount: duplicate.buttons.length }
+  });
   applyButtonReorderControls();
   doSearch();
   updateToggleSectionsBtnLabel();

@@ -6,6 +6,7 @@
 
 let dragEl = null;
 let placeholder = null;
+let draggedButtonOrigin = null;
 
 // --- Preferência "Mostrar Destino" (preview visual do drag) ---------
 // Desativado por padrão. Importante: mesmo desativado, o placeholder
@@ -53,6 +54,12 @@ function onDragStart(event) {
   }
 
   dragEl = this;
+  const originSection = this.closest('.section-wrap');
+  draggedButtonOrigin = {
+    sectionId: originSection?.dataset.id || '',
+    sectionName: originSection?.querySelector('.section-title')?.textContent || '',
+    position: [...(originSection?.querySelectorAll('.btn-wrap') || [])].indexOf(this) + 1
+  };
   hideButtonPreview();
   this.querySelector('.copy-btn')?.removeAttribute('title');
   this.classList.add('dragging');
@@ -73,6 +80,7 @@ function onDragEnd() {
   placeholder?.remove();
   dragEl = null;
   placeholder = null;
+  draggedButtonOrigin = null;
 }
 
 function onDragOver(event) {
@@ -104,6 +112,20 @@ function onDrop(event) {
   placeholder.parentNode.insertBefore(dragEl, placeholder);
   placeholder.remove();
 
+  const destinationSection = dragEl.closest('.section-wrap');
+  const destinationName = destinationSection?.querySelector('.section-title')?.textContent || '';
+  const destinationPosition = [...(destinationSection?.querySelectorAll('.btn-wrap') || [])].indexOf(dragEl) + 1;
+  const eventType = draggedButtonOrigin?.sectionId !== destinationSection?.dataset.id ? 'transferred' : 'reordered';
+  if (eventType === 'transferred' || draggedButtonOrigin?.position !== destinationPosition) {
+    recordActivityEvent(eventType, {
+      target: 'button', targetId: dragEl.dataset.id,
+      name: dragEl.querySelector('.btn-label')?.textContent || 'Botão sem nome',
+      sectionId: destinationSection?.dataset.id || '', sectionName: destinationName,
+      fromSectionName: draggedButtonOrigin?.sectionName || '', toSectionName: destinationName,
+      fromPosition: draggedButtonOrigin?.position, toPosition: destinationPosition
+    });
+  }
+
   document.querySelectorAll('.section-body').forEach(body => updateSectionCount(body.dataset.section));
   applyButtonReorderControls();
   updateUnsavedChangesUI();
@@ -134,6 +156,7 @@ let lastShiftPress = 0;
 let draggingSectionEl = null;
 let sectionPlaceholderEl = null;
 let isDraggingSection = false;
+let draggedSectionOriginPosition = null;
 
 function updateShiftMode() {
   if (!editMode) {
@@ -192,6 +215,12 @@ function moveSectionUp(btn) {
 
   pushHistory();
   section.parentNode.insertBefore(section, prev);
+  recordActivityEvent('reordered', {
+    target: 'section', targetId: section.dataset.id,
+    name: section.querySelector('.section-title')?.textContent || 'Seção sem nome',
+    fromPosition: [...section.parentNode.children].indexOf(section) + 2,
+    toPosition: [...section.parentNode.children].indexOf(section) + 1
+  });
   updateUnsavedChangesUI();
 }
 
@@ -201,7 +230,13 @@ function moveSectionDown(btn) {
   if (!next) return;
 
   pushHistory();
+  const fromPosition = [...section.parentNode.children].indexOf(section) + 1;
   section.parentNode.insertBefore(next, section);
+  recordActivityEvent('reordered', {
+    target: 'section', targetId: section.dataset.id,
+    name: section.querySelector('.section-title')?.textContent || 'Seção sem nome',
+    fromPosition, toPosition: [...section.parentNode.children].indexOf(section) + 1
+  });
   updateUnsavedChangesUI();
 }
 
@@ -242,6 +277,7 @@ window.addEventListener('mousedown', event => {
   if (!section) return;
 
   draggingSectionEl = section;
+  draggedSectionOriginPosition = [...section.parentNode.children].indexOf(section) + 1;
   isDraggingSection = true;
   section.classList.add('dragging');
 });
@@ -276,10 +312,20 @@ window.addEventListener('mouseup', () => {
   }
 
   draggingSectionEl.classList.remove('dragging');
+  const movedSection = draggingSectionEl;
+  const destinationPosition = [...movedSection.parentNode.children].indexOf(movedSection) + 1;
   draggingSectionEl = null;
   isDraggingSection = false;
 
   pushHistory();
+  if (draggedSectionOriginPosition !== destinationPosition) {
+    recordActivityEvent('reordered', {
+      target: 'section', targetId: movedSection.dataset.id,
+      name: movedSection.querySelector('.section-title')?.textContent || 'Seção sem nome',
+      fromPosition: draggedSectionOriginPosition, toPosition: destinationPosition
+    });
+  }
+  draggedSectionOriginPosition = null;
   updateUnsavedChangesUI();
 });
 
@@ -328,6 +374,12 @@ function moveButtonPrev(buttonWrap) {
 
   pushHistory();
   buttons[index - 1].before(buttonWrap);
+  recordActivityEvent('reordered', {
+    target: 'button', targetId: buttonWrap.dataset.id,
+    name: buttonWrap.querySelector('.btn-label')?.textContent || 'Botão sem nome',
+    sectionId: section.dataset.id, sectionName: section.querySelector('.section-title')?.textContent || '',
+    fromPosition: index + 1, toPosition: index
+  });
   afterButtonMove(buttonWrap);
 }
 
@@ -339,6 +391,12 @@ function moveButtonNext(buttonWrap) {
 
   pushHistory();
   buttons[index + 1].after(buttonWrap);
+  recordActivityEvent('reordered', {
+    target: 'button', targetId: buttonWrap.dataset.id,
+    name: buttonWrap.querySelector('.btn-label')?.textContent || 'Botão sem nome',
+    sectionId: section.dataset.id, sectionName: section.querySelector('.section-title')?.textContent || '',
+    fromPosition: index + 1, toPosition: index + 2
+  });
   afterButtonMove(buttonWrap);
 }
 

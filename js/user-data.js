@@ -3,7 +3,8 @@
 // ==========================================================
 
 const USERDATA_STORAGE_KEY = 'blu:userdata';
-const USERDATA_FORMAT_VERSION = 2;
+const USERDATA_FORMAT_VERSION = 3;
+const ACTIVITY_LOG_LIMIT = 500;
 const DAILY_METRICS_EPOCH = '2026-08-17';
 const USER_ACTIVITY_TYPES = ['created', 'deleted', 'edited', 'copied', 'viewed'];
 let userData = loadUserData();
@@ -78,13 +79,61 @@ function sanitizeUserData(source) {
   USER_ACTIVITY_TYPES.forEach(type => {
     activity[type] = Math.max(0, Math.floor(Number(activitySource[type]) || 0));
   });
+  const activityLog = (Array.isArray(value.activityLog) ? value.activityLog : [])
+    .filter(event => event && typeof event === 'object' && typeof event.type === 'string')
+    .map(event => ({
+      id: String(event.id || `event-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`),
+      type: String(event.type),
+      target: event.target === 'section' ? 'section' : 'button',
+      targetId: String(event.targetId || ''),
+      name: String(event.name || ''),
+      sectionId: String(event.sectionId || ''),
+      sectionName: String(event.sectionName || ''),
+      fromSectionName: String(event.fromSectionName || ''),
+      toSectionName: String(event.toSectionName || ''),
+      fromPosition: event.fromPosition != null && Number.isFinite(Number(event.fromPosition)) ? Number(event.fromPosition) : null,
+      toPosition: event.toPosition != null && Number.isFinite(Number(event.toPosition)) ? Number(event.toPosition) : null,
+      details: event.details && typeof event.details === 'object' && !Array.isArray(event.details) ? event.details : {},
+      timestamp: typeof event.timestamp === 'string' && !Number.isNaN(Date.parse(event.timestamp)) ? event.timestamp : new Date().toISOString()
+    }))
+    .slice(0, ACTIVITY_LOG_LIMIT);
   return {
     version: USERDATA_FORMAT_VERSION,
     favorites,
     stats,
     activity,
-    dailyMetrics: sanitizeDailyMetrics(value.dailyMetrics)
+    dailyMetrics: sanitizeDailyMetrics(value.dailyMetrics),
+    activityLog
   };
+}
+
+function recordActivityEvent(type, payload = {}) {
+  const event = {
+    id: `event-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    type,
+    target: payload.target === 'section' ? 'section' : 'button',
+    targetId: String(payload.targetId || ''),
+    name: String(payload.name || ''),
+    sectionId: String(payload.sectionId || ''),
+    sectionName: String(payload.sectionName || ''),
+    fromSectionName: String(payload.fromSectionName || ''),
+    toSectionName: String(payload.toSectionName || ''),
+    fromPosition: payload.fromPosition != null && Number.isFinite(Number(payload.fromPosition)) ? Number(payload.fromPosition) : null,
+    toPosition: payload.toPosition != null && Number.isFinite(Number(payload.toPosition)) ? Number(payload.toPosition) : null,
+    details: payload.details && typeof payload.details === 'object' ? payload.details : {},
+    timestamp: new Date().toISOString()
+  };
+  userData.activityLog.unshift(event);
+  if (userData.activityLog.length > ACTIVITY_LOG_LIMIT) userData.activityLog.length = ACTIVITY_LOG_LIMIT;
+  persistUserData();
+  if (typeof renderActivityPanels === 'function') renderActivityPanels();
+  return event;
+}
+
+function clearActivityLog() {
+  userData.activityLog = [];
+  persistUserData();
+  renderUserDataPanels();
 }
 
 function loadUserData() {

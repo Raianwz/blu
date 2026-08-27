@@ -258,6 +258,123 @@ function createUsageRow(info, stats) {
   return row;
 }
 
+const ACTIVITY_ICON_PATHS = {
+  created: '<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>',
+  updated: '<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+  deleted: '<circle cx="12" cy="12" r="9"/><path d="m9 9 6 6m0-6-6 6"/>',
+  restored: '<path d="M3 7v6h6"/><path d="M5.5 17a8 8 0 1 0 .5-10L3 10"/>',
+  duplicated: '<rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/>',
+  transferred: '<path d="M7 7h11l-3-3m3 3-3 3M17 17H6l3 3m-3-3 3-3"/>',
+  reordered: '<path d="m8 7 4-4 4 4M12 3v18m-4-4 4 4 4-4"/>'
+};
+
+function getActivityIcon(type) {
+  return `<span class="activity-icon activity-${escapeHtml(type)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ACTIVITY_ICON_PATHS[type] || ACTIVITY_ICON_PATHS.updated}</svg></span>`;
+}
+
+function getActivityMessage(event) {
+  const name = `<strong>${escapeHtml(event.name || (event.target === 'section' ? 'Seção' : 'Botão'))}</strong>`;
+  const section = event.sectionName ? ` em <strong>${escapeHtml(event.sectionName)}</strong>` : '';
+  if (event.type === 'created') return `${name} ${event.target === 'section' ? 'foi criada' : `foi criado${section}`}`;
+  if (event.type === 'updated') {
+    if (event.target === 'section' && event.details?.previousName) return `<strong>${escapeHtml(event.details.previousName)}</strong> foi renomeada para ${name}`;
+    return `${name} foi editado${event.target === 'button' ? section : ''}`;
+  }
+  if (event.type === 'deleted') {
+    const count = event.target === 'section' && event.details?.buttonCount ? ` com ${event.details.buttonCount} botão(ões)` : '';
+    return `${name} foi removid${event.target === 'section' ? 'a' : 'o'}${section}${count}`;
+  }
+  if (event.type === 'restored') return `${name} foi restaurad${event.target === 'section' ? 'a' : 'o'}${section}`;
+  if (event.type === 'duplicated') return `${name} foi duplicad${event.target === 'section' ? 'a' : 'o'}${section}`;
+  if (event.type === 'transferred') return `${name} foi movido de <strong>${escapeHtml(event.fromSectionName || 'outra seção')}</strong> para <strong>${escapeHtml(event.toSectionName || event.sectionName)}</strong>`;
+  if (event.type === 'reordered') return `${name} mudou da posição ${event.fromPosition || '?'} para ${event.toPosition || '?'}${section}`;
+  return `${name} foi alterado`;
+}
+
+function formatActivityTime(timestamp, compact = false) {
+  const date = new Date(timestamp);
+  if (Number.isNaN(date.getTime())) return '';
+  const today = getLocalDateKey();
+  const dateKey = getLocalDateKey(date);
+  const time = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: compact ? undefined : '2-digit' });
+  if (dateKey === today) return `Hoje às ${time}`;
+  return `${date.toLocaleDateString('pt-BR')} às ${time}`;
+}
+
+function createActivityRow(event, compact = false) {
+  const row = document.createElement('article');
+  row.className = `activity-row activity-row-${event.type}`;
+  const changed = event.details?.changedFields || [];
+  const fieldLabels = { name: 'nome', text: 'texto', tag: 'tag', vis: 'visibilidade' };
+  const details = changed.length ? `<small class="activity-change-details">Alterado: ${escapeHtml(changed.map(field => fieldLabels[field] || field).join(', '))}</small>` : '';
+  row.innerHTML = `${getActivityIcon(event.type)}<div class="activity-row-content"><div>${getActivityMessage(event)}</div><time datetime="${escapeHtml(event.timestamp)}">${escapeHtml(formatActivityTime(event.timestamp, compact))}</time>${compact ? '' : details}</div>`;
+  return row;
+}
+
+function getFilteredActivityEvents(filter = 'all', range = null) {
+  return (userData.activityLog || []).filter(event => {
+    const date = new Date(event.timestamp);
+    if (range && (date < range.start || date > range.end)) return false;
+    if (filter === 'all') return true;
+    if (filter === 'button' || filter === 'section') return event.target === filter;
+    if (filter === 'movement') return event.type === 'reordered' || event.type === 'transferred';
+    return event.type === filter;
+  });
+}
+
+function renderActivityPanels() {
+  const dashboardList = document.getElementById('dashboardActivityList');
+  const dashboardEmpty = document.getElementById('dashboardActivityEmpty');
+  if (dashboardList && dashboardEmpty) {
+    const range = dashboardPeriod === 'total' ? null : getDashboardPeriodRange();
+    const events = getFilteredActivityEvents('all', range).slice(0, 8);
+    dashboardList.replaceChildren(...events.map(event => createActivityRow(event, true)));
+    dashboardEmpty.hidden = events.length > 0;
+  }
+  if (document.getElementById('activityModal')?.classList.contains('open')) renderActivityHistory();
+}
+
+function renderActivityHistory() {
+  const list = document.getElementById('activityHistoryList');
+  const empty = document.getElementById('activityHistoryEmpty');
+  if (!list || !empty) return;
+  const filter = document.getElementById('activityFilter')?.value || 'all';
+  const events = getFilteredActivityEvents(filter);
+  const children = [];
+  let currentDate = '';
+  events.forEach(event => {
+    const date = new Date(event.timestamp);
+    const dateKey = getLocalDateKey(date);
+    if (dateKey !== currentDate) {
+      currentDate = dateKey;
+      const heading = document.createElement('h3');
+      heading.className = 'activity-date-heading';
+      const today = getLocalDateKey();
+      const yesterdayDate = new Date();
+      yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+      const yesterday = getLocalDateKey(yesterdayDate);
+      heading.textContent = dateKey === today ? 'Hoje' : (dateKey === yesterday ? 'Ontem' : date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }));
+      children.push(heading);
+    }
+    children.push(createActivityRow(event));
+  });
+  list.replaceChildren(...children);
+  empty.hidden = events.length > 0;
+}
+
+function openActivityHistory() {
+  renderActivityHistory();
+  openModal('activityModal');
+}
+
+async function confirmClearActivityLog() {
+  const confirmed = await confirmDialog('Limpar todo o histórico de atividade? As métricas totais não serão apagadas.', { title: 'Limpar histórico', danger: true, confirmText: 'Limpar' });
+  if (!confirmed) return;
+  clearActivityLog();
+  renderActivityHistory();
+  notify('Histórico de atividade limpo');
+}
+
 function renderContentDashboard() {
   const metrics = document.getElementById('dashboardMetricCards');
   const favorites = document.getElementById('dashboardFavoritesList');
@@ -314,6 +431,7 @@ function renderContentDashboard() {
     empty.textContent = 'Nenhuma cópia registrada ainda.';
     mostUsed.appendChild(empty);
   }
+  renderActivityPanels();
 }
 
 function updateContentViewSwitcher() {

@@ -52,7 +52,9 @@ function saveSection() {
   }
 
   pushHistory();
-  renderSection({ id: 's' + Date.now(), name, collapsed: false, buttons: [] }, document.getElementById('sections'));
+  const section = { id: 's' + Date.now(), name, collapsed: false, buttons: [] };
+  renderSection(section, document.getElementById('sections'));
+  recordActivityEvent('created', { target: 'section', targetId: section.id, name });
   closeModal('sectionModal');
   document.getElementById('sName').value = '';
   notify('Seção criada!');
@@ -72,6 +74,7 @@ async function renameSection(sectionId) {
   pushHistory();
   titleEl.textContent = newName.trim();
   wrap.querySelector('.section-add-btn').title = `Adicionar botão em ${newName.trim()}`;
+  recordActivityEvent('updated', { target: 'section', targetId: sectionId, name: newName.trim(), details: { previousName: current } });
   notify('Seção renomeada!');
   doSearch();
   updateUnsavedChangesUI();
@@ -94,9 +97,11 @@ async function deleteSection(sectionId) {
       .map(button => button.dataset.tag)
       .filter(Boolean)
   );
+  const sectionName = wrap.querySelector('.section-title')?.textContent || 'Seção sem nome';
   pushHistory();
   const removedButtons = [...wrap.querySelectorAll('.btn-wrap')];
   removedButtons.forEach(button => recordUserActivity('deleted', button.dataset.id));
+  recordActivityEvent('deleted', { target: 'section', targetId: sectionId, name: sectionName, details: { buttonCount: count } });
   wrap.remove();
   affectedTags.forEach(removeTagIfOrphan);
   pruneUserData();
@@ -182,13 +187,33 @@ function saveBtn() {
       return;
     }
     const oldTag = old.dataset.tag;
+    const previous = {
+      name: old.querySelector('.btn-label')?.textContent || '',
+      text: old.dataset.text || '',
+      tag: old.dataset.tag || '',
+      vis: old.dataset.vis || 'other'
+    };
     old.replaceWith(createBtnEl(button, currentSectionId));
     recordUserActivity('edited', currentBtnId);
+    recordActivityEvent('updated', {
+      target: 'button', targetId: currentBtnId, name,
+      sectionId: currentSectionId,
+      sectionName: body.closest('.section-wrap')?.querySelector('.section-title')?.textContent || '',
+      details: {
+        changedFields: Object.keys(previous).filter(field => previous[field] !== button[field]),
+        previousName: previous.name
+      }
+    });
     if (oldTag && oldTag !== tag) removeTagIfOrphan(oldTag);
     notify('Botão atualizado!');
   } else {
     body.appendChild(createBtnEl(button, currentSectionId));
     recordUserActivity('created', button.id);
+    recordActivityEvent('created', {
+      target: 'button', targetId: button.id, name,
+      sectionId: currentSectionId,
+      sectionName: body.closest('.section-wrap')?.querySelector('.section-title')?.textContent || ''
+    });
     notify('Botão adicionado!');
   }
 
@@ -210,9 +235,12 @@ async function deleteBtn(sectionId, btnId) {
   if (!ok) return;
 
   const removedTag = target.dataset.tag;
+  const removedName = target.querySelector('.btn-label')?.textContent || 'Botão sem nome';
+  const sectionName = target.closest('.section-wrap')?.querySelector('.section-title')?.textContent || '';
 
   pushHistory();
   recordUserActivity('deleted', btnId);
+  recordActivityEvent('deleted', { target: 'button', targetId: btnId, name: removedName, sectionId, sectionName });
   target.remove();
   removeButtonUserData(btnId);
   if (removedTag) removeTagIfOrphan(removedTag);

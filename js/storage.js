@@ -325,6 +325,28 @@ function restoreState(state) {
   updateUnsavedChangesUI();
 }
 
+function recordRestoredStateItems(beforeState, afterState) {
+  const beforeSections = new Map((beforeState?.sections || []).map(section => [section.id, section]));
+  (afterState?.sections || []).forEach(section => {
+    const previousSection = beforeSections.get(section.id);
+    if (!previousSection) {
+      recordActivityEvent('restored', {
+        target: 'section', targetId: section.id, name: section.name,
+        details: { buttonCount: section.buttons?.length || 0 }
+      });
+      return;
+    }
+    const previousButtons = new Set((previousSection.buttons || []).map(button => button.id));
+    (section.buttons || []).forEach(button => {
+      if (previousButtons.has(button.id)) return;
+      recordActivityEvent('restored', {
+        target: 'button', targetId: button.id, name: button.name,
+        sectionId: section.id, sectionName: section.name
+      });
+    });
+  });
+}
+
 function undoLastAction() {
   if (history.length === 0) return;
   document.querySelectorAll('#notifArea .notif.has-action').forEach(element => element.remove());
@@ -345,6 +367,7 @@ function undoLastAction() {
 
     const previousState = JSON.parse(previousStateString);
     restoreState(previousState);
+    recordRestoredStateItems(JSON.parse(currentStateString), previousState);
     if (typeof updateQuickActionsUI === 'function') updateQuickActionsUI();
     mobileHaptic('success');
     notify('Desfeito!');

@@ -350,6 +350,11 @@
       <p id="dashboardPeriodHint" class="dashboard-period-hint">Todo o período registrado, incluindo os totais anteriores ao histórico diário.</p>
     </section>
     <div id="dashboardMetricCards" class="dashboard-metric-cards"></div>
+    <section class="dashboard-card dashboard-activity-card">
+      <div class="activity-card-head"><div><h2>Atividade recente</h2><p>Alterações em botões e seções</p></div><button class="mbtn ghost" type="button" onclick="openActivityHistory()">Ver histórico</button></div>
+      <div id="dashboardActivityEmpty" class="userdata-empty">Nenhuma alteração registrada ainda.</div>
+      <div id="dashboardActivityList" class="activity-list activity-list-compact"></div>
+    </section>
     <div class="content-dashboard-grid">
       <section class="dashboard-card">
         <h2>⭐ Favoritos</h2>
@@ -375,6 +380,15 @@
       </section>
     </div>
   </main>
+
+  <div class="modal-bg" id="activityModal">
+    <div class="modal activity-modal">
+      <div class="activity-modal-head"><div><h2>Atividade do Blû</h2><p>Histórico local das alterações estruturais</p></div><label>Mostrar<select id="activityFilter" onchange="renderActivityHistory()"><option value="all">Tudo</option><option value="button">Botões</option><option value="section">Seções</option><option value="created">Criações</option><option value="updated">Edições</option><option value="deleted">Remoções</option><option value="restored">Restaurações</option><option value="duplicated">Duplicações</option><option value="movement">Movimentações</option></select></label></div>
+      <div id="activityHistoryEmpty" class="userdata-empty">Nenhuma atividade para este filtro.</div>
+      <div id="activityHistoryList" class="activity-list activity-history-list"></div>
+      <div class="modal-footer activity-modal-footer"><button class="mbtn danger" type="button" onclick="confirmClearActivityLog()">Limpar histórico</button><button class="mbtn secondary" type="button" onclick="closeModal('activityModal')">Fechar</button></div>
+    </div>
+  </div>
 
   <div class="modal-bg" id="statisticsModal">
     <div class="modal userdata-modal">

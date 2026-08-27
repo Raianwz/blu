@@ -346,7 +346,7 @@ document.addEventListener('keydown', event => {
   }
 
   if (event.key === 'Escape') {
-    ['btnModal', 'sectionModal', 'tagModal', 'importModal', 'customExportModal', 'dialogModal', 'shortcutsModal', 'shareModal', 'buttonViewModal', 'jsonModal', 'favoritesModal', 'statisticsModal'].forEach(closeModal);
+    ['btnModal', 'sectionModal', 'tagModal', 'importModal', 'customExportModal', 'dialogModal', 'shortcutsModal', 'shareModal', 'buttonViewModal', 'jsonModal', 'favoritesModal', 'statisticsModal', 'activityModal'].forEach(closeModal);
     document.getElementById('menuOverlay').classList.remove('open');
   }
 
