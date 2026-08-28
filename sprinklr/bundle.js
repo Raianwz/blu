@@ -132,13 +132,18 @@ function closeDialog(result) {
 function openDialog({ title, message, danger = false, showInput = false, inputValue = '', confirmText = 'Confirmar', cancelText = 'Cancelar' }) {
   const { bg, title: titleEl, message: messageEl, inputWrap, input, confirmBtn, cancelBtn } = getDialogEls();
 
+  if (bg) bg.classList.toggle('danger-dialog', danger);
   if (titleEl) titleEl.textContent = title;
   if (messageEl) messageEl.textContent = message;
   if (confirmBtn) {
     confirmBtn.textContent = confirmText;
     confirmBtn.classList.toggle('danger', danger);
   }
-  if (cancelBtn) cancelBtn.textContent = cancelText;
+  if (cancelBtn) {
+    cancelBtn.textContent = cancelText;
+    cancelBtn.classList.toggle('primary', danger);
+    cancelBtn.classList.toggle('cancel', !danger);
+  }
 
   if (showInput && inputWrap && input) {
     inputWrap.style.display = 'block';
@@ -1592,12 +1597,23 @@ function setImportFileMeta(message, isError = false) {
   meta.style.color = isError ? 'var(--red)' : 'var(--text2)';
 }
 
+function updateImportClearButton() {
+  const button = document.getElementById('clearImportBtn');
+  const input = document.getElementById('importFileInput');
+  const textarea = document.getElementById('importJson');
+  if (!button) return;
+  const hasFile = Boolean(input?.files?.length);
+  const hasText = Boolean(textarea?.value.trim());
+  button.disabled = !hasFile && !hasText;
+}
+
 function clearImportSource() {
   const input = document.getElementById('importFileInput');
   const textarea = document.getElementById('importJson');
   if (input) input.value = '';
   if (textarea) textarea.value = '';
   setImportFileMeta('Nenhum arquivo carregado.');
+  updateImportClearButton();
 }
 
 async function handleImportFileSelected(event) {
@@ -1610,6 +1626,7 @@ async function handleImportFileSelected(event) {
     setImportFileMeta('Formato não suportado. Use um arquivo .json ou .txt.', true);
     notify('Formato não suportado. Use .json ou .txt', 'err');
     event.target.value = '';
+    updateImportClearButton();
     return;
   }
 
@@ -1628,10 +1645,12 @@ async function handleImportFileSelected(event) {
     textarea.value = finalText;
     const sizeKb = (file.size / 1024).toFixed(file.size >= 1024 ? 1 : 0);
     setImportFileMeta(`Arquivo carregado: ${file.name} (${sizeKb} KB)`);
+    updateImportClearButton();
     notify('Arquivo carregado na área de importação');
   } catch (error) {
     console.error('Erro ao ler arquivo:', error);
     setImportFileMeta('Não foi possível ler o arquivo selecionado.', true);
+    updateImportClearButton();
     notify('Erro ao ler arquivo', 'err');
   }
 }

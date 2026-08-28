@@ -890,9 +890,44 @@ body.edit-mode .btn-del {
   color: white;
 }
 
+.mbtn.primary:hover {
+  filter: brightness(1.08);
+}
+
 .mbtn.secondary {
   background: var(--border);
   color: var(--text2);
+}
+
+.import-actions .mbtn.secondary:not(:disabled) {
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text);
+}
+
+.import-actions .mbtn.secondary:not(:disabled):hover {
+  border-color: var(--accent1);
+  color: var(--accent1);
+  background: rgba(102, 126, 234, .08);
+}
+
+.mbtn:disabled {
+  opacity: .48;
+  cursor: not-allowed;
+}
+
+.mbtn.cancel {
+  border: 1px solid rgba(239, 68, 68, .5);
+  background: rgba(239, 68, 68, .06);
+  color: var(--red);
+}
+
+.mbtn.cancel:hover,
+.mbtn.cancel:focus-visible {
+  border-color: var(--red);
+  background: var(--red);
+  color: white;
+  outline: none;
 }
 
 
@@ -1363,8 +1398,18 @@ body.shift-locked .btn-wrap.blu-button-shift-row .copy-btn {
 
 /* Diálogo customizado (substitui confirm()/prompt() nativos) */
 .mbtn.danger {
+  border: 1px solid rgba(239, 68, 68, .5);
+  background: rgba(239, 68, 68, .06);
+  color: var(--red);
+}
+
+.mbtn.danger:hover,
+.mbtn.danger:focus-visible {
+  border-color: var(--red);
   background: var(--red);
   color: white;
+  filter: none;
+  outline: none;
 }
 
 #dialogModal .modal {
@@ -1376,6 +1421,11 @@ body.shift-locked .btn-wrap.blu-button-shift-row .copy-btn {
   color: var(--text2);
   line-height: 1.5;
   white-space: pre-wrap;
+}
+
+#dialogModal.danger-dialog #dialogMessage {
+  color: var(--text);
+  text-transform: none;
 }
 
 #dialogInputWrap {
