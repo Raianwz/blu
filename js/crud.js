@@ -608,8 +608,9 @@ function openShareModal() {
     titleEl.textContent = '🔗 Link Ativo';
     bodyEl.innerHTML = `
       <p class="share-modal-desc">Você já tem um link válido para os dados atuais:</p>
-      <div class="form-group">
+      <div class="form-group share-link-field">
         <input id="shareResultInput" type="text" readonly value="${escapeHtmlAttr(lastShare.url)}">
+        ${lastShare.id ? `<button id="customizeShareBtn" class="share-link-edit" type="button" title="${lastShare.alias ? 'Alterar apelido' : 'Personalizar link'}" aria-label="${lastShare.alias ? 'Alterar apelido do link' : 'Personalizar link'}">${iconSvg('pencil')}</button>` : ''}
       </div>
       <p class="share-expiry">⏱️ Expira em ${formatTimeRemaining(lastShare.expiresAt - Date.now())}</p>
       ${countsHtml}
@@ -629,18 +630,8 @@ function openShareModal() {
     copyBtn.textContent = 'Copiar';
     copyBtn.onclick = copyShareLink;
 
-    footerEl.append(regenBtn);
-
-    if (lastShare.id) {
-      const aliasBtn = document.createElement('button');
-      aliasBtn.className = 'mbtn ghost';
-      aliasBtn.id = 'customizeShareBtn';
-      aliasBtn.textContent = lastShare.alias ? 'Alterar apelido' : 'Personalizar link';
-      aliasBtn.onclick = openShareAliasEditor;
-      footerEl.append(aliasBtn);
-    }
-
-    footerEl.append(copyBtn);
+    footerEl.append(regenBtn, copyBtn);
+    document.getElementById('customizeShareBtn')?.addEventListener('click', openShareAliasEditor);
   } else {
     titleEl.textContent = '🔗 Compartilhar Dados';
     bodyEl.innerHTML = `

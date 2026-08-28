@@ -3417,6 +3417,49 @@ kbd {
   font-size: 12px;
 }
 
+.share-link-field {
+  display: flex;
+  align-items: stretch;
+  gap: 7px;
+}
+
+.share-link-field #shareResultInput {
+  min-width: 0;
+}
+
+.share-link-edit {
+  display: inline-flex;
+  flex: 0 0 38px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface2);
+  color: var(--accent1);
+  cursor: pointer;
+  transition: border-color .15s, background .15s, color .15s;
+}
+
+.share-link-edit:hover {
+  border-color: var(--accent1);
+  background: color-mix(in srgb, var(--accent1) 12%, var(--surface2));
+}
+
+.share-link-edit:focus-visible {
+  outline: 2px solid var(--accent1);
+  outline-offset: 2px;
+}
+
+.share-link-edit:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+.share-link-edit .menu-icon {
+  width: 16px;
+  height: 16px;
+}
+
 .share-alias-editor {
   margin-top: 14px;
   padding: 12px;
