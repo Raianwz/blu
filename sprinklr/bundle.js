@@ -81,6 +81,7 @@ const ICONS = {
   fold_vertical: `<path d="M12 22v-6" /> <path d="M12 8V2" /> <path d="M4 12H2" /> <path d="M10 12H8" /> <path d="M16 12h-2" /> <path d="M22 12h-2" /> <path d="m15 19-3-3-3 3" /> <path d="m15 5-3 3-3-3" />`,
   moon: `<path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401" />`,
   sun: `<circle cx="12" cy="12" r="4" /> <path d="M12 2v2" /> <path d="M12 20v2" /> <path d="m4.93 4.93 1.41 1.41" /> <path d="m17.66 17.66 1.41 1.41" /> <path d="M2 12h2" /> <path d="M20 12h2" /> <path d="m6.34 17.66-1.41 1.41" /> <path d="m19.07 4.93-1.41 1.41" />`,
+  monitor: `<rect width="20" height="14" x="2" y="3" rx="2" /> <path d="M8 21h8" /> <path d="M12 17v4" />`,
   keyboard: `<path d="M10 8h.01" /> <path d="M12 12h.01" /> <path d="M14 8h.01" /> <path d="M16 12h.01" /> <path d="M18 8h.01" /> <path d="M6 8h.01" /> <path d="M7 16h10" /> <path d="M8 12h.01" /> <rect width="20" height="16" x="2" y="4" rx="2" />`,
   external_link: `<path d="M15 3h6v6" /> <path d="M10 14 21 3" /> <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />`,
   app_window: `<rect x="2" y="4" width="20" height="16" rx="2" /> <path d="M10 4v4" /> <path d="M2 8h20" /> <path d="M6 4v4" />`,
@@ -250,6 +251,18 @@ function clearBluLocalStorage() {
       if (key?.startsWith('blu:')) localStorage.removeItem(key);
     }
   } catch (_) {}
+}
+
+function clearBluPreferences() {
+  try {
+    localStorage.removeItem(SETTINGS_STORAGE_KEY);
+    localStorage.removeItem('blu:theme');
+    localStorage.removeItem('blu:textPreview');
+    return true;
+  } catch (error) {
+    console.error('Erro ao redefinir preferências:', error);
+    return false;
+  }
 }
 
 function collectState() {
@@ -804,6 +817,105 @@ function toggleAllSections() {
 // ==========================================================
 // Pesquisa (nome, tag, @seção)
 // ==========================================================
+const SEARCH_ALL_PLACEHOLDERS = [
+  'Pesquisar...',
+  'Pesquisar por nome',
+  'Pesquisar por tag ou grupo',
+  'Pesquisar por @seção',
+  'Pesquisar por "texto"',
+  'Pesquisar por nome ou tag'
+];
+const SEARCH_TYPE_PLACEHOLDERS = {
+  name: 'Pesquisar por nome...',
+  tag: 'Pesquisar por tag ou grupo...',
+  category: 'Pesquisar por seção...',
+  text: 'Pesquisar no conteúdo dos botões...'
+};
+const desktopSearchGuidanceMedia = window.matchMedia('(min-width: 761px) and (hover: hover) and (pointer: fine)');
+const reducedMotionMedia = window.matchMedia('(prefers-reduced-motion: reduce)');
+let searchPlaceholderIndex = 0;
+let searchPlaceholderTimer = null;
+let searchPlaceholderSwapTimer = null;
+
+function stopSearchPlaceholderRotation() {
+  clearInterval(searchPlaceholderTimer);
+  clearTimeout(searchPlaceholderSwapTimer);
+  searchPlaceholderTimer = null;
+  searchPlaceholderSwapTimer = null;
+  document.getElementById('searchInput')?.classList.remove('search-placeholder-changing');
+}
+
+function setSearchPlaceholder(text, animate = false) {
+  const input = document.getElementById('searchInput');
+  if (!input) return;
+  clearTimeout(searchPlaceholderSwapTimer);
+  if (!animate) {
+    input.classList.remove('search-placeholder-changing');
+    input.placeholder = text;
+    return;
+  }
+  input.classList.add('search-placeholder-changing');
+  searchPlaceholderSwapTimer = setTimeout(() => {
+    input.placeholder = text;
+    input.classList.remove('search-placeholder-changing');
+    searchPlaceholderSwapTimer = null;
+  }, 150);
+}
+
+function updateSearchGuidance() {
+  const input = document.getElementById('searchInput');
+  const type = document.getElementById('searchType')?.value || 'all';
+  if (!input) return;
+  stopSearchPlaceholderRotation();
+  if (type !== 'all') {
+    setSearchPlaceholder(SEARCH_TYPE_PLACEHOLDERS[type] || 'Pesquisar...');
+    return;
+  }
+  if (!desktopSearchGuidanceMedia.matches) {
+    setSearchPlaceholder('Pesquisar...');
+    return;
+  }
+  if (reducedMotionMedia.matches) {
+    setSearchPlaceholder('Pesquisar por nome, tag, @seção ou "texto"...');
+    return;
+  }
+  setSearchPlaceholder(SEARCH_ALL_PLACEHOLDERS[searchPlaceholderIndex]);
+  if (input.matches(':focus') || input.value) return;
+  searchPlaceholderTimer = setInterval(() => {
+    searchPlaceholderIndex = (searchPlaceholderIndex + 1) % SEARCH_ALL_PLACEHOLDERS.length;
+    setSearchPlaceholder(SEARCH_ALL_PLACEHOLDERS[searchPlaceholderIndex], true);
+  }, 2800);
+}
+
+function initSearchGuidance() {
+  const input = document.getElementById('searchInput');
+  const type = document.getElementById('searchType');
+  if (!input || !type) return;
+  input.addEventListener('focus', stopSearchPlaceholderRotation);
+  input.addEventListener('blur', updateSearchGuidance);
+  input.addEventListener('input', () => { if (input.value) stopSearchPlaceholderRotation(); });
+  type.addEventListener('change', updateSearchGuidance);
+  desktopSearchGuidanceMedia.addEventListener('change', updateSearchGuidance);
+  reducedMotionMedia.addEventListener('change', updateSearchGuidance);
+  updateSearchGuidance();
+  updateSearchClearButton();
+}
+
+function updateSearchClearButton() {
+  const input = document.getElementById('searchInput');
+  const button = document.getElementById('clearSearchBtn');
+  if (input && button) button.hidden = !input.value;
+}
+
+function clearSearch() {
+  const input = document.getElementById('searchInput');
+  if (!input) return;
+  input.value = '';
+  doSearch({ collapseOnClear: true });
+  updateSearchGuidance();
+  input.focus();
+}
+
 function showAllSearchResults() {
   document.querySelectorAll('.btn-wrap').forEach(button => {
     button.classList.remove('search-hidden');
@@ -819,11 +931,13 @@ function showAllSearchResults() {
 
 function setNoResultsMessage(query) {
   const msg = document.getElementById('noResultsMsg');
+  const addSectionButton = document.getElementById('addSectionBtn');
   if (!msg) return;
 
   if (!query) {
     msg.classList.remove('show');
     msg.textContent = '';
+    if (addSectionButton) addSectionButton.hidden = false;
     return;
   }
 
@@ -833,11 +947,13 @@ function setNoResultsMessage(query) {
   if (hasVisibleSection) {
     msg.classList.remove('show');
     msg.textContent = '';
+    if (addSectionButton) addSectionButton.hidden = false;
     return;
   }
 
   msg.innerHTML = `🔍 Nenhum resultado para <strong>"${escapeHtml(query)}"</strong>`;
   msg.classList.add('show');
+  if (addSectionButton) addSectionButton.hidden = true;
 }
 
 function collapseAllSectionsAfterSearchClear() {
@@ -853,6 +969,7 @@ function collapseAllSectionsAfterSearchClear() {
 
 function doSearch(options = {}) {
   hideButtonPreview();
+  updateSearchClearButton();
   const { collapseOnClear = false } = options;
   const raw = (document.getElementById('searchInput')?.value || '').trim();
   const q = normalizeSearchText(raw);
@@ -2293,40 +2410,58 @@ if (shiftBtn) {
   notify(editMode ? 'Modo edição ativado' : 'Modo edição desativado');
 }
 
-function toggleTheme() {
-  const dark = document.body.classList.toggle('dark');
-  applyThemeButtonUI(dark);
-  setSetting('theme', dark ? 'dark' : 'light');
-}
-
 const systemThemeQuery = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
 
-function applyThemeButtonUI(dark) {
-  const button = document.getElementById('themeBtn');
-  if (!button) return;
-  const icon = button.querySelector('.menu-icon');
-  if (icon) icon.innerHTML = ICONS[dark ? 'sun' : 'moon'];
-  button.querySelector('.menu-btn-label').textContent = dark ? 'Tema Claro' : 'Tema Escuro';
+function toggleTheme() {
+  setThemePreference(document.body.classList.contains('dark') ? 'light' : 'dark');
+}
+
+function setThemePreference(preference) {
+  const value = ['system', 'light', 'dark'].includes(preference) ? preference : 'system';
+  setSetting('theme', value);
+  applyTheme(value === 'system' ? !!systemThemeQuery?.matches : value === 'dark');
+}
+
+function updateThemePreferenceUI() {
+  const select = document.getElementById('themeSelect');
+  if (!select) return;
+  const stored = getSetting('theme', 'system');
+  const preference = ['system', 'light', 'dark'].includes(stored) ? stored : 'system';
+  select.value = preference;
+  const icon = select.closest('.menu-setting-row')?.querySelector('.menu-icon');
+  if (icon) icon.innerHTML = ICONS[{ system: 'monitor', light: 'sun', dark: 'moon' }[preference]];
 }
 
 function applyTheme(dark) {
   document.body.classList.toggle('dark', dark);
-  applyThemeButtonUI(dark);
+  updateThemePreferenceUI();
 }
 
 function initTheme() {
   const stored = getSetting('theme');
-
-  if (stored === 'dark' || stored === 'light') {
-    applyTheme(stored === 'dark');
-  } else {
-    applyTheme(!!systemThemeQuery?.matches);
-  }
+  applyTheme(stored === 'dark' || stored === 'light' ? stored === 'dark' : !!systemThemeQuery?.matches);
 
   systemThemeQuery?.addEventListener('change', event => {
     const currentStored = getSetting('theme');
-    if (currentStored !== 'dark' && currentStored !== 'light') applyTheme(event.matches);
+    if (currentStored === 'system' || (currentStored !== 'dark' && currentStored !== 'light')) applyTheme(event.matches);
   });
+}
+
+async function resetPreferences() {
+  const ok = await confirmDialog(
+    'As configurações de aparência e comportamento voltarão ao padrão. Seus botões, seções e organização não serão alterados.',
+    { title: '↺ Redefinir Preferências', confirmText: 'Redefinir' }
+  );
+  if (!ok) return;
+  if (!clearBluPreferences()) {
+    notify('Não foi possível redefinir as preferências', 'err');
+    return;
+  }
+  applyTheme(!!systemThemeQuery?.matches);
+  applyTextPreviewState(true);
+  updateSearchGuidance();
+  document.getElementById('menuOverlay')?.classList.remove('open');
+  notify('Preferências redefinidas');
 }
 
 function toggleMenu() {
@@ -2388,13 +2523,14 @@ function upgradeSprinklrMenu() {
     ]),
     createSprinklrSubmenu('aparencia', 'Aparência', 'palette', [
       document.getElementById('toggleSectionsBtn'),
-      document.getElementById('themeBtn'),
+      document.getElementById('themeSettingRow'),
       document.getElementById('textPreviewBtn')
     ]),
     createSprinklrSubmenu('ferramentas', 'Ferramentas', 'wrench', [
       findByOnclick("openModal('shortcutsModal')"),
       findByOnclick("openJsonModal('diagnostic')"),
-      findByOnclick("openTagModal('diagnostic')")
+      findByOnclick("openTagModal('diagnostic')"),
+      findByOnclick('resetPreferences()')
     ]),
     createSprinklrSubmenu('janela', 'Janela', 'app_window', [
       findByOnclick('openPopout()'),
@@ -2555,6 +2691,7 @@ setupVersionBadgeHover();
 migrateLegacySettings();
 initTheme();
 initTextPreviewPreference();
+initSearchGuidance();
 upgradeSprinklrMenu();
 init();
 
