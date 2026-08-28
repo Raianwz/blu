@@ -1769,11 +1769,86 @@ body.edit-mode .btn-del {
   z-index: 1500;
   cursor: default;
   transition: opacity 0.2s;
+  border: 0;
+  font-family: inherit;
 }
 
 #appVersion:hover {
   opacity: 1;
+  cursor: pointer;
 }
+
+.about-modal { max-width: 500px; }
+
+.about-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.about-brand img {
+  border-radius: 15px;
+  box-shadow: 0 8px 22px rgba(30, 95, 217, .22);
+}
+
+.about-brand h2 { margin: 0 0 4px; }
+.about-brand span { color: var(--text2); font-size: 12px; }
+
+.about-description {
+  margin: 0 0 16px;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.about-privacy {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 16px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface2);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.about-privacy span { color: var(--text2); }
+
+.about-details {
+  display: grid;
+  gap: 0;
+  margin: 0 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  overflow: hidden;
+}
+
+.about-details > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 9px 11px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11.5px;
+}
+
+.about-details > div:last-child { border-bottom: 0; }
+.about-details dt { color: var(--text2); }
+.about-details dd { margin: 0; color: var(--text); text-align: right; font-weight: 600; }
+
+.about-project-link {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  color: var(--accent1);
+  font-size: 12px;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.about-project-link:hover { text-decoration: underline; }
 
 #appVersion.unsaved {
   opacity: 1;

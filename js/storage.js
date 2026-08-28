@@ -221,8 +221,8 @@ function updateUnsavedChangesUI() {
     // Se o mouse já está sobre o badge, mantém a variação com versão visível.
     versionBadge.textContent = isVersionBadgeHovering ? getVersionedBadgeText(dirty) : getBaseBadgeText(dirty);
     versionBadge.title = dirty
-      ? 'Seus dados estão salvos neste navegador. Exporte um JSON para ter um backup fora do navegador.'
-      : 'Seus dados estão salvos neste navegador e com backup exportado.';
+      ? 'Seus dados estão salvos neste navegador. Exporte um JSON para ter um backup fora do navegador. Clique para saber mais sobre o Blû.'
+      : 'Seus dados estão salvos neste navegador e com backup exportado. Clique para saber mais sobre o Blû.';
   }
 
   if (exportBtn) {

@@ -105,6 +105,20 @@ function toggleTheme() {
   setThemePreference(document.body.classList.contains('dark') ? 'light' : 'dark');
 }
 
+function openAboutModal() {
+  const standalone = window.matchMedia?.('(display-mode: standalone)').matches || navigator.standalone === true;
+  const version = document.getElementById('aboutVersion');
+  const displayMode = document.getElementById('aboutDisplayMode');
+  const connection = document.getElementById('aboutConnection');
+
+  if (version) version.textContent = `Versão ${VERSION}`;
+  if (displayMode) displayMode.textContent = standalone ? 'Aplicativo instalado (PWA)' : 'Navegador';
+  if (connection) connection.textContent = navigator.onLine ? 'Online' : 'Offline';
+
+  document.getElementById('menuOverlay')?.classList.remove('open');
+  openModal('aboutModal');
+}
+
 function setThemePreference(preference) {
   const value = ['system', 'light', 'dark'].includes(preference) ? preference : 'system';
   setSetting('theme', value);
