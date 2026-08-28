@@ -17,6 +17,14 @@ const MAX_PAYLOAD_BYTES = 600 * 1024; // 600 KB
 const ID_LENGTH = 10;
 const ID_ALPHABET = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
+function isValidClientId(value) {
+  return typeof value === 'string' && /^[a-f0-9]{48}$/.test(value);
+}
+
+function hashClientId(value) {
+  return crypto.createHash('sha256').update(value).digest('hex');
+}
+
 function generateId(length = ID_LENGTH) {
   const bytes = crypto.randomBytes(length);
   let id = '';
@@ -77,6 +85,12 @@ module.exports = async (req, res) => {
     return;
   }
 
+  const clientId = body?.clientId;
+  if (clientId !== undefined && !isValidClientId(clientId)) {
+    res.status(400).json({ error: 'invalid_client', message: 'Não foi possível identificar este navegador.' });
+    return;
+  }
+
   try {
     let id = generateId();
     let attempts = 0;
@@ -88,7 +102,11 @@ module.exports = async (req, res) => {
       attempts++;
     }
 
-    await redis.set(`blu:share:${id}`, data, { ex: TTL_SECONDS });
+    const writes = [redis.set(`blu:share:${id}`, data, { ex: TTL_SECONDS })];
+    if (clientId) {
+      writes.push(redis.set(`blu:share-owner:${id}`, hashClientId(clientId), { ex: TTL_SECONDS }));
+    }
+    await Promise.all(writes);
 
     res.status(201).json({ id, expiresInSeconds: TTL_SECONDS });
   } catch (error) {

@@ -8,6 +8,7 @@
     }
   ],
   "rewrites": [
-    { "source": "/share/:code", "destination": "/share.html" }
+    { "source": "/share/:code", "destination": "/share.html" },
+    { "source": "/s/:code", "destination": "/share.html" }
   ]
 }

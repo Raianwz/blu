@@ -61,8 +61,12 @@
     setupDialogEvents();
 
     function getShareCode() {
-      const match = window.location.pathname.match(/\/share\/([^/]+)/);
+      const match = window.location.pathname.match(/\/(?:share|s)\/([^/]+)/);
       return match ? decodeURIComponent(match[1]) : '';
+    }
+
+    function isAliasSharePath() {
+      return window.location.pathname.startsWith('/s/');
     }
 
     async function loadShare() {
@@ -78,7 +82,8 @@
       }
 
       try {
-        const res = await fetch(`/api/share/${encodeURIComponent(code)}`);
+        const aliasQuery = isAliasSharePath() ? '?alias=1' : '';
+        const res = await fetch(`/api/share/${encodeURIComponent(code)}${aliasQuery}`);
 
         if (res.status === 404) {
           titleEl.textContent = 'Link expirado ou inexistente';

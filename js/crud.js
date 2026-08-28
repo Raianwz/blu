@@ -496,6 +496,10 @@ function saveLastShareRecord(record) {
   try { localStorage.setItem(LAST_SHARE_KEY, JSON.stringify(record)); } catch (_) {}
 }
 
+function isValidShareAlias(value) {
+  return /^(?=.*[A-Z])(?=.*\d)[A-Za-z][A-Za-z0-9_-]{5,31}$/.test(String(value || '').trim());
+}
+
 function formatTimeRemaining(msRemaining) {
   if (msRemaining <= 0) return 'expirado';
 
@@ -625,7 +629,18 @@ function openShareModal() {
     copyBtn.textContent = 'Copiar';
     copyBtn.onclick = copyShareLink;
 
-    footerEl.append(regenBtn, copyBtn);
+    footerEl.append(regenBtn);
+
+    if (lastShare.id) {
+      const aliasBtn = document.createElement('button');
+      aliasBtn.className = 'mbtn ghost';
+      aliasBtn.id = 'customizeShareBtn';
+      aliasBtn.textContent = lastShare.alias ? 'Alterar apelido' : 'Personalizar link';
+      aliasBtn.onclick = openShareAliasEditor;
+      footerEl.append(aliasBtn);
+    }
+
+    footerEl.append(copyBtn);
   } else {
     titleEl.textContent = '🔗 Compartilhar Dados';
     bodyEl.innerHTML = `
@@ -722,7 +737,7 @@ async function shareData() {
     const res = await fetch('/api/share', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ data: encryptedPayload })
+      body: JSON.stringify({ data: encryptedPayload, clientId: getOrCreateClientId() })
     });
 
     const responseBody = await res.json().catch(() => ({}));
@@ -744,8 +759,11 @@ async function shareData() {
     const url = `${window.location.origin}/share/${id}`;
 
     saveLastShareRecord({
+      id,
       comparableState: getComparableStateString(),
       url,
+      originalUrl: url,
+      alias: null,
       expiresAt: Date.now() + expiresInSeconds * 1000
     });
 
@@ -788,6 +806,26 @@ function updateShareConnectivityUI(announce = false) {
       : regenerateButton.dataset.payloadBlocked === 'true' ? 'O payload ultrapassa o limite de 600 KB' : '';
   }
 
+  const customizeButton = document.getElementById('customizeShareBtn');
+  if (customizeButton) {
+    customizeButton.disabled = !online;
+    customizeButton.title = online ? 'Criar ou alterar o apelido deste link' : 'Personalização indisponível: sem conexão';
+  }
+
+  const aliasInput = document.getElementById('shareAliasInput');
+  if (aliasInput) {
+    aliasInput.disabled = !online;
+    const removeAliasButton = document.getElementById('removeShareAliasBtn');
+    if (removeAliasButton) removeAliasButton.disabled = !online;
+    const saveAliasButton = document.getElementById('saveShareAliasBtn');
+    if (saveAliasButton) {
+      const currentAlias = getLastShareRecord()?.alias || '';
+      saveAliasButton.disabled = !online || !isValidShareAlias(aliasInput.value) || aliasInput.value.trim() === currentAlias;
+    }
+    const aliasError = document.getElementById('shareAliasError');
+    if (aliasError) aliasError.textContent = online ? '' : 'Conecte-se à internet para personalizar o link.';
+  }
+
   if (announce) {
     notify(online ? 'Conexão restabelecida' : 'Sem conexão: compartilhamento indisponível', online ? 'ok' : 'err');
   }
@@ -811,6 +849,107 @@ async function copyShareLink() {
   } catch (error) {
     console.error('Erro ao copiar link:', error);
     notify('Não foi possível copiar. Copie manualmente.', 'err');
+  }
+}
+
+function openShareAliasEditor() {
+  const record = getLastShareRecord();
+  const body = document.getElementById('shareModalBody');
+  if (!record?.id || !body) return;
+
+  body.querySelector('.share-alias-editor')?.remove();
+  const editor = document.createElement('div');
+  editor.className = 'share-alias-editor';
+  editor.innerHTML = `
+    <label for="shareAliasInput">Apelido do link</label>
+    <div class="share-alias-input-row">
+      <span>${escapeHtml(window.location.origin)}/s/</span>
+      <input id="shareAliasInput" type="text" maxlength="32" autocomplete="off" spellcheck="false" value="${escapeHtmlAttr(record.alias || '')}" placeholder="EquipeA1">
+    </div>
+    <p class="share-alias-help">6 a 32 caracteres, começando por letra, com pelo menos uma maiúscula e um número.</p>
+    <p id="shareAliasError" class="share-alias-error" role="alert"></p>
+    <div class="share-alias-actions">
+      ${record.alias ? '<button class="mbtn ghost" id="removeShareAliasBtn" type="button">Remover apelido</button>' : ''}
+      <button class="mbtn secondary" id="cancelShareAliasBtn" type="button">Cancelar</button>
+      <button class="mbtn primary" id="saveShareAliasBtn" type="button" disabled>Salvar apelido</button>
+    </div>
+  `;
+  body.appendChild(editor);
+
+  const input = document.getElementById('shareAliasInput');
+  const saveButton = document.getElementById('saveShareAliasBtn');
+  const updateValidation = () => {
+    const valid = isValidShareAlias(input.value);
+    saveButton.disabled = !valid || input.value.trim() === record.alias;
+    document.getElementById('shareAliasError').textContent = input.value && !valid
+      ? 'O apelido precisa começar por letra e conter uma maiúscula e um número.' : '';
+  };
+  input.addEventListener('input', updateValidation);
+  saveButton.onclick = saveShareAlias;
+  document.getElementById('cancelShareAliasBtn').onclick = () => editor.remove();
+  document.getElementById('removeShareAliasBtn')?.addEventListener('click', removeShareAlias);
+  updateValidation();
+  input.focus();
+  input.select();
+}
+
+function setShareAliasEditorBusy(busy) {
+  document.querySelectorAll('.share-alias-editor input, .share-alias-editor button').forEach(element => { element.disabled = busy; });
+}
+
+async function saveShareAlias() {
+  const record = getLastShareRecord();
+  const input = document.getElementById('shareAliasInput');
+  const errorEl = document.getElementById('shareAliasError');
+  const alias = input?.value.trim() || '';
+  if (!record?.id || !isValidShareAlias(alias)) return;
+
+  setShareAliasEditorBusy(true);
+  errorEl.textContent = '';
+  try {
+    const response = await fetch(`/api/share/${encodeURIComponent(record.id)}/alias`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ alias, clientId: getOrCreateClientId() })
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) throw Object.assign(new Error(`HTTP ${response.status}`), { userMessage: payload.message });
+
+    const url = `${window.location.origin}/s/${encodeURIComponent(alias)}`;
+    saveLastShareRecord({ ...record, alias, url });
+    openShareModal();
+    notify('Link personalizado!');
+  } catch (error) {
+    console.error('Erro ao personalizar link:', error);
+    errorEl.textContent = error.userMessage || 'Não foi possível personalizar o link.';
+    setShareAliasEditorBusy(false);
+  }
+}
+
+async function removeShareAlias() {
+  const record = getLastShareRecord();
+  const errorEl = document.getElementById('shareAliasError');
+  if (!record?.id || !record.alias) return;
+
+  setShareAliasEditorBusy(true);
+  errorEl.textContent = '';
+  try {
+    const response = await fetch(`/api/share/${encodeURIComponent(record.id)}/alias`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ clientId: getOrCreateClientId() })
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) throw Object.assign(new Error(`HTTP ${response.status}`), { userMessage: payload.message });
+
+    const originalUrl = record.originalUrl || `${window.location.origin}/share/${record.id}`;
+    saveLastShareRecord({ ...record, alias: null, url: originalUrl, originalUrl });
+    openShareModal();
+    notify('Apelido removido');
+  } catch (error) {
+    console.error('Erro ao remover apelido:', error);
+    errorEl.textContent = error.userMessage || 'Não foi possível remover o apelido.';
+    setShareAliasEditorBusy(false);
   }
 }
 

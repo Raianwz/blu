@@ -47,7 +47,18 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const data = await redis.get(`blu:share:${id}`);
+    const aliasMode = req.query.alias === '1';
+    let resolvedId = id;
+    if (aliasMode) {
+      const aliasTarget = await redis.get(`blu:share-alias:${String(id).toLowerCase()}`);
+      if (aliasTarget === null || aliasTarget === undefined) {
+        res.status(404).json({ error: 'not_found', message: 'Este link não existe ou expirou.' });
+        return;
+      }
+      resolvedId = String(aliasTarget);
+    }
+
+    const data = await redis.get(`blu:share:${resolvedId}`);
 
     if (data === null || data === undefined) {
       res.status(404).json({ error: 'not_found', message: 'Este link não existe ou expirou.' });

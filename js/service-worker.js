@@ -13,7 +13,7 @@
 // subir a versão abaixo (CACHE_VERSION). Isso cria um cache
 // novo e descarta o antigo na ativação.
 
-const CACHE_VERSION = 'v8';
+const CACHE_VERSION = 'v9';
 const CACHE_NAME = `blu-cache-${CACHE_VERSION}`;
 
 const APP_SHELL = [
@@ -76,6 +76,7 @@ self.addEventListener('fetch', event => {
   // respostas da API devem sobreviver offline por meio do cache do PWA.
   const networkOnly = requestUrl.pathname === '/share.html'
     || requestUrl.pathname.startsWith('/share/')
+    || requestUrl.pathname.startsWith('/s/')
     || requestUrl.pathname.startsWith('/api/');
   if (networkOnly) {
     event.respondWith(fetch(request, { cache: 'no-store' }));
