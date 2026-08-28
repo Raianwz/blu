@@ -1795,6 +1795,21 @@ body.edit-mode .btn-del {
 .about-brand h2 { margin: 0 0 4px; }
 .about-brand span { color: var(--text2); font-size: 12px; }
 
+.about-source-link {
+  display: block;
+  width: fit-content;
+  margin-top: 3px;
+  color: var(--text2);
+  font-size: 10.5px;
+  font-weight: 400;
+  text-decoration: none;
+}
+
+.about-source-link:hover {
+  color: var(--accent1);
+  text-decoration: underline;
+}
+
 .about-description {
   margin: 0 0 16px;
   color: var(--text);
@@ -1838,17 +1853,6 @@ body.edit-mode .btn-del {
 .about-details dt { color: var(--text2); }
 .about-details dd { margin: 0; color: var(--text); text-align: right; font-weight: 600; }
 
-.about-project-link {
-  display: inline-flex;
-  gap: 5px;
-  align-items: center;
-  color: var(--accent1);
-  font-size: 12px;
-  font-weight: 650;
-  text-decoration: none;
-}
-
-.about-project-link:hover { text-decoration: underline; }
 
 #appVersion.unsaved {
   opacity: 1;
