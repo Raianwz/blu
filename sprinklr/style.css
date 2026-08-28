@@ -618,6 +618,130 @@ body.edit-mode .btn-wrap.dragging {
 .json-view-text { width: 100%; min-height: 320px; resize: vertical; box-sizing: border-box; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface2); color: var(--text); font: 12px/1.45 Consolas, monospace; }
 .json-view-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
 .json-size-meta { margin: 8px 0; color: var(--text2); font-size: 11px; line-height: 1.4; }
+
+.json-modal {
+  width: min(640px, calc(100vw - 24px));
+  max-width: 640px;
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.json-modal.view-active { height: min(86vh, 760px); }
+
+.json-modal-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 4px;
+  margin-bottom: 14px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface2);
+}
+
+.json-modal-tab {
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text2);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.json-modal-tab.active { background: var(--accent1); color: white; }
+.json-modal-panel[hidden] { display: none; }
+.json-modal-panel.active { flex: 1; min-height: 0; overflow-y: auto; }
+#jsonViewPanel.active { display: flex; flex-direction: column; overflow: hidden; }
+
+.json-diagnostic-summary {
+  padding: 11px 12px;
+  margin-bottom: 8px;
+  border: 1.5px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.json-diagnostic-summary.ok { border-color: rgba(34, 197, 94, .5); background: rgba(34, 197, 94, .08); }
+.json-diagnostic-summary.warning { border-color: rgba(245, 158, 11, .55); background: rgba(245, 158, 11, .08); }
+
+.json-diagnostic-issues {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 42vh;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.json-toolbox { padding: 12px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface2); }
+.json-toolbox-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 11px; color: var(--text); font-size: 13px; }
+.json-toolbox-heading span, .json-toolbox-label { color: var(--text2); font-size: 10.5px; }
+.json-toolbox-label { margin: 9px 0 6px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+.json-tool-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+
+.json-tool-action {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+  padding: 9px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.json-tool-action:hover:not(:disabled) { border-color: var(--accent1); background: rgba(102, 126, 234, .08); }
+.json-tool-action:disabled { opacity: .48; cursor: not-allowed; }
+.json-tool-action .menu-icon { flex: 0 0 auto; width: 17px; height: 17px; margin-top: 1px; color: var(--accent1); }
+.json-tool-action span { min-width: 0; }
+.json-tool-action strong, .json-tool-action small { display: block; }
+.json-tool-action strong { margin-bottom: 3px; font-size: 11.5px; }
+.json-tool-action small { color: var(--text2); font-size: 9.5px; line-height: 1.35; }
+
+.json-modal .diagnostic-group { padding: 11px 12px; }
+
+.json-modal .json-view-text {
+  flex: 1 1 180px;
+  width: 100%;
+  height: auto;
+  min-height: 180px;
+  max-height: 100%;
+  resize: vertical;
+  overflow: auto;
+  padding: 12px;
+  border-radius: 9px;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  line-height: 1.5;
+  outline: none;
+  scrollbar-gutter: stable;
+  scrollbar-width: auto;
+  scrollbar-color: var(--tag-scroll-thumb) var(--tag-scroll-track);
+}
+
+.json-view-text::-webkit-scrollbar { width: 10px; height: 10px; }
+.json-view-text::-webkit-scrollbar-track { margin: 6px 0; border-radius: 8px; background: var(--tag-scroll-track); }
+.json-view-text::-webkit-scrollbar-thumb { min-width: 28px; min-height: 28px; border: 2px solid var(--tag-scroll-thumb-border); border-radius: 8px; background-color: var(--tag-scroll-thumb); }
+.json-view-text::-webkit-scrollbar-thumb:hover { background-color: var(--tag-scroll-thumb-hover); }
+.json-view-text::-webkit-scrollbar-corner { background: transparent; }
+
+.json-modal .json-view-actions { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+.json-view-actions .mbtn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; width: 100%; min-width: 0; min-height: 36px; padding-inline: 10px; white-space: nowrap; }
+.json-view-actions .menu-icon { flex: 0 0 auto; width: 15px; height: 15px; }
+.json-view-actions .json-compact-action { border-color: rgba(102, 126, 234, .65); color: var(--accent1); }
+
+.json-modal > .modal-footer { flex-shrink: 0; margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border); }
+.json-modal > .modal-footer .mbtn { border: 1px solid var(--border); background: var(--surface2); color: var(--text); }
+.json-modal > .modal-footer .mbtn:hover { border-color: var(--accent1); color: var(--accent1); background: rgba(102, 126, 234, .08); }
 .context-menu { position: fixed; z-index: 2300; display: flex; flex-direction: column; min-width: 210px; padding: 6px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 14px 36px var(--shadow); }
 .context-menu[hidden] { display: none; }
 .context-menu-item { display: flex; align-items: center; gap: 9px; width: 100%; padding: 8px 10px; border: 0; border-radius: 7px; background: transparent; color: var(--text); text-align: left; cursor: pointer; }
@@ -700,6 +824,13 @@ body.edit-mode .btn-del {
   width: 90%;
   max-width: 460px;
   box-shadow: 0 20px 60px var(--shadow);
+}
+
+/* O modal genérico é estreito; o visualizador precisa acomodar quatro ações. */
+#jsonModal .json-modal {
+  width: min(640px, calc(100vw - 32px));
+  max-width: 640px;
+  box-sizing: border-box;
 }
 
 .modal h2 {
@@ -1320,4 +1451,24 @@ kbd {
 
 .no-results strong {
   color: var(--text);
+}
+
+@media (max-width: 560px) {
+  #jsonModal .json-view-actions {
+    gap: 6px;
+  }
+
+  #jsonModal .json-view-actions .mbtn {
+    min-height: 38px;
+    padding-inline: 8px;
+  }
+
+  #jsonModal .json-view-actions .mbtn span {
+    display: none;
+  }
+
+  #jsonModal .json-view-actions .menu-icon {
+    width: 17px;
+    height: 17px;
+  }
 }

@@ -257,20 +257,25 @@
 
   <div class="modal-bg" id="jsonModal">
     <div class="modal json-modal">
-      <h2>Verificar JSON</h2>
-      <div class="tool-tabs">
-        <button id="jsonDiagnosticTab" class="tool-tab active" type="button" onclick="setJsonModalTab('diagnostic')">Diagnóstico</button>
-        <button id="jsonViewTab" class="tool-tab" type="button" onclick="setJsonModalTab('view')">Visualizar</button>
+      <h2 id="jsonModalTitle">📄 Verificar JSON</h2>
+      <div class="json-modal-tabs" role="tablist" aria-label="Ferramentas de JSON">
+        <button id="jsonDiagnosticTab" class="json-modal-tab active" type="button" role="tab" aria-selected="true" aria-controls="jsonDiagnosticPanel" onclick="setJsonModalTab('diagnostic')">Diagnóstico</button>
+        <button id="jsonViewTab" class="json-modal-tab" type="button" role="tab" aria-selected="false" aria-controls="jsonViewPanel" onclick="setJsonModalTab('view')">Visualizar</button>
       </div>
-      <div id="jsonDiagnosticPanel" class="tool-panel active">
-        <div id="jsonDiagnosticSummary" class="diagnostic-summary"></div>
+      <div id="jsonDiagnosticPanel" class="json-modal-panel active" role="tabpanel" aria-labelledby="jsonDiagnosticTab">
+        <div id="jsonDiagnosticSummary" class="json-diagnostic-summary"></div>
         <div id="jsonDiagnosticSize" class="json-size-meta"></div>
-        <div id="jsonDiagnosticIssues" class="diagnostic-issues"></div>
+        <div id="jsonDiagnosticIssues" class="json-diagnostic-issues"></div>
       </div>
-      <div id="jsonViewPanel" class="tool-panel" hidden>
-        <textarea id="jsonViewText" class="json-view-text" readonly spellcheck="false"></textarea>
+      <div id="jsonViewPanel" class="json-modal-panel" role="tabpanel" aria-labelledby="jsonViewTab" hidden>
+        <textarea id="jsonViewText" class="json-view-text" readonly spellcheck="false" wrap="soft" aria-label="JSON atual do Blû Sprinklr"></textarea>
         <div id="jsonViewSize" class="json-size-meta"></div>
-        <div class="json-view-actions"><button class="mbtn ghost" onclick="refreshJsonView()">Atualizar</button><button class="mbtn ghost" onclick="copyCompactJsonView()">Copiar compacto</button><button class="mbtn primary" onclick="copyJsonView()">Copiar JSON</button></div>
+        <div class="json-view-actions">
+          <button class="mbtn ghost" type="button" onclick="refreshJsonView()" title="Atualizar visualização" aria-label="Atualizar visualização"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 4v5h5" /><path d="M4 13a8.1 8.1 0 0 0 15.5 2M20 20v-5h-5" /></svg><span>Atualizar</span></button>
+          <button class="mbtn ghost" type="button" onclick="copyJsonView()" title="Copiar JSON formatado" aria-label="Copiar JSON formatado"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></svg><span>Copiar JSON</span></button>
+          <button class="mbtn ghost json-compact-action" type="button" onclick="copyCompactJsonView()" title="Copiar versão compacta" aria-label="Copiar versão compacta"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 3-5 5 5 5" /><path d="M3 8h9a4 4 0 0 1 4 4v1" /><path d="m16 21 5-5-5-5" /><path d="M21 16h-9a4 4 0 0 1-4-4v-1" /></svg><span>Copiar compacto</span></button>
+          <button class="mbtn primary" type="button" onclick="exportData()" title="Exportar JSON" aria-label="Exportar JSON"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3" /><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="m7 10 5 5 5-5" /></svg><span>Exportar</span></button>
+        </div>
       </div>
       <div class="modal-footer"><button class="mbtn secondary" onclick="closeModal('jsonModal')">Fechar</button></div>
     </div>

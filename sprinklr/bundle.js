@@ -2107,10 +2107,21 @@ function openJsonModal(tab = 'diagnostic') {
 function setJsonModalTab(tab) {
   activeJsonModalTab = tab === 'view' ? 'view' : 'diagnostic';
   const viewing = activeJsonModalTab === 'view';
-  document.getElementById('jsonDiagnosticPanel').hidden = viewing;
-  document.getElementById('jsonViewPanel').hidden = !viewing;
-  document.getElementById('jsonDiagnosticTab').classList.toggle('active', !viewing);
-  document.getElementById('jsonViewTab').classList.toggle('active', viewing);
+  const diagnosticPanel = document.getElementById('jsonDiagnosticPanel');
+  const viewPanel = document.getElementById('jsonViewPanel');
+  const diagnosticTab = document.getElementById('jsonDiagnosticTab');
+  const viewTab = document.getElementById('jsonViewTab');
+  document.querySelector('#jsonModal .json-modal')?.classList.toggle('view-active', viewing);
+  if (diagnosticPanel) diagnosticPanel.hidden = viewing;
+  if (viewPanel) viewPanel.hidden = !viewing;
+  diagnosticPanel?.classList.toggle('active', !viewing);
+  viewPanel?.classList.toggle('active', viewing);
+  diagnosticTab?.classList.toggle('active', !viewing);
+  viewTab?.classList.toggle('active', viewing);
+  diagnosticTab?.setAttribute('aria-selected', String(!viewing));
+  viewTab?.setAttribute('aria-selected', String(viewing));
+  const title = document.getElementById('jsonModalTitle');
+  if (title) title.textContent = viewing ? '📄 Visualizar JSON' : '📄 Verificar JSON';
   if (viewing) refreshJsonView();
   else renderJsonDiagnostics();
 }
@@ -2140,13 +2151,104 @@ function renderJsonDiagnostics() {
   const state = collectState();
   const issues = getJsonDiagnostics(state);
   const buttonCount = state.sections.reduce((sum, section) => sum + section.buttons.length, 0);
-  document.getElementById('jsonDiagnosticSummary').textContent = issues.length
+  const summary = document.getElementById('jsonDiagnosticSummary');
+  summary.className = `json-diagnostic-summary ${issues.length ? 'warning' : 'ok'}`;
+  summary.textContent = issues.length
     ? `${issues.length} problema(s) em ${state.sections.length} seção(ões), ${buttonCount} botão(ões) e ${state.tags.length} tag(s).`
     : `JSON íntegro: ${state.sections.length} seção(ões), ${buttonCount} botão(ões) e ${state.tags.length} tag(s).`;
   updateJsonSizeMeta('jsonDiagnosticSize', state);
   const wrap = document.getElementById('jsonDiagnosticIssues');
   wrap.replaceChildren();
-  if (issues.length) wrap.appendChild(makeDiagnosticGroup('Problemas encontrados', issues, 'Corrigir automaticamente', repairJsonIntegrity));
+
+  const optimization = getSprinklrJsonOptimization(state);
+  const repairableCount = issues.filter(issue => !issue.includes('está sem texto') && !issue.startsWith('Um botão da seção')).length;
+  const toolbox = document.createElement('section');
+  toolbox.className = 'json-toolbox';
+  toolbox.innerHTML = '<div class="json-toolbox-heading"><strong>Manutenção do JSON</strong><span>Ações compatíveis com Desfazer</span></div><div class="json-toolbox-label">Ações seguras</div>';
+  const grid = document.createElement('div');
+  grid.className = 'json-tool-grid';
+  grid.append(
+    createJsonToolAction('Corrigir', repairableCount ? `${repairableCount} ajuste(s) disponível(is)` : 'Nenhuma correção automática', 'wrench', repairJsonIntegrity, !repairableCount),
+    createJsonToolAction('Otimizar', optimization.changed ? `${formatJsonFileSize(optimization.compactBytes)} após otimização` : 'Estrutura já otimizada', 'unfold_vertical', optimizeSprinklrJson, !optimization.changed),
+    createJsonToolAction('Copiar relatório', 'Resumo técnico sem os textos', 'copy', copySprinklrJsonReport)
+  );
+  toolbox.appendChild(grid);
+  wrap.appendChild(toolbox);
+  if (issues.length) wrap.appendChild(makeDiagnosticGroup('Problemas encontrados', issues));
+}
+
+function createJsonToolAction(label, description, icon, action, disabled = false) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'json-tool-action';
+  button.disabled = disabled;
+  button.innerHTML = `${iconSvg(icon)}<span><strong>${escapeHtml(label)}</strong><small>${escapeHtml(description)}</small></span>`;
+  button.onclick = action;
+  return button;
+}
+
+function getSprinklrJsonOptimization(state = collectState()) {
+  const original = JSON.parse(JSON.stringify(state));
+  const optimized = normalizeImportedData(original);
+  const usedTags = new Set();
+  optimized.sections.forEach(section => section.buttons.forEach(button => { if (button.tag) usedTags.add(button.tag); }));
+  const beforeTags = optimized.tags.length;
+  optimized.tags = optimized.tags
+    .filter(tag => usedTags.has(tag))
+    .sort((left, right) => left.localeCompare(right, 'pt-BR', { sensitivity: 'base', numeric: true }));
+  const compact = JSON.stringify(optimized);
+  return {
+    state: optimized,
+    compact,
+    compactBytes: new TextEncoder().encode(compact).byteLength,
+    removedOrphanTags: beforeTags - optimized.tags.length,
+    changed: JSON.stringify(original) !== compact
+  };
+}
+
+async function optimizeSprinklrJson() {
+  const optimization = getSprinklrJsonOptimization();
+  if (!optimization.changed) {
+    notify('Os dados já estão estruturalmente otimizados');
+    return;
+  }
+  const detail = optimization.removedOrphanTags
+    ? `${optimization.removedOrphanTags} tag(s) sem uso será(ão) removida(s).`
+    : 'A estrutura e a ordem das tags serão normalizadas.';
+  const ok = await confirmDialog(
+    `${detail}\n\nTags apenas parecidas não serão mescladas. Textos e quebras de linha não serão alterados.`,
+    { title: 'Otimizar JSON', confirmText: 'Otimizar' }
+  );
+  if (!ok) return;
+  pushHistory();
+  restoreState(optimization.state);
+  renderJsonDiagnostics();
+  refreshJsonView();
+  notify('JSON otimizado!');
+}
+
+async function copySprinklrJsonReport() {
+  const state = collectState();
+  const issues = getJsonDiagnostics(state);
+  const size = getJsonSizeData(state);
+  const buttonCount = state.sections.reduce((sum, section) => sum + section.buttons.length, 0);
+  const lines = [
+    'Blû Sprinklr — Diagnóstico JSON',
+    `Seções: ${state.sections.length}`,
+    `Botões: ${buttonCount}`,
+    `Tags: ${state.tags.length}`,
+    `Tamanho formatado: ${formatJsonFileSize(size.formattedBytes)}`,
+    `Tamanho compacto: ${formatJsonFileSize(size.compactBytes)}`,
+    `Problemas: ${issues.length}`,
+    ...issues.map(issue => `- ${issue}`)
+  ];
+  try {
+    await copyToClipboard(lines.join('\n'));
+    notify('Relatório do JSON copiado!');
+  } catch (error) {
+    console.error('Erro ao copiar diagnóstico JSON:', error);
+    notify('Não foi possível copiar o relatório', 'err');
+  }
 }
 
 async function repairJsonIntegrity() {
