@@ -1,6 +1,6 @@
 # Blû
 
-Blû é um painel de textos reutilizáveis organizados em seções e tags. Ele permite criar botões para copiar rapidamente respostas de atendimento, comandos de RPG, prompts, links ou qualquer conteúdo usado com frequência.
+Blû é um painel de textos reutilizáveis organizados em seções e tags. Ele permite criar botões para copiar rapidamente respostas, comandos de RPG, prompts, links ou qualquer conteúdo usado com frequência.
 
 **Acesse:** [blu.rwz.app](https://blu.rwz.app)
 
