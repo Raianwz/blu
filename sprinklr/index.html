@@ -131,6 +131,7 @@
       <button class="menu-btn" onclick="openJsonModal('diagnostic')" title="Checar a integridade dos dados"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" /><path d="M14 2v5a1 1 0 0 0 1 1h5" /><path d="m9 15 2 2 4-4" /></svg><span class="menu-btn-label">Verificar JSON</span></button>
       <button class="menu-btn" onclick="openTagModal('diagnostic')" title="Checar tags órfãs ou conflitantes"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z" /><circle cx="7.5" cy="7.5" r=".5" fill="currentColor" /></svg><span class="menu-btn-label">Verificar Tags</span></button>
       <button class="menu-btn" onclick="resetPreferences()" title="Restaurar preferências de aparência e comportamento"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v6h6" /></svg><span class="menu-btn-label">Redefinir Preferências</span></button>
+      <button class="menu-btn" onclick="openAboutModal()" title="Conhecer esta edição do Blû"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg><span class="menu-btn-label">Sobre o Blû</span></button>
     </div>
 
     <div class="menu-sep"></div>
@@ -263,11 +264,13 @@
       </div>
       <div id="jsonDiagnosticPanel" class="tool-panel active">
         <div id="jsonDiagnosticSummary" class="diagnostic-summary"></div>
+        <div id="jsonDiagnosticSize" class="json-size-meta"></div>
         <div id="jsonDiagnosticIssues" class="diagnostic-issues"></div>
       </div>
       <div id="jsonViewPanel" class="tool-panel" hidden>
         <textarea id="jsonViewText" class="json-view-text" readonly spellcheck="false"></textarea>
-        <div class="json-view-actions"><button class="mbtn ghost" onclick="refreshJsonView()">Atualizar</button><button class="mbtn primary" onclick="copyJsonView()">Copiar JSON</button></div>
+        <div id="jsonViewSize" class="json-size-meta"></div>
+        <div class="json-view-actions"><button class="mbtn ghost" onclick="refreshJsonView()">Atualizar</button><button class="mbtn ghost" onclick="copyCompactJsonView()">Copiar compacto</button><button class="mbtn primary" onclick="copyJsonView()">Copiar JSON</button></div>
       </div>
       <div class="modal-footer"><button class="mbtn secondary" onclick="closeModal('jsonModal')">Fechar</button></div>
     </div>
@@ -279,6 +282,16 @@
       <div id="buttonViewMeta" class="button-view-meta"></div>
       <pre id="buttonViewText" class="button-view-text"></pre>
       <div class="modal-footer"><button class="mbtn secondary" onclick="closeModal('buttonViewModal')">Fechar</button><button class="mbtn primary" onclick="copyViewedButtonText()">Copiar texto</button></div>
+    </div>
+  </div>
+
+  <div class="modal-bg" id="aboutModal">
+    <div class="modal about-modal">
+      <div class="about-brand"><img src="blu.svg" alt="" width="64" height="64"><div><h2>Blû Sprinklr</h2><span id="aboutVersion">Versão</span><a class="about-source-link" href="https://github.com/Raianwz/blu" target="_blank" rel="noopener noreferrer">Ver código-fonte</a></div></div>
+      <p class="about-description">O Sprinklr é a edição local do Blû voltada para desktop e telas grandes. Ele organiza textos reutilizáveis em botões e seções, oferece edição e portabilidade dos dados e funciona sem recursos de compartilhamento ou serviços online.</p>
+      <div class="about-privacy"><strong>Funcionamento totalmente local.</strong><span>Botões, seções e preferências permanecem armazenados neste navegador. Use a exportação JSON para manter um backup fora dele.</span></div>
+      <dl class="about-details"><div><dt>Edição</dt><dd>Desktop local</dd></div><div><dt>Armazenamento</dt><dd>Neste navegador</dd></div></dl>
+      <div class="modal-footer"><button class="mbtn primary" type="button" onclick="closeModal('aboutModal')">Fechar</button></div>
     </div>
   </div>
 
@@ -376,7 +389,7 @@
   </div>
 
   <div id="notifArea"></div>
-  <div id="appVersion">Blû</div>
+  <button id="appVersion" type="button" onclick="openAboutModal()">Blû</button>
   <script src="/sprinklr/bundle.js?sprinklr-version=1.6.1"></script>
 </body>
 

@@ -2143,6 +2143,7 @@ function renderJsonDiagnostics() {
   document.getElementById('jsonDiagnosticSummary').textContent = issues.length
     ? `${issues.length} problema(s) em ${state.sections.length} seção(ões), ${buttonCount} botão(ões) e ${state.tags.length} tag(s).`
     : `JSON íntegro: ${state.sections.length} seção(ões), ${buttonCount} botão(ões) e ${state.tags.length} tag(s).`;
+  updateJsonSizeMeta('jsonDiagnosticSize', state);
   const wrap = document.getElementById('jsonDiagnosticIssues');
   wrap.replaceChildren();
   if (issues.length) wrap.appendChild(makeDiagnosticGroup('Problemas encontrados', issues, 'Corrigir automaticamente', repairJsonIntegrity));
@@ -2169,13 +2170,47 @@ async function repairJsonIntegrity() {
 }
 
 function refreshJsonView() {
-  document.getElementById('jsonViewText').value = JSON.stringify(collectState(), null, 2);
+  const state = collectState();
+  document.getElementById('jsonViewText').value = JSON.stringify(state, null, 2);
+  updateJsonSizeMeta('jsonViewSize', state);
+}
+
+function getJsonSizeData(state = collectState()) {
+  const formatted = JSON.stringify(state, null, 2);
+  const compact = JSON.stringify(state);
+  return {
+    formatted,
+    compact,
+    formattedBytes: new TextEncoder().encode(formatted).byteLength,
+    compactBytes: new TextEncoder().encode(compact).byteLength
+  };
+}
+
+function formatJsonFileSize(bytes) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(bytes < 10 * 1024 ? 1 : 0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function updateJsonSizeMeta(id, state = collectState()) {
+  const element = document.getElementById(id);
+  if (!element) return;
+  const size = getJsonSizeData(state);
+  const saved = Math.max(0, size.formattedBytes - size.compactBytes);
+  const percent = size.formattedBytes ? Math.round((saved / size.formattedBytes) * 100) : 0;
+  element.textContent = `Formatado: ${formatJsonFileSize(size.formattedBytes)} • Compacto: ${formatJsonFileSize(size.compactBytes)} • Economia: ${formatJsonFileSize(saved)} (${percent}%)`;
 }
 
 async function copyJsonView() {
   refreshJsonView();
   await copyToClipboard(document.getElementById('jsonViewText').value);
   notify('JSON copiado!');
+}
+
+async function copyCompactJsonView() {
+  const size = getJsonSizeData();
+  await copyToClipboard(size.compact);
+  notify('JSON compacto copiado!');
 }
 
 let viewedButtonText = '';
@@ -2464,6 +2499,13 @@ async function resetPreferences() {
   notify('Preferências redefinidas');
 }
 
+function openAboutModal() {
+  const version = document.getElementById('aboutVersion');
+  if (version) version.textContent = `Versão ${VERSION}`;
+  document.getElementById('menuOverlay')?.classList.remove('open');
+  openModal('aboutModal');
+}
+
 function toggleMenu() {
   document.getElementById('menuOverlay').classList.toggle('open');
 }
@@ -2530,7 +2572,8 @@ function upgradeSprinklrMenu() {
       findByOnclick("openModal('shortcutsModal')"),
       findByOnclick("openJsonModal('diagnostic')"),
       findByOnclick("openTagModal('diagnostic')"),
-      findByOnclick('resetPreferences()')
+      findByOnclick('resetPreferences()'),
+      findByOnclick('openAboutModal()')
     ]),
     createSprinklrSubmenu('janela', 'Janela', 'app_window', [
       findByOnclick('openPopout()'),
@@ -2669,7 +2712,7 @@ document.addEventListener('keydown', event => {
   }
 
   if (event.key === 'Escape') {
-    ['btnModal', 'sectionModal', 'tagModal', 'importModal', 'dialogModal', 'shortcutsModal', 'jsonModal', 'buttonViewModal'].forEach(closeModal);
+    ['btnModal', 'sectionModal', 'tagModal', 'importModal', 'dialogModal', 'shortcutsModal', 'jsonModal', 'buttonViewModal', 'aboutModal'].forEach(closeModal);
     closeContextMenu();
     document.getElementById('menuOverlay').classList.remove('open');
   }
