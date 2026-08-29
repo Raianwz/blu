@@ -1522,3 +1522,37 @@ kbd {
     height: 17px;
   }
 }
+
+/* Exportação personalizada */
+#customExportModal .custom-export-modal { display: flex; width: min(920px, calc(100vw - 32px)); max-width: 920px; max-height: 88vh; flex-direction: column; box-sizing: border-box; overflow: hidden; }
+.custom-export-tabs { display: grid; flex-shrink: 0; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 12px; padding: 4px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface2); }
+.custom-export-tabs button { padding: 8px; border: 0; border-radius: 7px; background: transparent; color: var(--text2); cursor: pointer; font-weight: 700; }
+.custom-export-tabs button.active { background: var(--accent1); color: white; }
+.custom-export-panel { min-height: 0; }
+#customExportConfigPanel { display: flex; flex: 1; flex-direction: column; overflow: hidden; }
+#customExportConfigPanel[hidden], #customExportPreviewPanel[hidden] { display: none; }
+.custom-export-top-grid, .custom-export-control-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 9px; }
+.custom-export-top-grid { margin-bottom: 10px; }
+.custom-export-top-grid label, .custom-export-control-grid label { display: flex; min-width: 0; flex-direction: column; gap: 4px; color: var(--text2); font-size: 10.5px; font-weight: 700; }
+.custom-export-top-grid select, .custom-export-control-grid select { width: 100%; padding: 8px 28px 8px 9px; border: 1px solid var(--border); border-radius: 7px; background: var(--surface2); color: var(--text); }
+.custom-export-options-scroll { min-height: 150px; flex: 1; overflow-y: auto; padding-right: 5px; scrollbar-color: var(--tag-scroll-thumb) var(--tag-scroll-track); }
+.custom-export-options-scroll::-webkit-scrollbar, #customExportPreview::-webkit-scrollbar { width: 10px; height: 10px; }
+.custom-export-options-scroll::-webkit-scrollbar-track, #customExportPreview::-webkit-scrollbar-track { margin: 6px 0; border-radius: 8px; background: var(--tag-scroll-track); }
+.custom-export-options-scroll::-webkit-scrollbar-thumb, #customExportPreview::-webkit-scrollbar-thumb { border: 2px solid var(--tag-scroll-thumb-border); border-radius: 8px; background: var(--tag-scroll-thumb); }
+.custom-export-options-scroll::-webkit-scrollbar-thumb:hover, #customExportPreview::-webkit-scrollbar-thumb:hover { background: var(--tag-scroll-thumb-hover); }
+.custom-export-group { margin-bottom: 9px; padding: 10px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface2); }
+.custom-export-group-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; color: var(--text); font-size: 12px; }
+.custom-export-group-head span { display: flex; gap: 5px; }
+.custom-export-group-head button { padding: 3px 6px; border: 0; background: transparent; color: var(--accent1); cursor: pointer; }
+.custom-export-check-grid, .custom-export-scope-list { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 7px 14px; }
+.custom-export-check-grid.compact { margin-top: 10px; }
+.custom-export-check-grid label, .custom-export-scope-list label { display: flex; min-width: 0; align-items: flex-start; gap: 7px; color: var(--text); cursor: pointer; font-size: 11.5px; }
+.custom-export-check-grid input, .custom-export-scope-list input { accent-color: var(--accent1); }
+.custom-export-check-grid label.disabled { cursor: not-allowed; opacity: .45; }
+.custom-export-scope-list { max-height: 120px; overflow-y: auto; }
+#customExportPreviewPanel { flex: 1; min-height: 0; }
+#customExportPreview { width: 100%; height: 100%; min-height: 300px; resize: vertical; padding: 12px; border: 1px solid var(--border); border-radius: 9px; box-sizing: border-box; outline: none; background: var(--surface2); color: var(--text); font: 11.5px/1.5 Consolas,monospace; white-space: pre-wrap; overflow-wrap: anywhere; scrollbar-color: var(--tag-scroll-thumb) var(--tag-scroll-track); }
+.custom-export-summary { margin-top: 9px; color: var(--text2); font-size: 11px; }
+.custom-export-warnings { display: flex; max-height: 82px; flex-direction: column; gap: 5px; margin-top: 7px; overflow-y: auto; }
+.custom-export-warning { padding: 8px 10px; border: 1px solid rgba(245,158,11,.55); border-radius: 8px; background: rgba(245,158,11,.08); color: var(--yellow); font-size: 11px; }
+.custom-export-footer { flex-shrink: 0; padding-top: 12px; border-top: 1px solid var(--border); }
