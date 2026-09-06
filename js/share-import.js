@@ -4,6 +4,7 @@
 
 const SHARE_IMPORT_UNDO_KEY = 'blu:pendingImportUndo';
 let customImportState = null;
+let customImportReturnFocus = null;
 
 function getLocalShareImportData() {
   try {
@@ -151,16 +152,20 @@ function customImportCounts() {
 }
 
 function openCustomImport(localData, incomingData) {
+  customImportReturnFocus = document.activeElement;
   customImportState = buildCustomImportComparison(localData, incomingData);
   document.getElementById('customImportShowSame').checked = false;
   document.getElementById('customImportPreset').value = 'new';
   applyCustomImportPreset('new');
   setCustomImportStep('compare');
   document.getElementById('customImportModal').classList.add('open');
+  requestAnimationFrame(() => document.getElementById('customImportPreset')?.focus());
 }
 
 function closeCustomImport() {
   document.getElementById('customImportModal').classList.remove('open');
+  customImportReturnFocus?.focus?.();
+  customImportReturnFocus = null;
 }
 
 function applyCustomImportPreset(preset) {
@@ -468,7 +473,26 @@ document.addEventListener('click', event => {
 });
 
 document.addEventListener('keydown', event => {
-  if (event.key === 'Escape' && document.getElementById('customImportModal')?.classList.contains('open')) {
+  const modalBackground = document.getElementById('customImportModal');
+  if (!modalBackground?.classList.contains('open')) return;
+
+  if (event.key === 'Escape') {
     closeCustomImport();
+    return;
+  }
+
+  if (event.key === 'Tab') {
+    const focusable = [...modalBackground.querySelectorAll('button:not([disabled]):not([hidden]), select:not([disabled]), input:not([disabled]), summary')]
+      .filter(element => element.offsetParent !== null);
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
   }
 });

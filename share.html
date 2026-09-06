@@ -49,14 +49,14 @@
   <div class="modal-bg" id="customImportModal">
     <div class="modal custom-import-modal" role="dialog" aria-modal="true" aria-labelledby="customImportTitle">
       <h2 id="customImportTitle">🔀 Personalizar importação</h2>
-      <div class="custom-import-steps" aria-label="Etapas da importação">
-        <button id="customImportCompareTab" class="active" type="button" onclick="setCustomImportStep('compare')">1. Comparar</button>
-        <button id="customImportReviewTab" type="button" onclick="setCustomImportStep('review')">2. Revisar</button>
+      <div class="custom-import-steps" role="tablist" aria-label="Etapas da importação">
+        <button id="customImportCompareTab" class="active" type="button" role="tab" aria-selected="true" aria-controls="customImportComparePanel" onclick="setCustomImportStep('compare')">1. Comparar</button>
+        <button id="customImportReviewTab" type="button" role="tab" aria-selected="false" aria-controls="customImportReviewPanel" onclick="setCustomImportStep('review')">2. Revisar</button>
       </div>
 
-      <section id="customImportComparePanel" class="custom-import-panel">
+      <section id="customImportComparePanel" class="custom-import-panel" role="tabpanel" aria-labelledby="customImportCompareTab">
         <p class="custom-import-intro">Escolha o que será incorporado. Seus itens locais não serão apagados.</p>
-        <div id="customImportSummary" class="custom-import-summary"></div>
+        <div id="customImportSummary" class="custom-import-summary" role="status" aria-live="polite"></div>
         <div class="custom-import-toolbar">
           <label>Seleção inicial
             <select id="customImportPreset" onchange="applyCustomImportPreset(this.value)">
@@ -67,11 +67,11 @@
           </label>
           <label class="custom-import-toggle"><input id="customImportShowSame" type="checkbox" onchange="renderCustomImportTree()"> Mostrar itens idênticos</label>
         </div>
-        <div id="customImportTree" class="custom-import-tree"></div>
+        <div id="customImportTree" class="custom-import-tree" aria-label="Diferenças encontradas"></div>
       </section>
 
-      <section id="customImportReviewPanel" class="custom-import-panel" hidden>
-        <div id="customImportReviewSummary" class="custom-import-review-summary"></div>
+      <section id="customImportReviewPanel" class="custom-import-panel" role="tabpanel" aria-labelledby="customImportReviewTab" hidden>
+        <div id="customImportReviewSummary" class="custom-import-review-summary" role="status" aria-live="polite"></div>
         <div id="customImportReviewList" class="custom-import-review-list"></div>
         <p class="custom-import-safety">Nenhum item local será removido. Um snapshot permitirá desfazer a importação com Ctrl+Z após abrir o Blû.</p>
       </section>
@@ -178,6 +178,7 @@
           const customImportBtn = document.createElement('button');
           customImportBtn.className = 'mbtn ghost';
           customImportBtn.textContent = 'Personalizar importação';
+          customImportBtn.setAttribute('aria-haspopup', 'dialog');
           customImportBtn.onclick = () => openCustomImport(localData, normalized);
           actionsEl.append(importBtn, customImportBtn);
         } else {
