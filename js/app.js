@@ -52,11 +52,15 @@ function getDemoState() {
 
 function init() {
   const saved = loadPersistedState();
+  const importUndoState = consumePendingImportUndoState();
   const sourceData = saved && Array.isArray(saved.sections) ? saved : getDemoState();
   const data = normalizeImportedData(sourceData);
 
   tags = Array.isArray(data.tags) ? [...data.tags] : [];
   renderAll(Array.isArray(data.sections) ? data.sections : []);
+  if (importUndoState) {
+    history.push(JSON.stringify(importUndoState));
+  }
   updateTagDatalist();
   updateToggleSectionsBtnLabel();
 

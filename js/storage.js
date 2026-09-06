@@ -5,6 +5,7 @@
 const STORAGE_KEY = 'blu:data';
 const SETTINGS_STORAGE_KEY = 'blu:settings';
 const CLIENT_ID_STORAGE_KEY = 'blu:clientId';
+const PENDING_IMPORT_UNDO_KEY = 'blu:pendingImportUndo';
 const VERSION = '1.7';
 const BASE_TITLE = 'Blû';
 
@@ -287,6 +288,18 @@ function syncBackupBannerNotificationOffset() {
   document.body.style.setProperty('--notif-backup-bottom', `${Math.ceil(bannerBottom + banner.offsetHeight + 10)}px`);
   document.body.classList.add('backup-banner-visible');
   if (typeof updateQuickActionsPosition === 'function') updateQuickActionsPosition();
+}
+
+function consumePendingImportUndoState() {
+  try {
+    const raw = localStorage.getItem(PENDING_IMPORT_UNDO_KEY);
+    if (!raw) return null;
+    localStorage.removeItem(PENDING_IMPORT_UNDO_KEY);
+    return normalizeImportedData(JSON.parse(raw));
+  } catch (_) {
+    localStorage.removeItem(PENDING_IMPORT_UNDO_KEY);
+    return null;
+  }
 }
 
 function evaluateBackupBanner(dirty) {

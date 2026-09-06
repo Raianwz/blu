@@ -46,11 +46,51 @@
     </div>
   </div>
 
+  <div class="modal-bg" id="customImportModal">
+    <div class="modal custom-import-modal" role="dialog" aria-modal="true" aria-labelledby="customImportTitle">
+      <h2 id="customImportTitle">🔀 Personalizar importação</h2>
+      <div class="custom-import-steps" aria-label="Etapas da importação">
+        <button id="customImportCompareTab" class="active" type="button" onclick="setCustomImportStep('compare')">1. Comparar</button>
+        <button id="customImportReviewTab" type="button" onclick="setCustomImportStep('review')">2. Revisar</button>
+      </div>
+
+      <section id="customImportComparePanel" class="custom-import-panel">
+        <p class="custom-import-intro">Escolha o que será incorporado. Seus itens locais não serão apagados.</p>
+        <div id="customImportSummary" class="custom-import-summary"></div>
+        <div class="custom-import-toolbar">
+          <label>Seleção inicial
+            <select id="customImportPreset" onchange="applyCustomImportPreset(this.value)">
+              <option value="new">Adicionar apenas novidades</option>
+              <option value="update">Adicionar e atualizar</option>
+              <option value="manual">Selecionar manualmente</option>
+            </select>
+          </label>
+          <label class="custom-import-toggle"><input id="customImportShowSame" type="checkbox" onchange="renderCustomImportTree()"> Mostrar itens idênticos</label>
+        </div>
+        <div id="customImportTree" class="custom-import-tree"></div>
+      </section>
+
+      <section id="customImportReviewPanel" class="custom-import-panel" hidden>
+        <div id="customImportReviewSummary" class="custom-import-review-summary"></div>
+        <div id="customImportReviewList" class="custom-import-review-list"></div>
+        <p class="custom-import-safety">Nenhum item local será removido. Um snapshot permitirá desfazer a importação com Ctrl+Z após abrir o Blû.</p>
+      </section>
+
+      <div class="modal-footer custom-import-footer">
+        <button class="mbtn cancel" type="button" onclick="closeCustomImport()">Cancelar</button>
+        <button id="customImportBackBtn" class="mbtn ghost" type="button" onclick="setCustomImportStep('compare')" hidden>Voltar</button>
+        <button id="customImportNextBtn" class="mbtn primary" type="button" onclick="setCustomImportStep('review')">Revisar importação</button>
+        <button id="customImportApplyBtn" class="mbtn primary" type="button" onclick="applyCustomImport()" hidden>Importar selecionados</button>
+      </div>
+    </div>
+  </div>
+
   <div id="notifArea"></div>
 
   <script src="/js/utils.js"></script>
   <script src="/js/dialogs.js"></script>
   <script src="/js/crypto.js"></script>
+  <script src="/js/share-import.js"></script>
   <script>
     // Chave usada pelo app principal (js/storage.js) para o autosave —
     // mantida em sincronia manualmente aqui, já que esta página não
@@ -133,12 +173,23 @@
         importBtn.textContent = 'Importar para o Blû';
         importBtn.onclick = () => importShare(normalized);
 
+        const localData = getLocalShareImportData();
+        if (localData) {
+          const customImportBtn = document.createElement('button');
+          customImportBtn.className = 'mbtn ghost';
+          customImportBtn.textContent = 'Personalizar importação';
+          customImportBtn.onclick = () => openCustomImport(localData, normalized);
+          actionsEl.append(importBtn, customImportBtn);
+        } else {
+          actionsEl.append(importBtn);
+        }
+
         const cancelLink = document.createElement('a');
         cancelLink.href = '/';
         cancelLink.className = 'mbtn secondary';
         cancelLink.textContent = 'Ir para o Blû sem importar';
 
-        actionsEl.append(importBtn, cancelLink);
+        actionsEl.append(cancelLink);
       } catch (error) {
         if (error.code === 'SHARE_NOT_FOUND') {
           titleEl.textContent = 'Link expirado ou inexistente';
@@ -166,6 +217,7 @@
       if (!ok) return;
 
       try {
+        saveShareImportUndoSnapshot();
         localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
         notify('Importado! Redirecionando…');
         setTimeout(() => { window.location.replace('/'); }, 700);
