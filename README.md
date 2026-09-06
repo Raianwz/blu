@@ -65,6 +65,10 @@ Também é possível usar extensões como Live Server.
 
 O projeto não utiliza framework nem processo de build no front-end. Essa é uma decisão deliberada para preservar simplicidade, portabilidade e facilidade de manutenção.
 
+## Versões arquivadas
+
+A antiga versão `legacy` foi removida da branch principal e permanece preservada na branch [`archive/legacy`](../../tree/archive/legacy) e na tag [`legacy-final`](../../tree/legacy-final).
+
 ## Estrutura resumida
 
 ```text
