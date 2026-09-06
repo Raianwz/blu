@@ -284,6 +284,30 @@ body {
   pointer-events: none;
 }
 
+.menu-edit-subitem {
+  display: none;
+  width: calc(100% - 18px);
+  margin-left: 18px;
+  position: relative;
+}
+
+body.edit-mode .menu-edit-subitem {
+  display: flex;
+}
+
+.menu-edit-subitem::before {
+  content: '';
+  position: absolute;
+  top: -7px;
+  bottom: 50%;
+  left: -11px;
+  border-left: 2px solid var(--border);
+  border-bottom: 2px solid var(--border);
+  border-bottom-left-radius: 6px;
+  width: 8px;
+  pointer-events: none;
+}
+
 .menu-submenu {
   display: flex;
   flex-direction: column;
@@ -1105,6 +1129,28 @@ body.edit-mode .btn-wrap.dragging {
   opacity: 0.4;
   animation: none;
   cursor: grabbing;
+}
+
+/* Estado temporário de organização durante qualquer arraste. O modo de edição
+   permanece ativo, mas deixa somente os conteúdos e destinos relevantes. */
+body.edit-mode.drag-organizing .btn-edit,
+body.edit-mode.drag-organizing .btn-del,
+body.edit-mode.drag-organizing .section-rename-btn,
+body.edit-mode.drag-organizing .section-del-btn,
+body.edit-mode.drag-organizing .section-move-controls,
+body.edit-mode.drag-organizing .blu-btn-move-horizontal {
+  display: none !important;
+}
+
+body.edit-mode.drag-organizing .section-wrap:not(.section-drag-placeholder) {
+  outline: 2px dashed #22c55e;
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, .2), 0 0 6px rgba(34, 197, 94, .24);
+}
+
+/* Experimento: estabiliza somente a altura das seções. Congelar cada botão
+   individualmente criava células largas e novas quebras de linha. */
+body.advanced-drag-organizing .section-body {
+  min-height: var(--advanced-drag-body-height);
 }
 
 .pointer-dragging {
@@ -2965,12 +3011,19 @@ body.debug-mode-minimized #backupBanner { bottom: 58px; }
 }
 
 .drag-placeholder {
-  border: 2px dashed var(--accent1);
-  border-radius: 8px;
-  background: rgba(102, 126, 234, 0.07);
-  min-width: 80px;
-  height: 40px;
-  pointer-events: none;
+  width: var(--drag-placeholder-width);
+  min-width: var(--drag-placeholder-width);
+  height: var(--drag-placeholder-height);
+  flex: 0 0 var(--drag-placeholder-width);
+  opacity: .32;
+  pointer-events: none !important;
+  user-select: none;
+  filter: saturate(.7);
+  animation: none !important;
+}
+
+.drag-placeholder * {
+  pointer-events: none !important;
 }
 
 /* Shift system */
@@ -3011,34 +3064,32 @@ body.shift-mode .section-move-controls {
 }
 
 .section-drag-placeholder {
-  height: 0;
-  border-top: 2px dashed #f59e0b;
-  margin: 6px 0
+  width: var(--drag-placeholder-width);
+  height: var(--drag-placeholder-height);
+  opacity: .28;
+  pointer-events: none !important;
+  user-select: none;
+  filter: saturate(.7);
+  overflow: hidden;
+  animation: none !important;
 }
 
+.section-drag-placeholder,
+body.shift-mode:not(.shift-locked) .section-drag-placeholder,
 body.shift-locked .section-drag-placeholder {
-  border-top: 2px dashed #22c55e
+  outline: 1px solid color-mix(in srgb, var(--accent1) 55%, transparent);
+  box-shadow: none;
 }
 
-/* "Mostrar Destino: OFF" — o placeholder continua sendo posicionado no
-   DOM normalmente (necessário para o drop saber onde inserir o item),
-   mas fica com pegada ZERO: sem cor E sem tamanho. Só cor não bastava —
-   um placeholder invisível mas ainda com 40px de altura/80px de largura
-   continuava empurrando os botões vizinhos ao ser inserido, e era esse
-   empurrão (não a cor) que causava o "flicker" percebido. */
-body.drag-preview-off .drag-placeholder {
-  width: 0;
-  min-width: 0;
-  height: 0;
-  margin: 0;
-  border: none;
-  background: transparent;
+.section-drag-placeholder * {
+  pointer-events: none !important;
 }
 
+/* "Mostrar Destino: OFF" — mantém o marcador no DOM para determinar a
+   posição do drop, mas o remove completamente do fluxo visual. */
+body.drag-preview-off .drag-placeholder,
 body.drag-preview-off .section-drag-placeholder {
-  height: 0;
-  margin: 0;
-  border-top: none;
+  display: none;
 }
 
 

@@ -7,11 +7,93 @@
 let dragEl = null;
 let placeholder = null;
 let draggedButtonOrigin = null;
+let dragOrganizingFrame = 0;
+let advancedOrganizingEnabled = false;
+
+function updateAdvancedOrganizingButtonUI() {
+  const button = document.getElementById('advancedOrganizingBtn');
+  if (!button) return;
+  button.classList.toggle('active', advancedOrganizingEnabled);
+  button.setAttribute('aria-pressed', String(advancedOrganizingEnabled));
+  button.querySelector('.menu-btn-label').textContent = `Organização Avançada: ${advancedOrganizingEnabled ? 'ON' : 'OFF'}`;
+}
+
+function initAdvancedOrganizingPreference() {
+  advancedOrganizingEnabled = getSetting('advancedOrganizing') === 'on';
+  updateAdvancedOrganizingButtonUI();
+}
+
+function toggleAdvancedOrganizing() {
+  advancedOrganizingEnabled = !advancedOrganizingEnabled;
+  setSetting('advancedOrganizing', advancedOrganizingEnabled ? 'on' : 'off');
+  updateAdvancedOrganizingButtonUI();
+  notify(`Organização avançada ${advancedOrganizingEnabled ? 'ativada' : 'desativada'}`);
+}
+
+function prepareAdvancedDragLayout() {
+  if (!advancedOrganizingEnabled) return;
+
+  document.querySelectorAll('.section-body').forEach(body => {
+    body.style.setProperty('--advanced-drag-body-height', `${body.getBoundingClientRect().height}px`);
+  });
+  document.body.classList.add('advanced-drag-organizing');
+}
+
+function clearAdvancedDragLayout() {
+  document.body.classList.remove('advanced-drag-organizing');
+  document.querySelectorAll('.section-body').forEach(body => {
+    body.style.removeProperty('--advanced-drag-body-height');
+  });
+}
+
+function setDragOrganizing(active) {
+  if (!active && dragOrganizingFrame) {
+    cancelAnimationFrame(dragOrganizingFrame);
+    dragOrganizingFrame = 0;
+  }
+  document.body.classList.toggle('drag-organizing', active);
+  if (!active) clearAdvancedDragLayout();
+}
+
+function scheduleNativeDragOrganizing(element, targetPlaceholder) {
+  dragOrganizingFrame = requestAnimationFrame(() => {
+    dragOrganizingFrame = 0;
+    if (dragEl !== element || !targetPlaceholder) return;
+
+    // Alterar o fluxo ainda dentro de dragstart pode deslocar a origem antes
+    // de o navegador consolidar o arraste. No quadro seguinte isso é seguro.
+    setDragOrganizing(true);
+    const compactRect = element.getBoundingClientRect();
+    targetPlaceholder.style.setProperty('--drag-placeholder-width', `${compactRect.width}px`);
+    targetPlaceholder.style.setProperty('--drag-placeholder-height', `${compactRect.height}px`);
+  });
+}
+
+// Mantém o espaço de destino estável com uma cópia visual do item arrastado.
+// A cópia é inerte: existe apenas para representar tamanho e aparência.
+function createDragPlaceholder(element, className) {
+  const rect = element.getBoundingClientRect();
+  const clone = element.cloneNode(true);
+
+  clone.classList.remove('dragging', 'pointer-dragging');
+  clone.classList.add(className);
+  clone.removeAttribute('id');
+  clone.removeAttribute('draggable');
+  clone.setAttribute('aria-hidden', 'true');
+  clone.setAttribute('inert', '');
+  clone.style.setProperty('--drag-placeholder-width', `${rect.width}px`);
+  clone.style.setProperty('--drag-placeholder-height', `${rect.height}px`);
+
+  clone.querySelectorAll('[id]').forEach(child => child.removeAttribute('id'));
+  clone.querySelectorAll('[draggable]').forEach(child => child.removeAttribute('draggable'));
+
+  return clone;
+}
 
 // --- Preferência "Mostrar Destino" (preview visual do drag) ---------
 // Desativado por padrão. Importante: mesmo desativado, o placeholder
-// CONTINUA sendo posicionado no DOM normalmente — é só a APARÊNCIA dele
-// que fica invisível via CSS (body.drag-preview-off). Isso preserva o
+// CONTINUA sendo posicionado no DOM normalmente — o CSS só o retira do
+// fluxo visual (body.drag-preview-off). Isso preserva o
 // posicionamento correto no drop (onDrop depende de placeholder.parentNode
 // para saber onde inserir o item), sem exibir a "caixa" pra quem não quer vê-la.
 
@@ -62,10 +144,11 @@ function onDragStart(event) {
   };
   hideButtonPreview();
   this.querySelector('.copy-btn')?.removeAttribute('title');
+  prepareAdvancedDragLayout();
   this.classList.add('dragging');
-  placeholder = document.createElement('div');
-  placeholder.className = 'drag-placeholder';
+  placeholder = createDragPlaceholder(this, 'drag-placeholder');
   event.dataTransfer.effectAllowed = 'move';
+  scheduleNativeDragOrganizing(this, placeholder);
 }
 
 function onDragEnd() {
@@ -78,6 +161,7 @@ function onDragEnd() {
     }
   }
   placeholder?.remove();
+  setDragOrganizing(false);
   dragEl = null;
   placeholder = null;
   draggedButtonOrigin = null;
@@ -132,7 +216,7 @@ function onDrop(event) {
 }
 
 function getDragAfter(container, x) {
-  const elements = [...container.querySelectorAll('.btn-wrap:not(.dragging)')];
+  const elements = [...container.querySelectorAll('.btn-wrap:not(.dragging):not(.drag-placeholder)')];
 
   return elements.reduce((closest, element) => {
     const box = element.getBoundingClientRect();
@@ -201,9 +285,8 @@ function toggleOrganizeMode() {
 }
 
 function getSectionPlaceholder() {
-  if (!sectionPlaceholderEl) {
-    sectionPlaceholderEl = document.createElement('div');
-    sectionPlaceholderEl.className = 'section-drag-placeholder';
+  if (!sectionPlaceholderEl && draggingSectionEl) {
+    sectionPlaceholderEl = createDragPlaceholder(draggingSectionEl, 'section-drag-placeholder');
   }
   return sectionPlaceholderEl;
 }
@@ -279,19 +362,22 @@ window.addEventListener('mousedown', event => {
   draggingSectionEl = section;
   draggedSectionOriginPosition = [...section.parentNode.children].indexOf(section) + 1;
   isDraggingSection = true;
+  prepareAdvancedDragLayout();
   section.classList.add('dragging');
+  setDragOrganizing(true);
 });
 
 window.addEventListener('mousemove', event => {
   if (!isDraggingSection || !draggingSectionEl) return;
 
-  const target = event.target.closest('.section-wrap');
+  const target = event.target.closest('.section-wrap:not(.section-drag-placeholder)');
   if (!target || target === draggingSectionEl) return;
 
   const rect = target.getBoundingClientRect();
   const mid = rect.top + rect.height / 2;
   const parent = target.parentNode;
   const ph = getSectionPlaceholder();
+  if (!ph) return;
 
   // Mesma lógica anti-flicker do drag de botões: só mexe no DOM se a
   // posição-alvo realmente mudou desde o último mousemove.
@@ -315,7 +401,9 @@ window.addEventListener('mouseup', () => {
   const movedSection = draggingSectionEl;
   const destinationPosition = [...movedSection.parentNode.children].indexOf(movedSection) + 1;
   draggingSectionEl = null;
+  sectionPlaceholderEl = null;
   isDraggingSection = false;
+  setDragOrganizing(false);
 
   pushHistory();
   if (draggedSectionOriginPosition !== destinationPosition) {
@@ -471,12 +559,13 @@ function beginPointerDrag(candidate) {
   pointerDragCandidate = null;
   suppressPointerClick = true;
   hideButtonPreview();
+  prepareAdvancedDragLayout();
   candidate.element.classList.add('dragging', 'pointer-dragging');
+  setDragOrganizing(true);
 
   if (candidate.type === 'button') {
     dragEl = candidate.element;
-    placeholder = document.createElement('div');
-    placeholder.className = 'drag-placeholder';
+    placeholder = createDragPlaceholder(candidate.element, 'drag-placeholder');
   } else {
     draggingSectionEl = candidate.element;
     isDraggingSection = true;
@@ -489,7 +578,7 @@ function updatePointerButtonDrag(x, y) {
   const target = document.elementFromPoint(x, y);
   const body = target?.closest('.section-body');
   if (!body || !dragEl || !placeholder) return;
-  const targetButton = target.closest('.btn-wrap:not(.dragging)');
+  const targetButton = target.closest('.btn-wrap:not(.dragging):not(.drag-placeholder)');
   if (!targetButton) {
     body.appendChild(placeholder);
     return;
@@ -501,10 +590,11 @@ function updatePointerButtonDrag(x, y) {
 }
 
 function updatePointerSectionDrag(x, y) {
-  const target = document.elementFromPoint(x, y)?.closest('.section-wrap');
+  const target = document.elementFromPoint(x, y)?.closest('.section-wrap:not(.section-drag-placeholder)');
   if (!target || target === draggingSectionEl) return;
   const rect = target.getBoundingClientRect();
   const ph = getSectionPlaceholder();
+  if (!ph) return;
   if (y < rect.top + rect.height / 2) target.before(ph);
   else target.after(ph);
 }
@@ -533,8 +623,10 @@ function finishPointerDrag(cancelled = false) {
   dragEl = null;
   placeholder = null;
   draggingSectionEl = null;
+  sectionPlaceholderEl = null;
   isDraggingSection = false;
   pointerDragState = null;
+  setDragOrganizing(false);
 
   if (moved) {
     document.querySelectorAll('.section-body').forEach(body => updateSectionCount(body.dataset.section));

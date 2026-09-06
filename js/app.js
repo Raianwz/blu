@@ -145,6 +145,8 @@ async function resetPreferences() {
   applyTextPreviewState(true);
   dragPreviewEnabled = false;
   applyDragPreviewState();
+  advancedOrganizingEnabled = false;
+  updateAdvancedOrganizingButtonUI();
 
   versionHidden = false;
   document.getElementById('appVersion')?.classList.remove('version-hidden');
@@ -209,6 +211,8 @@ function toggleSubmenu(name) {
   if (isOpen) {
     document.querySelectorAll('.menu-submenu-body.open').forEach(otherBody => {
       if (otherBody === body) return;
+      // Um submenu aninhado permanece aberto junto de seu grupo pai.
+      if (otherBody.contains(body) || body.contains(otherBody)) return;
       otherBody.classList.remove('open');
 
       const otherName = otherBody.id.replace('submenu-', '');
@@ -386,6 +390,7 @@ getOrCreateClientId();
 migrateLegacySettings();
 initTheme();
 initDragPreviewPreference();
+initAdvancedOrganizingPreference();
 initTextPreviewPreference();
 initSearchGuidance();
 initShareConnectivity();
