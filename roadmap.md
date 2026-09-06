@@ -38,6 +38,82 @@ Polimentos pendentes:
 
 ## Próximos recursos
 
+### Criptografia versionada para o Blû
+
+Substituir a chave fixa pública usada atualmente por um formato criptográfico versionado, preservando a leitura de arquivos e links criados pelas versões anteriores.
+
+Objetivos:
+
+- Continuar usando AES-GCM com chave de 256 bits, IV aleatório de 96 bits e tag de autenticação.
+- Marcar novos envelopes com `version`, `keyMode` e `keyId`.
+- Tratar envelopes sem versão como criptografia legada `v1`.
+- Manter a chave antiga exclusivamente para leitura e migração; nunca usá-la para criar novos conteúdos.
+- Permitir reexportar dados legados usando o formato atual.
+
+#### Compartilhamentos com chave no servidor
+
+Usar as Vercel Functions como camada de criptografia dos compartilhamentos:
+
+- `POST /api/share` valida, criptografa e armazena o conteúdo.
+- `GET /api/share/:id` busca, descriptografa e devolve o conteúdo por HTTPS.
+- A chave ativa permanece somente nas variáveis de ambiente da Vercel.
+- O Redis recebe apenas o envelope criptografado.
+- Não criar uma rota pública e genérica como `/api/decrypt`.
+- Aplicar limite de payload, rate limit e `Cache-Control: no-store`.
+- Não registrar chaves, conteúdo aberto ou payloads completos nos logs.
+
+Formato planejado:
+
+```json
+{
+  "blu_encrypted": true,
+  "version": 2,
+  "alg": "AES-GCM-256",
+  "keyMode": "server",
+  "keyId": "share-2026-01",
+  "iv": "...",
+  "data": "..."
+}
+```
+
+Rotação de chaves:
+
+- Definir no `.env` o identificador e a chave ativa.
+- Manter temporariamente as chaves anteriores para links ainda válidos.
+- Selecionar a chave correta por `keyId`.
+- Como os links expiram após três dias, remover chaves antigas somente depois dessa janela.
+- Documentar um procedimento de rotação e recuperação antes da publicação.
+
+Limitação assumida: nesse modelo, o servidor consegue ler os dados durante a criação e abertura do compartilhamento. A proteção principal é contra leitura direta do Redis ou exposição da chave no front-end.
+
+#### Alternativa sem conhecimento do servidor
+
+Avaliar como opção futura uma chave aleatória por compartilhamento no fragmento da URL:
+
+```text
+https://blu.rwz.app/s/EquipeA1#k=chave-aleatoria
+```
+
+Nesse modelo, o servidor nunca recebe a chave e não consegue descriptografar o conteúdo. O botão de copiar e o fluxo de personalização do link devem preservar obrigatoriamente o fragmento. Apelidos curtos e previsíveis exigem atenção especial, pois não devem ser tratados como segredo.
+
+#### Arquivos exportados
+
+- Derivar a chave a partir de uma senha definida pelo usuário usando PBKDF2-SHA-256 e salt aleatório.
+- Calibrar a quantidade de iterações em computadores e celulares reais.
+- Futuramente permitir que usuários avançados forneçam a própria chave.
+- Nunca salvar senha ou chave dentro do mesmo arquivo criptografado.
+- Informar claramente que uma senha ou chave perdida não pode ser recuperada pelo Blû.
+- Identificar na interface “Criptografia legada” e “Criptografia Blû 1.8”.
+
+#### Etapas sugeridas
+
+1. Definir e validar o envelope criptográfico `v2`.
+2. Criar testes com payload correto, adulterado, chave incorreta e versões desconhecidas.
+3. Manter o leitor `v1` e passar todas as novas gravações para `v2`.
+4. Implementar criptografia e rotação de chave dentro das rotas de compartilhamento.
+5. Implementar exports protegidos por senha.
+6. Avaliar chave própria e compartilhamentos sem conhecimento do servidor.
+
 ### Importação em massa por texto
 
 Criar seções e botões a partir de uma sintaxe textual simples, inspirada em Markdown. Nome provisório do recurso: **Importar por Texto**. Nome provisório da linguagem: **Sintaxe Blû**.

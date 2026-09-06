@@ -115,8 +115,8 @@
 
     async function fetchSharedData(code) {
       if (isLocalDevelopment()) {
-        const response = await fetch('/demo2_dev.json', { cache: 'no-store' });
-        if (!response.ok) throw new Error(`Não foi possível carregar demo2_dev.json (HTTP ${response.status})`);
+        const response = await fetch('/assets/demo2_dev.json', { cache: 'no-store' });
+        if (!response.ok) throw new Error(`Não foi possível carregar assets/demo2_dev.json (HTTP ${response.status})`);
         return response.json();
       }
 
