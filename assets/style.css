@@ -3298,6 +3298,34 @@ body.dark #dialogModal[data-variant="clear-all"] #dialogMessage {
   opacity: .62;
 }
 
+/* Alterações não salvas: permanecer no formulário é a ação segura e padrão. */
+#dialogModal[data-variant="unsaved-changes"] #dialogCancelBtn {
+  border-color: var(--accent1);
+  background: var(--accent1);
+  color: #fff;
+}
+
+#dialogModal[data-variant="unsaved-changes"] #dialogCancelBtn:hover,
+#dialogModal[data-variant="unsaved-changes"] #dialogCancelBtn:focus-visible {
+  filter: brightness(1.08);
+}
+
+#dialogModal[data-variant="unsaved-changes"] #dialogConfirmBtn,
+#dialogModal[data-variant="unsaved-changes"] #dialogConfirmBtn.danger {
+  border: 1px solid color-mix(in srgb, var(--red) 55%, transparent);
+  background: color-mix(in srgb, var(--red) 7%, var(--surface2));
+  color: var(--red);
+  transition: border-color .16s ease, background .16s ease, color .16s ease;
+}
+
+#dialogModal[data-variant="unsaved-changes"] #dialogConfirmBtn:hover,
+#dialogModal[data-variant="unsaved-changes"] #dialogConfirmBtn:focus-visible,
+#dialogModal[data-variant="unsaved-changes"] #dialogConfirmBtn:active {
+  border-color: var(--red);
+  background: var(--red);
+  color: #fff;
+}
+
 /* Confirmação de compartilhamento: importar é a ação principal; cancelar
    continua indicando recusa sem competir visualmente com o botão azul. */
 .share-import-dialog #dialogConfirmBtn,

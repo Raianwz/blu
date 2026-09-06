@@ -29,7 +29,7 @@ function closeDialog(result) {
   }
 }
 
-function openDialog({ title, message, danger = false, showInput = false, inputValue = '', confirmText = 'Confirmar', cancelText = 'Cancelar', variant = '', confirmDelay = 0 }) {
+function openDialog({ title, message, danger = false, showInput = false, inputValue = '', confirmText = 'Confirmar', cancelText = 'Cancelar', variant = '', confirmDelay = 0, focusCancel = false }) {
   const { bg, title: titleEl, message: messageEl, inputWrap, input, confirmBtn, cancelBtn } = getDialogEls();
 
   clearInterval(activeDialogTimer);
@@ -72,14 +72,14 @@ function openDialog({ title, message, danger = false, showInput = false, inputVa
     if (showInput) {
       setTimeout(() => { input.focus(); input.select(); }, 50);
     } else {
-      setTimeout(() => confirmBtn.focus(), 50);
+      setTimeout(() => (focusCancel ? cancelBtn : confirmBtn).focus(), 50);
     }
   });
 }
 
 // Substitui confirm(): retorna Promise<boolean>
-function confirmDialog(message, { title = 'Confirmar ação', danger = false, confirmText = 'Confirmar', cancelText = 'Cancelar', variant = '', confirmDelay = 0 } = {}) {
-  return openDialog({ title, message, danger, showInput: false, confirmText, cancelText, variant, confirmDelay }).then(result => result === true);
+function confirmDialog(message, { title = 'Confirmar ação', danger = false, confirmText = 'Confirmar', cancelText = 'Cancelar', variant = '', confirmDelay = 0, focusCancel = false } = {}) {
+  return openDialog({ title, message, danger, showInput: false, confirmText, cancelText, variant, confirmDelay, focusCancel }).then(result => result === true);
 }
 
 // Substitui prompt(): retorna Promise<string|null>

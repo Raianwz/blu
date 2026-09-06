@@ -368,7 +368,18 @@ document.addEventListener('keydown', event => {
   }
 
   if (event.key === 'Escape') {
-    ['btnModal', 'sectionModal', 'tagModal', 'importModal', 'customExportModal', 'dialogModal', 'shortcutsModal', 'shareModal', 'buttonViewModal', 'jsonModal', 'favoritesModal', 'statisticsModal', 'activityModal'].forEach(closeModal);
+    if (document.getElementById('dialogModal')?.classList.contains('open')) {
+      closeDialog(false);
+      return;
+    }
+
+    const openModals = [...document.querySelectorAll('.modal-bg.open')];
+    const topModal = openModals[openModals.length - 1];
+    if (topModal) {
+      event.preventDefault();
+      requestModalDismiss(topModal.id);
+      return;
+    }
     document.getElementById('menuOverlay').classList.remove('open');
   }
 
@@ -380,7 +391,9 @@ document.addEventListener('keydown', event => {
 
 document.querySelectorAll('.modal-bg').forEach(background => {
   background.addEventListener('click', event => {
-    if (event.target === background) background.classList.remove('open');
+    if (event.target === background && background.id !== 'dialogModal') {
+      requestModalDismiss(background.id);
+    }
   });
 });
 

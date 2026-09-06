@@ -4,6 +4,9 @@
 
 let currentSectionId = null;
 let currentBtnId = null;
+const protectedEditModals = new Set(['btnModal', 'sectionModal']);
+const modalInitialValues = new Map();
+let modalDismissPending = false;
 
 // Criptografia do export: controlada via atalho Alt+C (não há mais
 // checkbox no menu — o estado liga/desliga e reflete como um pequeno
@@ -22,7 +25,12 @@ function toggleExportEncryption() {
 }
 
 function openModal(id) {
-  document.getElementById(id).classList.add('open');
+  const modal = document.getElementById(id);
+  modal.classList.add('open');
+
+  if (protectedEditModals.has(id)) {
+    modalInitialValues.set(id, getModalFormValues(modal));
+  }
 
   if (id === 'tagModal') {
     const filterInput = document.getElementById('tagFilterInput');
@@ -40,6 +48,46 @@ function openModal(id) {
 
 function closeModal(id) {
   document.getElementById(id).classList.remove('open');
+  modalInitialValues.delete(id);
+}
+
+function getModalFormValues(modal) {
+  return JSON.stringify([...modal.querySelectorAll('input, textarea, select')].map(field => ({
+    id: field.id,
+    value: field.value,
+    checked: field.type === 'checkbox' || field.type === 'radio' ? field.checked : undefined
+  })));
+}
+
+function modalHasUnsavedFormChanges(id) {
+  const modal = document.getElementById(id);
+  const initial = modalInitialValues.get(id);
+  return Boolean(modal && initial !== undefined && initial !== getModalFormValues(modal));
+}
+
+async function requestModalDismiss(id) {
+  const modal = document.getElementById(id);
+  if (!modal?.classList.contains('open') || modalDismissPending) return;
+
+  if (!protectedEditModals.has(id) || !modalHasUnsavedFormChanges(id)) {
+    closeModal(id);
+    return;
+  }
+
+  modalDismissPending = true;
+  const confirmed = await confirmDialog(
+    'As alterações feitas neste formulário ainda não foram salvas. Deseja sair mesmo assim?',
+    {
+      title: 'Descartar alterações?',
+      confirmText: 'Sair sem salvar',
+      cancelText: 'Continuar editando',
+      danger: true,
+      variant: 'unsaved-changes',
+      focusCancel: true
+    }
+  );
+  modalDismissPending = false;
+  if (confirmed) closeModal(id);
 }
 
 // --- Seções --------------------------------------------------
