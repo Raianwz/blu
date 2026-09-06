@@ -69,37 +69,51 @@
       return window.location.pathname.startsWith('/s/');
     }
 
+    function isLocalDevelopment() {
+      return ['localhost', '127.0.0.1'].includes(window.location.hostname);
+    }
+
+    async function fetchSharedData(code) {
+      if (isLocalDevelopment()) {
+        const response = await fetch('/demo2_dev.json', { cache: 'no-store' });
+        if (!response.ok) throw new Error(`Não foi possível carregar demo2_dev.json (HTTP ${response.status})`);
+        return response.json();
+      }
+
+      const aliasQuery = isAliasSharePath() ? '?alias=1' : '';
+      const response = await fetch(`/api/share/${encodeURIComponent(code)}${aliasQuery}`);
+
+      if (response.status === 404) {
+        const error = new Error('Link expirado ou inexistente');
+        error.code = 'SHARE_NOT_FOUND';
+        throw error;
+      }
+
+      if (response.status === 429) {
+        const error = new Error('Muitas tentativas');
+        error.code = 'SHARE_RATE_LIMIT';
+        throw error;
+      }
+
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      const payload = await response.json();
+      return payload.data;
+    }
+
     async function loadShare() {
       const titleEl = document.getElementById('shareTitle');
       const descEl = document.getElementById('shareDesc');
       const actionsEl = document.getElementById('shareActions');
       const code = getShareCode();
 
-      if (!code) {
+      if (!code && !isLocalDevelopment()) {
         titleEl.textContent = 'Link inválido';
         descEl.textContent = 'Não encontramos um código de compartilhamento nesta URL.';
         return;
       }
 
       try {
-        const aliasQuery = isAliasSharePath() ? '?alias=1' : '';
-        const res = await fetch(`/api/share/${encodeURIComponent(code)}${aliasQuery}`);
-
-        if (res.status === 404) {
-          titleEl.textContent = 'Link expirado ou inexistente';
-          descEl.textContent = 'Este link de compartilhamento não existe mais, ou já passou do prazo de 3 dias.';
-          return;
-        }
-
-        if (res.status === 429) {
-          titleEl.textContent = 'Muitas tentativas';
-          descEl.textContent = 'Aguarde um pouco antes de tentar novamente.';
-          return;
-        }
-
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-
-        const { data } = await res.json();
+        const data = await fetchSharedData(code);
         let parsed = typeof data === 'string' ? JSON.parse(data) : data;
 
         if (isEncryptedPayload(parsed)) {
@@ -126,6 +140,18 @@
 
         actionsEl.append(importBtn, cancelLink);
       } catch (error) {
+        if (error.code === 'SHARE_NOT_FOUND') {
+          titleEl.textContent = 'Link expirado ou inexistente';
+          descEl.textContent = 'Este link de compartilhamento não existe mais, ou já passou do prazo de 3 dias.';
+          return;
+        }
+
+        if (error.code === 'SHARE_RATE_LIMIT') {
+          titleEl.textContent = 'Muitas tentativas';
+          descEl.textContent = 'Aguarde um pouco antes de tentar novamente.';
+          return;
+        }
+
         console.error('Erro ao carregar compartilhamento:', error);
         titleEl.textContent = 'Não foi possível carregar';
         descEl.textContent = 'Houve um erro ao processar este link. Tente novamente mais tarde.';

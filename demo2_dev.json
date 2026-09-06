@@ -1,0 +1,144 @@
+{
+  "tags": [
+    "combate",
+    "loja",
+    "mestre",
+    "secreto",
+    "taverna"
+  ],
+  "sections": [
+    {
+      "id": "s1",
+      "name": "🎲 Mesa do Mestre",
+      "collapsed": false,
+      "buttons": [
+        {
+          "id": "b1",
+          "name": "Crítico Natural!",
+          "text": "🎉 CRÍTICO NATURAL 20! Descreva como seu personagem realiza esta ação épica.",
+          "tag": "mestre",
+          "vis": "public"
+        },
+        {
+          "id": "b2",
+          "name": "Falha Crítica",
+          "text": "💀 Falha crítica (1 no dado)... as coisas estão prestes a piorar.",
+          "tag": "mestre",
+          "vis": "public"
+        },
+        {
+          "id": "b13",
+          "name": "Inspiração",
+          "text": "Você recebeu Inspiração! Use-a para obter vantagem em uma jogada.",
+          "tag": "mestre",
+          "vis": "public"
+        }
+      ]
+    },
+    {
+      "id": "s2",
+      "name": "🍻 Taverna do Javali Dourado",
+      "collapsed": true,
+      "buttons": [
+        {
+          "id": "b5",
+          "name": "Boas-vindas, Aventureiro",
+          "text": "Seja bem-vindo(a) ao Javali Dourado! Hoje a primeira bebida é por conta da casa.",
+          "tag": "taverna",
+          "vis": "public"
+        },
+        {
+          "id": "b6",
+          "name": "Rumores Locais",
+          "text": "Dizem que luzes estranhas foram vistas saindo da Torre Esquecida, ao norte da vila...",
+          "tag": "taverna",
+          "vis": "public"
+        },
+        {
+          "id": "b7",
+          "name": "Recompensa no Mural",
+          "text": "📜 PROCURA-SE: criatura que ataca o gado da região. Recompensa: 50 peças de ouro. Procurar o Prefeito Aldric.",
+          "tag": "taverna",
+          "vis": "public"
+        },
+        {
+          "id": "b15",
+          "name": "Rumores Locais",
+          "text": "Dizem que luzes estranhas foram vistas saindo da Torre Esquecida, ao norte da vila...",
+          "tag": "taverna",
+          "vis": "public"
+        }
+      ]
+    },
+    {
+      "id": "s3",
+      "name": "🧙 Loja do Velho Mago",
+      "collapsed": false,
+      "buttons": [
+        {
+          "id": "b8",
+          "name": "Poção de Cura",
+          "text": "Poção de Cura (2d4+2 PV) — 50 peças de ouro. \"Sabor de cereja, garanto!\"",
+          "tag": "loja",
+          "vis": "public"
+        },
+        {
+          "id": "b9",
+          "name": "Pergaminho Misterioso",
+          "text": "Pergaminho selado, runas desconhecidas. O vendedor jura que não é amaldiçoado. Jura mesmo.",
+          "tag": "loja",
+          "vis": "private"
+        },
+        {
+          "id": "b10",
+          "name": "Sem Troco Hoje",
+          "text": "Ah, sinto muito, viajante... hoje o caixa está vazio. Volte amanhã!",
+          "tag": "loja",
+          "vis": "public"
+        }
+      ]
+    },
+    {
+      "id": "s4",
+      "name": "🗝️ Notas Secretas do Mestre",
+      "collapsed": true,
+      "buttons": [
+        {
+          "id": "b11",
+          "name": "Plot Twist",
+          "text": "O \"mercador gentil\" do capítulo 2 é, na verdade, o vilão disfarçado. Guardar para o momento certo.",
+          "tag": "secreto",
+          "vis": "private"
+        },
+        {
+          "id": "b12",
+          "name": "Mapa da Fortaleza",
+          "text": "A passagem secreta fica atrás da tapeçaria do salão principal.",
+          "tag": "secreto",
+          "vis": "private"
+        }
+      ]
+    },
+    {
+      "id": "s5",
+      "name": "⚔️ Combate",
+      "collapsed": false,
+      "buttons": [
+        {
+          "id": "b3",
+          "name": "Rolar Iniciativa",
+          "text": "⚔️ Combate iniciado! Todos rolem iniciativa (d20 + modificador de Destreza).",
+          "tag": "combate",
+          "vis": "public"
+        },
+        {
+          "id": "b14",
+          "name": "Fim do Turno",
+          "text": "Encerre seu turno e passe a vez para a próxima criatura na ordem de iniciativa.",
+          "tag": "combate",
+          "vis": "public"
+        }
+      ]
+    }
+  ]
+}
