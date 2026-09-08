@@ -3663,6 +3663,47 @@ body.dark .custom-import-modal {
   accent-color: var(--accent1);
 }
 
+.custom-import-filterbar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: flex-end;
+  gap: 9px;
+  margin-bottom: 10px;
+}
+
+.custom-import-filterbar label {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--import-muted);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.custom-import-filterbar input {
+  width: 100%;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  outline: none;
+  background: var(--surface2);
+  color: var(--text);
+  font: inherit;
+}
+
+.custom-import-filterbar input:focus {
+  border-color: var(--accent1);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent1) 20%, transparent);
+}
+
+.custom-import-filterbar .mbtn {
+  min-width: 126px;
+  min-height: 34px;
+}
+
 .custom-import-tree,
 .custom-import-review-list {
   min-height: 160px;
@@ -3931,6 +3972,15 @@ body.dark .custom-import-modal {
     align-items: stretch;
     flex-direction: column;
     gap: 4px;
+  }
+
+  .custom-import-filterbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .custom-import-filterbar .mbtn {
+    width: 100%;
   }
 
   .custom-import-toolbar > label:first-child {

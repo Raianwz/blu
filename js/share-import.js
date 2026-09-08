@@ -155,6 +155,8 @@ function openCustomImport(localData, incomingData) {
   customImportReturnFocus = document.activeElement;
   customImportState = buildCustomImportComparison(localData, incomingData);
   document.getElementById('customImportShowSame').checked = false;
+  document.getElementById('customImportSearch').value = '';
+  document.getElementById('customImportTree').replaceChildren();
   document.getElementById('customImportPreset').value = 'new';
   applyCustomImportPreset('new');
   setCustomImportStep('compare');
@@ -224,18 +226,55 @@ function customImportDifferenceHtml(item) {
   return rows.length ? `<div class="custom-import-diffs">${rows.join('')}</div>` : '';
 }
 
-function renderCustomImportTree() {
+function customImportItemMatchesSearch(item, query) {
+  return [item.incoming.name, item.incoming.text, item.incoming.tag]
+    .some(value => normalizeSearchText(value).includes(query));
+}
+
+function updateCustomImportToggleSectionsButton() {
+  const button = document.getElementById('customImportToggleSectionsBtn');
+  const sections = [...document.querySelectorAll('#customImportTree .custom-import-section')];
+  if (!button) return;
+  const hasExpanded = sections.some(section => section.open);
+  button.textContent = hasExpanded ? 'Minimizar tudo' : 'Expandir tudo';
+  button.disabled = sections.length === 0;
+}
+
+function toggleAllCustomImportSections() {
+  const sections = [...document.querySelectorAll('#customImportTree .custom-import-section')];
+  const shouldExpand = !sections.some(section => section.open);
+  sections.forEach(section => { section.open = shouldExpand; });
+  updateCustomImportToggleSectionsButton();
+}
+
+function filterCustomImportTree() {
+  renderCustomImportTree({ resetScroll: true });
+}
+
+function renderCustomImportTree({ resetScroll = false } = {}) {
   if (!customImportState) return;
   renderCustomImportSummary();
+  const tree = document.getElementById('customImportTree');
+  const renderedSections = [...tree.querySelectorAll('.custom-import-section')];
+  const hadRenderedSections = renderedSections.length > 0;
+  const expandedSections = new Set(renderedSections.filter(section => section.open).map(section => section.dataset.sectionId));
+  const previousScrollTop = tree.scrollTop;
   const showSame = document.getElementById('customImportShowSame').checked;
+  const query = normalizeSearchText(document.getElementById('customImportSearch')?.value || '').trim();
   const html = customImportState.sections.map(section => {
-    const visibleButtons = section.buttons.filter(item => showSame || item.status !== 'same');
+    const sectionId = encodeURIComponent(section.incoming.id);
+    const sectionMatches = !query || normalizeSearchText(section.incoming.name).includes(query);
+    const visibleButtons = section.buttons.filter(item => {
+      if (!showSame && item.status === 'same') return false;
+      return sectionMatches || customImportItemMatchesSearch(item, query);
+    });
+    if (query && !sectionMatches && !visibleButtons.length) return '';
     if (!visibleButtons.length && section.status === 'same') return '';
     const sectionMeta = customImportStatusMeta(section.status);
     const actionableButtons = section.buttons.filter(item => item.status !== 'same');
     const sectionActionable = section.status !== 'same' || actionableButtons.length > 0;
     const sectionChecked = section.selected || (actionableButtons.length > 0 && actionableButtons.every(item => item.selected));
-    const sectionId = encodeURIComponent(section.incoming.id);
+    const sectionOpen = query || !hadRenderedSections || expandedSections.has(sectionId);
     const buttonRows = visibleButtons.map(item => {
       const meta = customImportStatusMeta(item.status);
       const key = encodeURIComponent(item.key);
@@ -264,7 +303,7 @@ function renderCustomImportTree() {
       </div>`;
     }).join('');
 
-    return `<details class="custom-import-section" open>
+    return `<details class="custom-import-section" data-section-id="${sectionId}"${sectionOpen ? ' open' : ''}>
       <summary>
         <label onclick="event.stopPropagation()"><input type="checkbox"${sectionChecked ? ' checked' : ''}${sectionActionable ? '' : ' disabled'} onchange="toggleCustomImportSection('${sectionId}', this.checked)"></label>
         <span class="custom-import-section-name">${escapeHtml(section.incoming.name)}</span>
@@ -274,7 +313,9 @@ function renderCustomImportTree() {
       <div class="custom-import-section-items">${buttonRows || '<p class="custom-import-empty">Nenhuma diferença nos botões.</p>'}</div>
     </details>`;
   }).join('');
-  document.getElementById('customImportTree').innerHTML = html || '<p class="custom-import-empty">Os dois conjuntos de dados são idênticos.</p>';
+  tree.innerHTML = html || `<p class="custom-import-empty">${query ? 'Nenhum item corresponde à pesquisa.' : 'Os dois conjuntos de dados são idênticos.'}</p>`;
+  tree.scrollTop = resetScroll ? 0 : previousScrollTop;
+  updateCustomImportToggleSectionsButton();
 }
 
 function findCustomImportSection(encodedId) {
@@ -472,9 +513,20 @@ document.addEventListener('click', event => {
   if (event.target?.id === 'customImportModal') closeCustomImport();
 });
 
+document.getElementById('customImportTree')?.addEventListener('toggle', event => {
+  if (event.target.matches('.custom-import-section')) updateCustomImportToggleSectionsButton();
+}, true);
+
 document.addEventListener('keydown', event => {
   const modalBackground = document.getElementById('customImportModal');
   if (!modalBackground?.classList.contains('open')) return;
+
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'e'
+      && !document.getElementById('customImportComparePanel').hidden) {
+    event.preventDefault();
+    toggleAllCustomImportSections();
+    return;
+  }
 
   if (event.key === 'Escape') {
     closeCustomImport();

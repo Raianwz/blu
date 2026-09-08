@@ -67,6 +67,10 @@
           </label>
           <label class="custom-import-toggle"><input id="customImportShowSame" type="checkbox" onchange="renderCustomImportTree()"> Mostrar itens idênticos</label>
         </div>
+        <div class="custom-import-filterbar">
+          <label for="customImportSearch"><span>Pesquisar</span><input id="customImportSearch" type="search" placeholder="Seção, botão, texto ou tag..." autocomplete="off" oninput="filterCustomImportTree()"></label>
+          <button id="customImportToggleSectionsBtn" class="mbtn ghost" type="button" onclick="toggleAllCustomImportSections()" title="Expandir ou minimizar categorias — Ctrl + E">Minimizar tudo</button>
+        </div>
         <div id="customImportTree" class="custom-import-tree" aria-label="Diferenças encontradas"></div>
       </section>
 
