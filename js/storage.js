@@ -114,10 +114,12 @@ function clearBluLocalStorage({ includeClientId = false } = {}) {
 function collectState() {
   const sections = [];
 
-  document.querySelectorAll('.section-wrap').forEach(section => {
+  // Réplicas de destino do drag-and-drop são apenas elementos visuais e nunca
+  // podem entrar em autosave, exportação ou snapshots de desfazer/refazer.
+  document.querySelectorAll('.section-wrap:not(.section-drag-placeholder)').forEach(section => {
     const buttons = [];
 
-    section.querySelectorAll('.btn-wrap').forEach(button => {
+    section.querySelectorAll('.btn-wrap:not(.drag-placeholder)').forEach(button => {
       const label = button.querySelector('.btn-label');
       buttons.push({
         id: button.dataset.id,

@@ -393,6 +393,9 @@ window.addEventListener('mouseup', () => {
 
   const ph = document.querySelector('.section-drag-placeholder');
   if (ph && ph.parentNode) {
+    // Neste ponto a seção original ainda está na posição antiga; somente o
+    // marcador visual está no destino. O snapshot precisa ser feito agora.
+    pushHistory();
     ph.parentNode.insertBefore(draggingSectionEl, ph);
     ph.remove();
   }
@@ -405,7 +408,6 @@ window.addEventListener('mouseup', () => {
   isDraggingSection = false;
   setDragOrganizing(false);
 
-  pushHistory();
   if (draggedSectionOriginPosition !== destinationPosition) {
     recordActivityEvent('reordered', {
       target: 'section', targetId: movedSection.dataset.id,
