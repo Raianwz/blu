@@ -288,6 +288,38 @@ textarea::placeholder {
   color: var(--accent1);
 }
 
+.menu-btn.menu-btn-experimental {
+  position: relative;
+  padding-bottom: 15px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--yellow) 9%, var(--surface2)), var(--surface2) 72%);
+  border-color: color-mix(in srgb, var(--yellow) 32%, var(--border));
+}
+
+.menu-btn.menu-btn-experimental:hover {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--yellow) 14%, var(--surface2)), var(--surface2) 76%);
+  border-color: color-mix(in srgb, var(--yellow) 52%, var(--border));
+}
+
+.menu-btn.menu-btn-experimental.active {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--yellow) 8%, rgba(102, 126, 234, 0.12)), rgba(102, 126, 234, 0.12) 76%);
+  border-color: var(--accent1);
+  color: var(--accent1);
+}
+
+.menu-experiment-note {
+  position: absolute;
+  right: 10px;
+  bottom: 3px;
+  color: var(--yellow);
+  font-size: 8px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.82;
+  pointer-events: none;
+}
+
 .menu-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
