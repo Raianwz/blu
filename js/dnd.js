@@ -15,7 +15,7 @@ function updateAdvancedOrganizingButtonUI() {
   if (!button) return;
   button.classList.toggle('active', advancedOrganizingEnabled);
   button.setAttribute('aria-pressed', String(advancedOrganizingEnabled));
-  button.querySelector('.menu-btn-label').textContent = `Organização Avançada: ${advancedOrganizingEnabled ? 'ON' : 'OFF'}`;
+  button.querySelector('.menu-btn-label').textContent = `Estabilizar ao Arrastar: ${advancedOrganizingEnabled ? 'ON' : 'OFF'}`;
 }
 
 function initAdvancedOrganizingPreference() {
@@ -27,7 +27,7 @@ function toggleAdvancedOrganizing() {
   advancedOrganizingEnabled = !advancedOrganizingEnabled;
   setSetting('advancedOrganizing', advancedOrganizingEnabled ? 'on' : 'off');
   updateAdvancedOrganizingButtonUI();
-  notify(`Organização avançada ${advancedOrganizingEnabled ? 'ativada' : 'desativada'}`);
+  notify(`Estabilização ao arrastar ${advancedOrganizingEnabled ? 'ativada' : 'desativada'}`);
 }
 
 function prepareAdvancedDragLayout() {
@@ -90,7 +90,7 @@ function createDragPlaceholder(element, className) {
   return clone;
 }
 
-// --- Preferência "Mostrar Destino" (preview visual do drag) ---------
+// --- Preferência "Destino ao Arrastar" (preview visual do drag) -----
 // Desativado por padrão. Importante: mesmo desativado, o placeholder
 // CONTINUA sendo posicionado no DOM normalmente — o CSS só o retira do
 // fluxo visual (body.drag-preview-off). Isso preserva o
@@ -103,7 +103,7 @@ function updateDragPreviewButtonUI() {
   const button = document.getElementById('dragPreviewBtn');
   if (!button) return;
   button.classList.toggle('active', dragPreviewEnabled);
-  button.querySelector('.menu-btn-label').textContent = `Mostrar Destino: ${dragPreviewEnabled ? 'ON' : 'OFF'}`;
+  button.querySelector('.menu-btn-label').textContent = `Destino ao Arrastar: ${dragPreviewEnabled ? 'ON' : 'OFF'}`;
 }
 
 function applyDragPreviewState() {
@@ -271,17 +271,17 @@ function updateOrganizeModeButtonUI() {
   button.disabled = !editMode;
   button.classList.toggle('active', shiftLocked);
   button.setAttribute('aria-pressed', String(shiftLocked));
-  button.querySelector('.menu-btn-label').textContent = `Modo Organização: ${shiftLocked ? 'ON' : 'OFF'}`;
+  button.querySelector('.menu-btn-label').textContent = `Modo de Organização: ${shiftLocked ? 'ON' : 'OFF'}`;
 }
 
-// Alterna o Modo Organização a partir do clique no botão do menu — usa a
+// Alterna o modo de organização a partir do clique no botão do menu — usa a
 // mesma variável e o mesmo updateShiftMode() que o atalho de teclado.
 function toggleOrganizeMode() {
   if (!editMode) return; // botão fica desabilitado nesse caso; defesa extra
   shiftLocked = !shiftLocked;
   updateShiftMode();
   mobileHaptic('toggle');
-  notify(shiftLocked ? 'Modo Organização ativado' : 'Modo Organização desativado');
+  notify(shiftLocked ? 'Modo de organização ativado' : 'Modo de organização desativado');
 }
 
 function getSectionPlaceholder() {

@@ -113,7 +113,7 @@ function initQuickActions() {
   items.append(
     createQuickActionButton({ id: 'quickUndoBtn', label: 'Desfazer', icon: 'undo', action: undoLastAction }),
     createQuickActionButton({ id: 'quickRedoBtn', label: 'Refazer', icon: 'redo', action: redoLastAction }),
-    createQuickActionButton({ id: 'quickEditBtn', label: 'Modo edição', icon: 'pencil', action: toggleEditMode }),
+    createQuickActionButton({ id: 'quickEditBtn', label: 'Modo de edição', icon: 'pencil', action: toggleEditMode }),
     createQuickActionButton({ id: 'quickOrganizeBtn', label: 'Organizar', icon: 'target', action: toggleQuickOrganizeMode })
   );
 

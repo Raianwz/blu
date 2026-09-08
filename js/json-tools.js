@@ -29,7 +29,7 @@ function setJsonModalTab(tab) {
   viewPanel?.classList.toggle('active', isView);
   if (diagnosticPanel) diagnosticPanel.hidden = isView;
   if (viewPanel) viewPanel.hidden = !isView;
-  if (title) title.textContent = isView ? '📄 Visualizar JSON' : '📄 Verificar JSON';
+  if (title) title.textContent = isView ? '📄 Visualizar JSON' : '📄 Diagnóstico dos Dados';
 
   if (isView) refreshJsonView();
   else renderJsonDiagnostics();

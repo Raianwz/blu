@@ -8,9 +8,9 @@ const protectedEditModals = new Set(['btnModal', 'sectionModal']);
 const modalInitialValues = new Map();
 let modalDismissPending = false;
 
-// Criptografia do export: controlada via atalho Alt+C (não há mais
+// Criptografia do backup: controlada via atalho Alt+C (não há mais
 // checkbox no menu — o estado liga/desliga e reflete como um pequeno
-// cadeado no botão Exportar).
+// cadeado no botão Exportar Backup).
 let encryptExportEnabled = false;
 
 function setExportEncryption(enabled) {
@@ -325,7 +325,7 @@ function setTagModalTab(tab) {
   diagnosticPanel?.classList.toggle('active', isDiagnostic);
   if (managePanel) managePanel.hidden = isDiagnostic;
   if (diagnosticPanel) diagnosticPanel.hidden = !isDiagnostic;
-  if (title) title.textContent = isDiagnostic ? '🏷️ Verificar Tags' : '🏷️ Gerenciar Tags';
+  if (title) title.textContent = isDiagnostic ? '🏷️ Diagnóstico de Tags' : '🏷️ Gerenciar Tags';
 
   if (isDiagnostic) renderTagDiagnostics();
 }
@@ -1097,7 +1097,7 @@ async function importData() {
 
     if (!parsed.sections && !parsed.categories) throw new Error('Formato inválido: esperado "sections", "categories" ou um backup do Blû');
 
-    const ok = await confirmDialog('Isso substituirá todos os dados atuais. Continuar?', { title: '📥 Importar JSON', danger: true, confirmText: 'Importar' });
+    const ok = await confirmDialog('Isso substituirá todos os dados atuais. Continuar?', { title: '📥 Importar Backup', danger: true, confirmText: 'Importar' });
     if (!ok) return;
 
     pushHistory();

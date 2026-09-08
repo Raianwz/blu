@@ -79,15 +79,15 @@ function toggleEditMode() {
   document.querySelectorAll('.btn-wrap').forEach(button => button.draggable = editMode);
 
   const button = document.getElementById('editModeBtn');
-  button.querySelector('.menu-btn-label').textContent = `Modo Edição: ${editMode ? 'ON' : 'OFF'}`;
+  button.querySelector('.menu-btn-label').textContent = `Modo de Edição: ${editMode ? 'ON' : 'OFF'}`;
   button.classList.toggle('active', editMode);
 
   updateShiftMode();
   renderFavoritesShelf();
-  notify(editMode ? 'Modo edição ativado' : 'Modo edição desativado');
+  notify(editMode ? 'Modo de edição ativado' : 'Modo de edição desativado');
 }
 
-// "Ocultar Marca/Versão" — propositalmente NÃO persiste em localStorage:
+// "Marca e Versão" — propositalmente NÃO persiste em localStorage:
 // é um estado só da sessão atual, sempre volta a aparecer num F5/nova
 // visita (pensado como um "modo apresentação" rápido, não preferência).
 let versionHidden = false;
@@ -101,7 +101,7 @@ function toggleVersionVisibility() {
   const button = document.getElementById('hideVersionBtn');
   if (button) {
     button.classList.toggle('active', versionHidden);
-    button.querySelector('.menu-btn-label').textContent = `Ocultar Marca/Versão: ${versionHidden ? 'ON' : 'OFF'}`;
+    button.querySelector('.menu-btn-label').textContent = `Marca e Versão: ${versionHidden ? 'Ocultas' : 'Visíveis'}`;
   }
 }
 
@@ -190,7 +190,7 @@ async function resetPreferences() {
   const hideVersionButton = document.getElementById('hideVersionBtn');
   if (hideVersionButton) {
     hideVersionButton.classList.remove('active');
-    hideVersionButton.querySelector('.menu-btn-label').textContent = 'Ocultar Marca/Versão: OFF';
+    hideVersionButton.querySelector('.menu-btn-label').textContent = 'Marca e Versão: Visíveis';
   }
 
   updateContentPreferenceButtons();
@@ -376,7 +376,7 @@ document.addEventListener('keydown', event => {
     return;
   }
 
-  // Alt+G — Ativar/desativar modo edição
+  // Alt+G — Ativar/desativar modo de edição
   if (event.altKey && key === 'g' && !typing) {
     event.preventDefault();
     toggleEditMode();

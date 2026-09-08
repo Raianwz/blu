@@ -11,7 +11,7 @@ function updateTextPreviewButtonUI() {
   const button = document.getElementById('textPreviewBtn');
   if (!button) return;
   button.classList.toggle('active', textPreviewEnabled);
-  button.querySelector('.menu-btn-label').textContent = `Prévia de Texto: ${textPreviewEnabled ? 'ON' : 'OFF'}`;
+  button.querySelector('.menu-btn-label').textContent = `Prévia dos Textos: ${textPreviewEnabled ? 'ON' : 'OFF'}`;
 }
 
 function getCopyButtonTitle(button) {
@@ -365,7 +365,7 @@ function updateToggleSectionsBtnLabel() {
   const hasCollapsed = targetSections.some(section => section.classList.contains('collapsed'));
   const icon = button.querySelector('.menu-icon');
   if (icon) icon.innerHTML = ICONS[hasCollapsed ? 'unfold_vertical' : 'fold_vertical'];
-  button.querySelector('.menu-btn-label').textContent = hasCollapsed ? 'Expandir Categorias' : 'Minimizar Categorias';
+  button.querySelector('.menu-btn-label').textContent = hasCollapsed ? 'Expandir Seções' : 'Minimizar Seções';
 }
 
 function toggleAllSections() {
@@ -381,5 +381,5 @@ function toggleAllSections() {
 
   updateToggleSectionsBtnLabel();
   persistState();
-  notify(hasCollapsed ? 'Categorias expandidas' : 'Categorias minimizadas');
+  notify(hasCollapsed ? 'Seções expandidas' : 'Seções minimizadas');
 }

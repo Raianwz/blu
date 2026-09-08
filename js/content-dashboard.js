@@ -163,11 +163,11 @@ function updateContentPreferenceButtons() {
   const dashboardEnabled = isContentDashboardEnabled();
   if (shelfButton) {
     shelfButton.classList.toggle('active', shelfEnabled);
-    shelfButton.querySelector('.menu-btn-label').textContent = `Exibir Favoritos: ${shelfEnabled ? 'ON' : 'OFF'}`;
+    shelfButton.querySelector('.menu-btn-label').textContent = `Favoritos na Tela Inicial: ${shelfEnabled ? 'ON' : 'OFF'}`;
   }
   if (dashboardButton) {
     dashboardButton.classList.toggle('active', dashboardEnabled);
-    dashboardButton.querySelector('.menu-btn-label').textContent = `Aba de Estatísticas: ${dashboardEnabled ? 'ON' : 'OFF'}`;
+    dashboardButton.querySelector('.menu-btn-label').textContent = `Estatísticas: ${dashboardEnabled ? 'ON' : 'OFF'}`;
   }
   if (contextButton) {
     const enabled = isFavoriteContextMenuEnabled();

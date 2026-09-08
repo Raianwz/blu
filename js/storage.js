@@ -230,7 +230,7 @@ function updateUnsavedChangesUI() {
 
   if (exportBtn) {
     exportBtn.classList.toggle('active', dirty);
-    exportBtn.title = dirty ? 'Exportar JSON — há alterações sem backup' : 'Exportar JSON';
+    exportBtn.title = dirty ? 'Exportar backup — há alterações desde o último backup' : 'Exportar backup';
   }
 
   // Propaga o mesmo aviso para o cabeçalho do submenu "Dados" — assim dá
