@@ -129,6 +129,42 @@ function setThemePreference(preference) {
   applyTheme(value === 'system' ? !!systemThemeQuery?.matches : value === 'dark');
 }
 
+const editAnimationMedia = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+let editAnimationEnabled = true;
+
+function updateEditAnimationButtonUI() {
+  const button = document.getElementById('editAnimationBtn');
+  if (!button) return;
+  button.classList.toggle('active', editAnimationEnabled);
+  button.setAttribute('aria-pressed', String(editAnimationEnabled));
+  button.querySelector('.menu-btn-label').textContent = `Animação na Edição: ${editAnimationEnabled ? 'ON' : 'OFF'}`;
+}
+
+function applyEditAnimationPreference(value = getSetting('editAnimation')) {
+  editAnimationEnabled = value === 'on' || (value !== 'off' && !editAnimationMedia?.matches);
+  document.body.classList.toggle('edit-animation-off', !editAnimationEnabled);
+  updateEditAnimationButtonUI();
+}
+
+function toggleEditAnimationPreference() {
+  editAnimationEnabled = !editAnimationEnabled;
+  setSetting('editAnimation', editAnimationEnabled ? 'on' : 'off');
+  applyEditAnimationPreference(editAnimationEnabled ? 'on' : 'off');
+  notify(`Animação na edição ${editAnimationEnabled ? 'ativada' : 'desativada'}`);
+}
+
+function initEditAnimationPreference() {
+  applyEditAnimationPreference();
+  const handleMotionPreferenceChange = () => {
+    if (getSetting('editAnimation') === null) applyEditAnimationPreference();
+  };
+  if (editAnimationMedia?.addEventListener) {
+    editAnimationMedia.addEventListener('change', handleMotionPreferenceChange);
+  } else {
+    editAnimationMedia?.addListener(handleMotionPreferenceChange);
+  }
+}
+
 async function resetPreferences() {
   const ok = await confirmDialog(
     'As configurações de aparência e comportamento voltarão ao padrão. Seus botões, seções, favoritos e estatísticas não serão alterados.',
@@ -147,6 +183,7 @@ async function resetPreferences() {
   applyDragPreviewState();
   advancedOrganizingEnabled = false;
   updateAdvancedOrganizingButtonUI();
+  applyEditAnimationPreference();
 
   versionHidden = false;
   document.getElementById('appVersion')?.classList.remove('version-hidden');
@@ -402,6 +439,7 @@ setupVersionBadgeHover();
 getOrCreateClientId();
 migrateLegacySettings();
 initTheme();
+initEditAnimationPreference();
 initDragPreviewPreference();
 initAdvancedOrganizingPreference();
 initTextPreviewPreference();
