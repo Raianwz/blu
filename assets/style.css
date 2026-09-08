@@ -10,7 +10,7 @@
   --surface2: #f4f5fa;
   --border: #e2e5ef;
   --text: #1e2235;
-  --text2: #6b7080;
+  --text2: #555b6e;
   --accent1: #667eea;
   --accent2: #764ba2;
   --btn-public-1: #60a5fa;
@@ -37,7 +37,7 @@ body.dark {
   --surface2: #1e2235;
   --border: #2a2f45;
   --text: #e8eaf2;
-  --text2: #7a809a;
+  --text2: #adb4c9;
   --shadow: rgba(0, 0, 0, 0.4);
   --topbar-bg: #13161f;
   --topbar-shadow: rgba(0, 0, 0, 0.5);
@@ -53,6 +53,16 @@ body {
   min-height: 100vh;
   color: var(--text);
   transition: background 0.3s, color 0.3s;
+}
+
+body.dark {
+  color-scheme: dark;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text2);
+  opacity: 1;
 }
 
 #topbar {
@@ -1792,7 +1802,8 @@ body.edit-mode .btn-del {
 
 .mbtn.secondary {
   background: var(--border);
-  color: var(--text2);
+  color: var(--text);
+  border: 1px solid color-mix(in srgb, var(--text2) 38%, var(--border));
 }
 
 .mbtn:disabled {
@@ -1807,7 +1818,7 @@ body.edit-mode .btn-del {
   left: 12px;
   font-size: 10px;
   color: var(--text2);
-  opacity: 0.5;
+  opacity: 0.9;
   background: rgba(0, 0, 0, 0.04);
   padding: 4px 8px;
   border-radius: 6px;
@@ -2622,7 +2633,7 @@ body.edit-mode .btn-del {
 }
 
 .debug-panel-header strong { font-size: 14px; }
-#debugEntryCount { color: #8f99aa; font-size: 11px; }
+#debugEntryCount { color: #b2bacb; font-size: 11px; }
 .debug-panel-actions { display: flex; gap: 6px; }
 
 .debug-panel-actions button,
@@ -2668,13 +2679,13 @@ body.edit-mode .btn-del {
   border-bottom: 1px solid rgba(255, 255, 255, 0.045);
 }
 
-.debug-entry-meta { color: #8993a4; white-space: nowrap; }
+.debug-entry-meta { color: #aeb7c8; white-space: nowrap; }
 .debug-entry pre { margin: 0; color: inherit; font: inherit; white-space: pre-wrap; overflow-wrap: anywhere; }
 .debug-warn { color: #fbbf24; background: rgba(245, 158, 11, 0.06); }
 .debug-error { color: #f87171; background: rgba(239, 68, 68, 0.08); }
 .debug-info { color: #7dd3fc; }
 .debug-debug { color: #c4b5fd; }
-.debug-empty { padding: 18px 14px; color: #8f99aa; }
+.debug-empty { padding: 18px 14px; color: #b2bacb; }
 
 body.debug-mode-open { padding-bottom: var(--debug-panel-height); }
 body.debug-mode-open #menuOverlay { z-index: 2300; }
