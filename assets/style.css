@@ -3483,6 +3483,43 @@ kbd {
   width: 100%;
   text-decoration: none;
   display: inline-block;
+  transition: border-color .16s ease, background .16s ease, color .16s ease, filter .16s ease;
+}
+
+.share-actions .mbtn.primary:hover,
+.share-actions .mbtn.primary:focus-visible {
+  filter: brightness(1.08);
+}
+
+.share-actions .share-custom-import-action {
+  border: 1px solid color-mix(in srgb, var(--accent1) 48%, var(--border));
+  background: color-mix(in srgb, var(--accent1) 9%, var(--surface2));
+  color: var(--text);
+}
+
+.share-actions .share-custom-import-action:hover,
+.share-actions .share-custom-import-action:focus-visible {
+  border-color: var(--accent1);
+  background: color-mix(in srgb, var(--accent1) 15%, var(--surface2));
+  color: var(--accent1);
+}
+
+.share-actions .share-exit-action {
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+}
+
+.share-actions .share-exit-action:hover,
+.share-actions .share-exit-action:focus-visible {
+  border-color: color-mix(in srgb, var(--text2) 65%, var(--border));
+  background: var(--surface2);
+  color: var(--text);
+}
+
+.share-actions .mbtn:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent1) 42%, transparent);
+  outline-offset: 2px;
 }
 
 /* Importação personalizada de compartilhamentos */

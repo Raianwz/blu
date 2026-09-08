@@ -180,7 +180,7 @@
         const localData = getLocalShareImportData();
         if (localData) {
           const customImportBtn = document.createElement('button');
-          customImportBtn.className = 'mbtn ghost';
+          customImportBtn.className = 'mbtn share-custom-import-action';
           customImportBtn.textContent = 'Personalizar importação';
           customImportBtn.setAttribute('aria-haspopup', 'dialog');
           customImportBtn.onclick = () => openCustomImport(localData, normalized);
@@ -191,8 +191,8 @@
 
         const cancelLink = document.createElement('a');
         cancelLink.href = '/';
-        cancelLink.className = 'mbtn secondary';
-        cancelLink.textContent = 'Ir para o Blû sem importar';
+        cancelLink.className = 'mbtn share-exit-action';
+        cancelLink.textContent = 'Voltar ao Blû sem importar';
 
         actionsEl.append(cancelLink);
       } catch (error) {
