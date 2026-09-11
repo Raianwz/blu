@@ -13,7 +13,7 @@
 // subir a versão abaixo (CACHE_VERSION). Isso cria um cache
 // novo e descarta o antigo na ativação.
 
-const CACHE_VERSION = 'v11';
+const CACHE_VERSION = 'v12';
 const CACHE_NAME = `blu-cache-${CACHE_VERSION}`;
 
 const APP_SHELL = [
@@ -26,21 +26,21 @@ const APP_SHELL = [
   '/assets/icons/icon-512.png',
   '/assets/icons/icon-maskable-192.png',
   '/assets/icons/icon-maskable-512.png',
-  '/js/debug.js',
-  '/js/utils.js',
-  '/js/dialogs.js',
-  '/js/storage.js',
-  '/js/user-data.js',
-  '/js/content-dashboard.js',
-  '/js/render.js',
-  '/js/search.js',
-  '/js/crypto.js',
-  '/js/crud.js',
-  '/js/dnd.js',
-  '/js/json-tools.js',
-  '/js/custom-export.js',
-  '/js/context-menu.js',
-  '/js/quick-actions.js',
+  '/js/core/debug.js',
+  '/js/core/utils.js',
+  '/js/ui/dialogs.js',
+  '/js/core/storage.js',
+  '/js/data/user-data.js',
+  '/js/features/content-dashboard.js',
+  '/js/ui/render.js',
+  '/js/features/search.js',
+  '/js/core/crypto.js',
+  '/js/data/crud.js',
+  '/js/features/dnd.js',
+  '/js/data/json-tools.js',
+  '/js/data/custom-export.js',
+  '/js/ui/context-menu.js',
+  '/js/ui/quick-actions.js',
   '/js/app.js'
 ];
 

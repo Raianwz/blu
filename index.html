@@ -497,21 +497,22 @@
 
   <div id="notifArea"></div>
   <button id="appVersion" type="button" onclick="openAboutModal()">Blû</button>
-  <script src="js/debug.js"></script>
-  <script src="js/utils.js"></script>
-  <script src="js/dialogs.js"></script>
-  <script src="js/storage.js"></script>
-  <script src="js/user-data.js"></script>
-  <script src="js/content-dashboard.js"></script>
-  <script src="js/render.js"></script>
-  <script src="js/search.js"></script>
-  <script src="js/crypto.js"></script>
-  <script src="js/crud.js"></script>
-  <script src="js/dnd.js"></script>
-  <script src="js/json-tools.js"></script>
-  <script src="js/custom-export.js"></script>
-  <script src="js/context-menu.js"></script>
-  <script src="js/quick-actions.js"></script>
+  <!-- A ordem é intencional: os scripts ainda compartilham o escopo global. -->
+  <script src="js/core/debug.js"></script>
+  <script src="js/core/utils.js"></script>
+  <script src="js/ui/dialogs.js"></script>
+  <script src="js/core/storage.js"></script>
+  <script src="js/data/user-data.js"></script>
+  <script src="js/features/content-dashboard.js"></script>
+  <script src="js/ui/render.js"></script>
+  <script src="js/features/search.js"></script>
+  <script src="js/core/crypto.js"></script>
+  <script src="js/data/crud.js"></script>
+  <script src="js/features/dnd.js"></script>
+  <script src="js/data/json-tools.js"></script>
+  <script src="js/data/custom-export.js"></script>
+  <script src="js/ui/context-menu.js"></script>
+  <script src="js/ui/quick-actions.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
