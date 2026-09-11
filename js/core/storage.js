@@ -17,6 +17,11 @@ const REDO_LIMIT = 10;
 let clearUndoSnapshot = null;
 let clearRedoSnapshot = null;
 
+// Última representação estável do estado exibido. Cada alteração concluída
+// substitui este snapshot, permitindo que autosave, histórico e indicadores
+// reutilizem a mesma coleta do DOM.
+let currentStateSnapshot = null;
+
 // Snapshot de referência: o estado no momento do último carregamento
 // ou da última exportação. É contra ele que comparamos para saber se
 // existem alterações ainda sem backup exportado.
@@ -141,9 +146,9 @@ function collectState() {
   return { tags: [...tags], sections };
 }
 
-function getComparableStateString() {
-  const state = collectState();
-  return JSON.stringify({
+function createStateSnapshot(state = collectState()) {
+  const stateString = JSON.stringify(state);
+  const comparableStateString = JSON.stringify({
     tags: [...state.tags],
     sections: state.sections.map(section => ({
       id: section.id,
@@ -157,18 +162,31 @@ function getComparableStateString() {
       }))
     }))
   });
+
+  return { state, stateString, comparableStateString };
 }
 
-function hasUnsavedChanges() {
+function getCurrentStateSnapshot() {
+  if (!currentStateSnapshot) currentStateSnapshot = createStateSnapshot();
+  return currentStateSnapshot;
+}
+
+function getComparableStateString(snapshot = getCurrentStateSnapshot()) {
+  return snapshot.comparableStateString;
+}
+
+function hasUnsavedChanges(snapshot = getCurrentStateSnapshot()) {
   if (!lastExportedComparableState) return false;
-  return getComparableStateString() !== lastExportedComparableState;
+  return snapshot.comparableStateString !== lastExportedComparableState;
 }
 
 // --- Autosave (localStorage) ------------------------------
 
-function persistState() {
+function persistState(snapshot = createStateSnapshot()) {
+  currentStateSnapshot = snapshot;
+
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(collectState()));
+    localStorage.setItem(STORAGE_KEY, snapshot.stateString);
     return true;
   } catch (error) {
     console.error('Erro ao salvar localmente:', error);
@@ -211,10 +229,11 @@ function getVersionedBadgeText(dirty) {
   return `Blû ${VERSION} • ${phrase}`;
 }
 
-function updateUnsavedChangesUI() {
-  persistState();
+function updateUnsavedChangesUI(snapshot = createStateSnapshot()) {
+  currentStateSnapshot = snapshot;
+  persistState(snapshot);
 
-  const dirty = hasUnsavedChanges();
+  const dirty = hasUnsavedChanges(snapshot);
   const versionBadge = document.getElementById('appVersion');
   const exportBtn = document.getElementById('exportBtn');
 
@@ -239,7 +258,7 @@ function updateUnsavedChangesUI() {
   if (dadosToggle) dadosToggle.classList.toggle('active', dirty);
 
   document.title = dirty ? `● ${BASE_TITLE}` : BASE_TITLE;
-  evaluateBackupBanner(dirty);
+  evaluateBackupBanner(dirty, snapshot);
 }
 
 function setupVersionBadgeHover() {
@@ -262,13 +281,15 @@ function setupVersionBadgeHover() {
   });
 }
 
-function markCurrentStateAsExported() {
-  lastExportedComparableState = getComparableStateString();
-  updateUnsavedChangesUI();
+function markCurrentStateAsExported(exportedSnapshot = getCurrentStateSnapshot()) {
+  lastExportedComparableState = exportedSnapshot.comparableStateString;
+  updateUnsavedChangesUI(getCurrentStateSnapshot());
 }
 
 window.addEventListener('beforeunload', event => {
-  if (isPopoutWindow || !hasUnsavedChanges()) return;
+  // Esta coleta defensiva também protege contra alguma futura mutação que não
+  // tenha passado pelo fechamento central de estado.
+  if (isPopoutWindow || !hasUnsavedChanges(createStateSnapshot())) return;
   event.preventDefault();
   event.returnValue = '';
 });
@@ -304,11 +325,11 @@ function consumePendingImportUndoState() {
   }
 }
 
-function evaluateBackupBanner(dirty) {
+function evaluateBackupBanner(dirty, snapshot = getCurrentStateSnapshot()) {
   const banner = document.getElementById('backupBanner');
   if (!banner) return;
 
-  const current = getComparableStateString();
+  const current = snapshot.comparableStateString;
   if (!dirty || backupBannerDismissedFor === current) {
     banner.classList.remove('show');
     syncBackupBannerNotificationOffset();
@@ -322,14 +343,15 @@ function evaluateBackupBanner(dirty) {
 window.addEventListener('resize', syncBackupBannerNotificationOffset);
 
 function dismissBackupBanner() {
-  backupBannerDismissedFor = getComparableStateString();
-  evaluateBackupBanner(hasUnsavedChanges());
+  const snapshot = getCurrentStateSnapshot();
+  backupBannerDismissedFor = snapshot.comparableStateString;
+  evaluateBackupBanner(hasUnsavedChanges(snapshot), snapshot);
 }
 
 // --- Histórico (undo/redo) ---------------------------------
 
 function pushHistory() {
-  history.push(JSON.stringify(collectState()));
+  history.push(getCurrentStateSnapshot().stateString);
   if (history.length > 30) history.shift();
 
   // Qualquer nova ação manual invalida o histórico de refazer.
@@ -384,7 +406,7 @@ function undoLastAction() {
   document.querySelectorAll('#notifArea .notif.has-action').forEach(element => element.remove());
 
   try {
-    const currentStateString = JSON.stringify(collectState());
+    const currentStateString = getCurrentStateSnapshot().stateString;
     pushRedoState(currentStateString);
     const previousStateString = history.pop();
 
@@ -414,7 +436,7 @@ function redoLastAction() {
   document.querySelectorAll('#notifArea .notif.has-action').forEach(element => element.remove());
 
   try {
-    const currentStateString = JSON.stringify(collectState());
+    const currentStateString = getCurrentStateSnapshot().stateString;
     history.push(currentStateString);
     if (history.length > 30) history.shift();
 

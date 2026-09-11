@@ -68,9 +68,8 @@ function init() {
   // pendente quando o usuário fizer alterações a partir daqui.
   markCurrentStateAsExported();
 
-  // Garante que o autosave já reflita o estado carregado (ex.: na
-  // primeira visita, grava o demo para a próxima sessão).
-  persistState();
+  // markCurrentStateAsExported() também persiste esse primeiro snapshot (por
+  // exemplo, grava o demo para a próxima sessão na primeira visita).
 }
 
 function toggleEditMode() {

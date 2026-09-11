@@ -484,8 +484,8 @@ function updateTagDatalist() {
 // --- Export / Import --------------------------------------
 
 async function exportData() {
-  const state = collectState();
-  let jsonString = JSON.stringify(state, null, 2);
+  const snapshot = getCurrentStateSnapshot();
+  let jsonString = JSON.stringify(snapshot.state, null, 2);
 
   const shouldEncrypt = encryptExportEnabled;
   let filenameSuffix = '';
@@ -511,7 +511,7 @@ async function exportData() {
   link.download = `blu_data-${exportDate}-${exportTime}${filenameSuffix}.json`;
   link.click();
   URL.revokeObjectURL(url);
-  markCurrentStateAsExported();
+  markCurrentStateAsExported(snapshot);
   notify(shouldEncrypt && filenameSuffix ? 'Exportado (criptografado)!' : 'Exportado!');
 }
 
@@ -641,9 +641,10 @@ function openShareModal() {
     return;
   }
 
-  const state = collectState();
+  const snapshot = getCurrentStateSnapshot();
+  const state = snapshot.state;
   const sizeInfo = getShareSizeInfo(state);
-  const currentComparable = getComparableStateString();
+  const currentComparable = snapshot.comparableStateString;
   const lastShare = getLastShareRecord();
   const stillValid = !!(lastShare && lastShare.comparableState === currentComparable && lastShare.expiresAt > Date.now());
 
@@ -720,8 +721,9 @@ async function shareData() {
     return;
   }
 
-  const state = collectState();
-  const jsonString = JSON.stringify(state);
+  const snapshot = getCurrentStateSnapshot();
+  const state = snapshot.state;
+  const jsonString = snapshot.stateString;
   const jsonBytes = getUtf8ByteLength(jsonString);
   const estimatedPayloadBytes = estimateEncryptedPayloadBytes(jsonString);
 
@@ -799,7 +801,7 @@ async function shareData() {
 
     saveLastShareRecord({
       id,
-      comparableState: getComparableStateString(),
+      comparableState: snapshot.comparableStateString,
       url,
       originalUrl: url,
       alias: null,
@@ -1126,7 +1128,7 @@ async function clearAll(event = null) {
   });
   if (!ok) return;
 
-  const stateBeforeClear = JSON.stringify(collectState());
+  const stateBeforeClear = getCurrentStateSnapshot().stateString;
   const exportedStateBeforeClear = lastExportedComparableState;
   pushHistory();
   clearUndoSnapshot = {

@@ -379,14 +379,15 @@ function exportUserDataBackup() {
 
 function exportAppDataBackup() {
   pruneUserData();
+  const snapshot = getCurrentStateSnapshot();
   downloadJsonFile({
     format: 'blu-appdata',
     version: USERDATA_FORMAT_VERSION,
     exportedAt: new Date().toISOString(),
-    data: collectState(),
+    data: snapshot.state,
     userdata: userData
   }, 'blu_appdata');
-  markCurrentStateAsExported();
+  markCurrentStateAsExported(snapshot);
   notify('Dados e estatísticas exportados!');
 }
 
