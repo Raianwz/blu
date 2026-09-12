@@ -38,6 +38,29 @@ Polimentos pendentes:
 
 ## Próximos recursos
 
+### Descontinuação dos Favoritos — 18/09/2026
+
+Preparar em **17/09/2026** a atualização que descontinuará os Favoritos. A mudança deve ser publicada após a data definida, sem depender do relógio do dispositivo.
+
+Comportamento após a descontinuação:
+
+- Impedir a inclusão de novos favoritos.
+- Manter a leitura dos favoritos já existentes nos dados locais e em JSONs antigos.
+- Exibir os favoritos existentes somente na tela de **Estatísticas**.
+- Continuar permitindo a remoção individual dos favoritos existentes.
+- Remover a prateleira de Favoritos da tela inicial.
+- Remover as opções “Favoritos na Tela Inicial” e “Favoritar pelo Menu”.
+- Não incluir o campo ou estado de favorito em novos JSONs exportados.
+- Preservar a compatibilidade de importação com arquivos e backups antigos que contenham favoritos.
+- Não apagar automaticamente os favoritos existentes; mantê-los até que o usuário os remova.
+
+Cuidados de implementação:
+
+- Separar a ação atual de alternância entre inclusão e remoção, bloqueando apenas a inclusão.
+- Garantir que a importação de dados antigos não reative controles de inclusão descontinuados.
+- Revisar os presets, escopos e campos da Exportação Personalizada relacionados a Favoritos.
+- Atualizar textos de backup, ajuda e interface que ainda mencionem a criação ou exportação de favoritos.
+
 ### Criptografia versionada para o Blû
 
 Substituir a chave fixa pública usada atualmente por um formato criptográfico versionado, preservando a leitura de arquivos e links criados pelas versões anteriores.
