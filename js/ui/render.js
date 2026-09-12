@@ -298,19 +298,32 @@ async function doCopy(text, btn) {
   } catch (err) {
     console.error('Erro ao copiar:', err);
     btn.disabled = originalDisabled;
-    notify('Erro ao copiar. Verifique se a página está em HTTPS ou localhost.', 'err');
+    notify('Não foi possível copiar. Ative esta janela e tente novamente.', 'err');
   }
 }
 
 async function copyToClipboard(text) {
   if (!text) throw new Error('Texto vazio para cópia');
 
+  let clipboardError = null;
   if (navigator.clipboard && window.isSecureContext) {
-    await navigator.clipboard.writeText(text);
-    mobileHaptic('tap');
-    return;
+    try {
+      await navigator.clipboard.writeText(text);
+      mobileHaptic('tap');
+      return;
+    } catch (error) {
+      clipboardError = error;
+      console.warn('Clipboard API falhou; tentando método alternativo.', {
+        name: error?.name || 'Error',
+        message: error?.message || String(error),
+        documentFocused: document.hasFocus(),
+        visibilityState: document.visibilityState,
+        windowName: window.name || 'main'
+      });
+    }
   }
 
+  const previouslyFocused = document.activeElement;
   const textArea = document.createElement('textarea');
   textArea.value = text;
   textArea.setAttribute('readonly', '');
@@ -319,15 +332,28 @@ async function copyToClipboard(text) {
   textArea.style.left = '-9999px';
   textArea.style.opacity = '0';
 
-  document.body.appendChild(textArea);
-  textArea.focus();
-  textArea.select();
-  textArea.setSelectionRange(0, textArea.value.length);
+  let success = false;
+  let fallbackError = null;
+  try {
+    document.body.appendChild(textArea);
+    textArea.focus({ preventScroll: true });
+    textArea.select();
+    textArea.setSelectionRange(0, textArea.value.length);
+    success = document.execCommand('copy');
+  } catch (error) {
+    fallbackError = error;
+  } finally {
+    textArea.remove();
+    if (previouslyFocused?.isConnected && !previouslyFocused.disabled && typeof previouslyFocused.focus === 'function') {
+      try {
+        previouslyFocused.focus({ preventScroll: true });
+      } catch (_) {
+        previouslyFocused.focus();
+      }
+    }
+  }
 
-  const success = document.execCommand('copy');
-  document.body.removeChild(textArea);
-
-  if (!success) throw new Error('Não foi possível copiar o texto');
+  if (!success) throw clipboardError || fallbackError || new Error('Não foi possível copiar o texto');
   mobileHaptic('tap');
 }
 
