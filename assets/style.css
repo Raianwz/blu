@@ -533,6 +533,17 @@ body.content-dashboard-enabled .content-dashboard {
   padding: 14px;
 }
 
+.favorites-deprecation-note {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-style: italic;
+}
+
+.favorites-shelf > .favorites-deprecation-note {
+  margin: 10px 14px 0;
+}
+
 .favorites-shelf.collapsed .favorites-shelf-head {
   border-bottom: 0;
 }
