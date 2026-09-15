@@ -350,10 +350,17 @@ Botões com o mesmo nome:
 
 ### Pesquisa
 
-- Histórico opcional de pesquisas que produziram resultados.
-- Controle para ativar ou desativar o histórico.
-- Exclusão individual de buscas recentes.
-- Limpar o histórico em “Limpar Tudo” e “Restaurar Configurações”.
+- [x] Histórico opcional de pesquisas confirmadas que produziram resultados.
+- [x] Controle para ativar ou desativar o histórico.
+- [x] Exclusão individual de buscas recentes.
+- [x] Limpar o histórico em “Limpar Tudo” e “Restaurar Configurações”.
+
+### Simplificação do menu
+
+- Avaliar um **Modo avançado** que revele menus e configurações menos utilizados.
+- Manter as ações essenciais visíveis para usuários comuns.
+- Definir quais configurações avançadas devem permanecer acessíveis pela pesquisa ou por atalhos.
+- Evitar que a mudança altere preferências já configuradas quando o modo avançado estiver desligado.
 
 ### Mobile
 

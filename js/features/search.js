@@ -18,9 +18,167 @@ const SEARCH_TYPE_PLACEHOLDERS = {
 };
 const desktopSearchGuidanceMedia = window.matchMedia('(min-width: 761px) and (hover: hover) and (pointer: fine)');
 const reducedMotionMedia = window.matchMedia('(prefers-reduced-motion: reduce)');
+const SEARCH_HISTORY_STORAGE_KEY = 'blu:searchHistory';
+const SEARCH_HISTORY_LIMIT = 10;
+const SEARCH_TYPE_LABELS = {
+  all: 'Tudo',
+  name: 'Nome',
+  tag: 'Tag',
+  category: 'Seção',
+  text: 'Texto'
+};
 let searchPlaceholderIndex = 0;
 let searchPlaceholderTimer = null;
 let searchPlaceholderSwapTimer = null;
+
+function isSearchHistoryEnabled() {
+  return getSetting('searchHistory', 'off') === 'on';
+}
+
+function loadSearchHistory() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(SEARCH_HISTORY_STORAGE_KEY) || '[]');
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter(item => item && typeof item.query === 'string')
+      .map(item => ({
+        query: item.query.trim().slice(0, 200),
+        type: Object.prototype.hasOwnProperty.call(SEARCH_TYPE_LABELS, item.type) ? item.type : 'all'
+      }))
+      .filter(item => item.query.length >= 2)
+      .slice(0, SEARCH_HISTORY_LIMIT);
+  } catch (_) {
+    return [];
+  }
+}
+
+function saveSearchHistory(entries) {
+  try {
+    localStorage.setItem(SEARCH_HISTORY_STORAGE_KEY, JSON.stringify(entries.slice(0, SEARCH_HISTORY_LIMIT)));
+  } catch (_) {}
+}
+
+function updateSearchHistoryButtonUI() {
+  const button = document.getElementById('searchHistoryBtn');
+  if (!button) return;
+  const enabled = isSearchHistoryEnabled();
+  button.classList.toggle('active', enabled);
+  button.setAttribute('aria-pressed', String(enabled));
+  button.querySelector('.menu-btn-label').textContent = `Histórico de Pesquisas: ${enabled ? 'ON' : 'OFF'}`;
+}
+
+function hideSearchHistory() {
+  const popover = document.getElementById('searchHistoryPopover');
+  if (popover) popover.hidden = true;
+  document.getElementById('searchInput')?.setAttribute('aria-expanded', 'false');
+}
+
+function renderSearchHistory() {
+  const input = document.getElementById('searchInput');
+  const popover = document.getElementById('searchHistoryPopover');
+  const list = document.getElementById('searchHistoryList');
+  if (!input || !popover || !list || !isSearchHistoryEnabled() || input.value) {
+    hideSearchHistory();
+    return;
+  }
+
+  const entries = loadSearchHistory();
+  if (!entries.length) {
+    hideSearchHistory();
+    return;
+  }
+
+  list.replaceChildren(...entries.map((entry, index) => {
+    const row = document.createElement('div');
+    row.className = 'search-history-item';
+
+    const use = document.createElement('button');
+    use.className = 'search-history-use';
+    use.type = 'button';
+    use.title = `Pesquisar novamente por ${entry.query}`;
+    use.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v6h6"/><path d="M12 7v5l3 2"/></svg>';
+    const term = document.createElement('span');
+    term.textContent = entry.query;
+    const type = document.createElement('small');
+    type.textContent = SEARCH_TYPE_LABELS[entry.type];
+    use.append(term, type);
+    use.onclick = () => useSearchHistoryEntry(entry);
+
+    const remove = document.createElement('button');
+    remove.className = 'search-history-remove';
+    remove.type = 'button';
+    remove.title = 'Remover pesquisa';
+    remove.setAttribute('aria-label', `Remover pesquisa ${entry.query}`);
+    remove.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m18 6-12 12"/><path d="m6 6 12 12"/></svg>';
+    remove.onclick = event => {
+      event.stopPropagation();
+      removeSearchHistoryEntry(index);
+    };
+
+    row.append(use, remove);
+    return row;
+  }));
+  popover.hidden = false;
+  input.setAttribute('aria-expanded', 'true');
+}
+
+function hasVisibleSearchResults() {
+  return [...document.querySelectorAll('.section-wrap')]
+    .some(section => !section.classList.contains('search-hidden'));
+}
+
+function rememberCurrentSearch() {
+  if (!isSearchHistoryEnabled()) return;
+  const input = document.getElementById('searchInput');
+  const type = document.getElementById('searchType')?.value || 'all';
+  const query = input?.value.trim() || '';
+  const quotedQuery = getQuotedTextQuery(query);
+  if (query.length < 2 || query === '@' || quotedQuery === '' || !hasVisibleSearchResults()) return;
+
+  const normalized = normalizeSearchText(query);
+  const entries = loadSearchHistory().filter(entry => (
+    normalizeSearchText(entry.query) !== normalized || entry.type !== type
+  ));
+  entries.unshift({ query: query.slice(0, 200), type });
+  saveSearchHistory(entries);
+}
+
+function useSearchHistoryEntry(entry) {
+  const input = document.getElementById('searchInput');
+  const type = document.getElementById('searchType');
+  if (!input || !type) return;
+  input.value = entry.query;
+  type.value = entry.type;
+  updateSearchGuidance();
+  doSearch();
+  rememberCurrentSearch();
+  hideSearchHistory();
+  input.focus();
+}
+
+function removeSearchHistoryEntry(index) {
+  const entries = loadSearchHistory();
+  entries.splice(index, 1);
+  saveSearchHistory(entries);
+  renderSearchHistory();
+}
+
+function clearSearchHistory({ silent = false } = {}) {
+  try {
+    localStorage.removeItem(SEARCH_HISTORY_STORAGE_KEY);
+  } catch (_) {}
+  hideSearchHistory();
+  if (!silent) notify('Histórico de pesquisas limpo');
+}
+
+function toggleSearchHistoryPreference() {
+  const enabled = !isSearchHistoryEnabled();
+  setSetting('searchHistory', enabled ? 'on' : 'off');
+  updateSearchHistoryButtonUI();
+  if (typeof updateContentPreferenceButtons === 'function') updateContentPreferenceButtons();
+  hideSearchHistory();
+  notify(`Histórico de pesquisas ${enabled ? 'ativado' : 'desativado'}`);
+}
 
 function stopSearchPlaceholderRotation() {
   clearInterval(searchPlaceholderTimer);
@@ -85,16 +243,34 @@ function initSearchGuidance() {
   const type = document.getElementById('searchType');
   if (!input || !type) return;
 
-  input.addEventListener('focus', stopSearchPlaceholderRotation);
+  input.addEventListener('focus', () => {
+    stopSearchPlaceholderRotation();
+    renderSearchHistory();
+  });
   input.addEventListener('blur', updateSearchGuidance);
   input.addEventListener('input', () => {
     if (input.value) stopSearchPlaceholderRotation();
+    if (input.value) hideSearchHistory();
+    else renderSearchHistory();
+  });
+  input.addEventListener('keydown', event => {
+    if (event.key === 'Enter') {
+      doSearch();
+      rememberCurrentSearch();
+      hideSearchHistory();
+    } else if (event.key === 'Escape') {
+      hideSearchHistory();
+    }
   });
   type.addEventListener('change', updateSearchGuidance);
   desktopSearchGuidanceMedia.addEventListener('change', updateSearchGuidance);
   reducedMotionMedia.addEventListener('change', updateSearchGuidance);
   updateSearchGuidance();
   updateSearchClearButton();
+  updateSearchHistoryButtonUI();
+  document.addEventListener('pointerdown', event => {
+    if (!event.target.closest('#searchWrap')) hideSearchHistory();
+  });
 }
 
 function updateSearchClearButton() {

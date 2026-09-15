@@ -176,6 +176,8 @@ async function resetPreferences() {
     return;
   }
 
+  clearSearchHistory({ silent: true });
+
   applyTheme(!!systemThemeQuery?.matches);
   applyTextPreviewState(true);
   dragPreviewEnabled = false;
@@ -183,6 +185,7 @@ async function resetPreferences() {
   advancedOrganizingEnabled = false;
   updateAdvancedOrganizingButtonUI();
   applyEditAnimationPreference();
+  updateSearchHistoryButtonUI();
 
   versionHidden = false;
   document.getElementById('appVersion')?.classList.remove('version-hidden');

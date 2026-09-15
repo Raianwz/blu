@@ -19,8 +19,12 @@
     <button id="hamburger" title="Menu" onclick="toggleMenu()"><svg class="menu-icon hamburger-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16" /> <path d="M4 12h16" /> <path d="M4 19h16" /></svg></button>
     <div id="searchWrap">
       <svg class="menu-icon search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 21-4.34-4.34" /> <circle cx="11" cy="11" r="8" /></svg>
-      <input title="Pesquisar por Nome/Tag, @Seção ou &quot;texto&quot;" id="searchInput" type="text" placeholder="Pesquisar..." oninput="doSearch({ collapseOnClear: true })">
+      <input title="Pesquisar por Nome/Tag, @Seção ou &quot;texto&quot;" id="searchInput" type="text" placeholder="Pesquisar..." autocomplete="off" aria-controls="searchHistoryPopover" aria-expanded="false" oninput="doSearch({ collapseOnClear: true })">
       <button id="clearSearchBtn" type="button" onclick="clearSearch()" title="Limpar pesquisa" aria-label="Limpar pesquisa" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m18 6-12 12" /><path d="m6 6 12 12" /></svg></button>
+      <div id="searchHistoryPopover" class="search-history-popover" aria-label="Pesquisas recentes" hidden>
+        <div class="search-history-head"><span>Pesquisas recentes</span><button type="button" onclick="clearSearchHistory()">Limpar</button></div>
+        <div id="searchHistoryList" class="search-history-list"></div>
+      </div>
     </div>
     <select id="searchType" title="Filtrar por" onchange="doSearch()">
       <option value="all">Tudo</option>
@@ -79,6 +83,7 @@
         <button class="menu-btn" id="favoritesShelfBtn" onclick="toggleFavoritesShelfPreference()" title="Mostrar favoritos no topo da tela inicial"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z" /></svg><span class="menu-btn-label">Favoritos na Tela Inicial: OFF</span></button>
         <button class="menu-btn" id="contentDashboardBtn" onclick="toggleContentDashboardPreference()" title="Habilitar a página secundária de estatísticas"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 20V10" /><path d="M12 20V4" /><path d="M18 20v-7" /></svg><span class="menu-btn-label">Estatísticas: OFF</span></button>
         <button class="menu-btn" id="favoriteContextMenuBtn" onclick="toggleFavoriteContextMenuPreference()" title="Mostrar a ação de favoritar no menu de contexto dos botões"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h.01" /><path d="M3 18h.01" /><path d="M3 6h.01" /><path d="M8 12h13" /><path d="M8 18h13" /><path d="M8 6h13" /></svg><span class="menu-btn-label">Favoritar pelo Menu: OFF</span></button>
+        <button class="menu-btn" id="searchHistoryBtn" onclick="toggleSearchHistoryPreference()" title="Guardar neste dispositivo as pesquisas confirmadas que encontrarem resultados" aria-pressed="false"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 3v6h6" /><path d="M12 7v5l3 2" /></svg><span class="menu-btn-label">Histórico de Pesquisas: OFF</span></button>
       </div>
     </div>
 

@@ -174,7 +174,7 @@ function updateContentPreferenceButtons() {
     contextButton.classList.toggle('active', enabled);
     contextButton.querySelector('.menu-btn-label').textContent = `Favoritar pelo Menu: ${enabled ? 'ON' : 'OFF'}`;
   }
-  contentToggle?.classList.toggle('active', shelfEnabled || dashboardEnabled || isFavoriteContextMenuEnabled());
+  contentToggle?.classList.toggle('active', shelfEnabled || dashboardEnabled || isFavoriteContextMenuEnabled() || getSetting('searchHistory', 'off') === 'on');
 }
 
 function toggleFavoritesShelfPreference() {
