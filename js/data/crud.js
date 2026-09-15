@@ -1147,6 +1147,7 @@ async function clearAll(event = null) {
   // ferramentas hospedadas na mesma origem. Num próximo F5, o demo e as
   // preferências padrão voltam.
   clearBluLocalStorage({ includeClientId });
+  clearSearchHistory({ silent: true });
   resetUserData();
   updateContentPreferenceButtons();
   updateContentViewSwitcher();

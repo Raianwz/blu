@@ -19,7 +19,7 @@ const SEARCH_TYPE_PLACEHOLDERS = {
 const desktopSearchGuidanceMedia = window.matchMedia('(min-width: 761px) and (hover: hover) and (pointer: fine)');
 const reducedMotionMedia = window.matchMedia('(prefers-reduced-motion: reduce)');
 const SEARCH_HISTORY_STORAGE_KEY = 'blu:searchHistory';
-const SEARCH_HISTORY_LIMIT = 10;
+const SEARCH_HISTORY_LIMIT = 6;
 const SEARCH_TYPE_LABELS = {
   all: 'Tudo',
   name: 'Nome',
@@ -30,6 +30,7 @@ const SEARCH_TYPE_LABELS = {
 let searchPlaceholderIndex = 0;
 let searchPlaceholderTimer = null;
 let searchPlaceholderSwapTimer = null;
+let searchHistorySaveTimer = null;
 
 function isSearchHistoryEnabled() {
   return getSetting('searchHistory', 'off') === 'on';
@@ -71,6 +72,23 @@ function hideSearchHistory() {
   const popover = document.getElementById('searchHistoryPopover');
   if (popover) popover.hidden = true;
   document.getElementById('searchInput')?.setAttribute('aria-expanded', 'false');
+}
+
+function hideSearchHistoryTip() {
+  const tip = document.getElementById('searchHistoryTip');
+  if (tip) tip.hidden = true;
+}
+
+function showSearchHistoryTip() {
+  const tip = document.getElementById('searchHistoryTip');
+  if (!tip || isSearchHistoryEnabled() || getSetting('searchHistoryTipSeen', 'no') === 'yes') return;
+  setSetting('searchHistoryTipSeen', 'yes');
+  tip.hidden = false;
+}
+
+function dismissSearchHistoryTip() {
+  setSetting('searchHistoryTipSeen', 'yes');
+  hideSearchHistoryTip();
 }
 
 function renderSearchHistory() {
@@ -128,6 +146,8 @@ function hasVisibleSearchResults() {
 }
 
 function rememberCurrentSearch() {
+  clearTimeout(searchHistorySaveTimer);
+  searchHistorySaveTimer = null;
   if (!isSearchHistoryEnabled()) return;
   const input = document.getElementById('searchInput');
   const type = document.getElementById('searchType')?.value || 'all';
@@ -141,6 +161,13 @@ function rememberCurrentSearch() {
   ));
   entries.unshift({ query: query.slice(0, 200), type });
   saveSearchHistory(entries);
+}
+
+function scheduleCurrentSearch() {
+  clearTimeout(searchHistorySaveTimer);
+  searchHistorySaveTimer = null;
+  if (!isSearchHistoryEnabled()) return;
+  searchHistorySaveTimer = setTimeout(rememberCurrentSearch, 700);
 }
 
 function useSearchHistoryEntry(entry) {
@@ -164,6 +191,8 @@ function removeSearchHistoryEntry(index) {
 }
 
 function clearSearchHistory({ silent = false } = {}) {
+  clearTimeout(searchHistorySaveTimer);
+  searchHistorySaveTimer = null;
   try {
     localStorage.removeItem(SEARCH_HISTORY_STORAGE_KEY);
   } catch (_) {}
@@ -174,9 +203,11 @@ function clearSearchHistory({ silent = false } = {}) {
 function toggleSearchHistoryPreference() {
   const enabled = !isSearchHistoryEnabled();
   setSetting('searchHistory', enabled ? 'on' : 'off');
+  setSetting('searchHistoryTipSeen', 'yes');
   updateSearchHistoryButtonUI();
   if (typeof updateContentPreferenceButtons === 'function') updateContentPreferenceButtons();
   hideSearchHistory();
+  hideSearchHistoryTip();
   notify(`Histórico de pesquisas ${enabled ? 'ativado' : 'desativado'}`);
 }
 
@@ -246,11 +277,15 @@ function initSearchGuidance() {
   input.addEventListener('focus', () => {
     stopSearchPlaceholderRotation();
     renderSearchHistory();
+    showSearchHistoryTip();
   });
   input.addEventListener('blur', updateSearchGuidance);
   input.addEventListener('input', () => {
     if (input.value) stopSearchPlaceholderRotation();
-    if (input.value) hideSearchHistory();
+    if (input.value) {
+      hideSearchHistory();
+      hideSearchHistoryTip();
+    }
     else renderSearchHistory();
   });
   input.addEventListener('keydown', event => {
@@ -260,6 +295,7 @@ function initSearchGuidance() {
       hideSearchHistory();
     } else if (event.key === 'Escape') {
       hideSearchHistory();
+      hideSearchHistoryTip();
     }
   });
   type.addEventListener('change', updateSearchGuidance);
@@ -269,7 +305,10 @@ function initSearchGuidance() {
   updateSearchClearButton();
   updateSearchHistoryButtonUI();
   document.addEventListener('pointerdown', event => {
-    if (!event.target.closest('#searchWrap')) hideSearchHistory();
+    if (!event.target.closest('#searchWrap')) {
+      hideSearchHistory();
+      hideSearchHistoryTip();
+    }
   });
 }
 
@@ -361,6 +400,8 @@ function doSearch(options = {}) {
   }
 
   if (!raw) {
+    clearTimeout(searchHistorySaveTimer);
+    searchHistorySaveTimer = null;
     if (collapseOnClear) {
       collapseAllSectionsAfterSearchClear();
     } else {
@@ -368,6 +409,8 @@ function doSearch(options = {}) {
     }
     return;
   }
+
+  scheduleCurrentSearch();
 
   // Aspas ativam uma busca direta no conteúdo, sem alterar ou depender
   // da opção selecionada no dropdown.

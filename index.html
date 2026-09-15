@@ -25,6 +25,10 @@
         <div class="search-history-head"><span>Pesquisas recentes</span><button type="button" onclick="clearSearchHistory()">Limpar</button></div>
         <div id="searchHistoryList" class="search-history-list"></div>
       </div>
+      <div id="searchHistoryTip" class="search-history-tip" role="status" hidden>
+        <span>💡 Ative ou desative o histórico de pesquisas com <kbd>Alt</kbd> + <kbd>H</kbd></span>
+        <button type="button" onclick="dismissSearchHistoryTip()" title="Fechar dica" aria-label="Fechar dica">×</button>
+      </div>
     </div>
     <select id="searchType" title="Filtrar por" onchange="doSearch()">
       <option value="all">Tudo</option>
@@ -83,7 +87,7 @@
         <button class="menu-btn" id="favoritesShelfBtn" onclick="toggleFavoritesShelfPreference()" title="Mostrar favoritos no topo da tela inicial"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z" /></svg><span class="menu-btn-label">Favoritos na Tela Inicial: OFF</span></button>
         <button class="menu-btn" id="contentDashboardBtn" onclick="toggleContentDashboardPreference()" title="Habilitar a página secundária de estatísticas"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 20V10" /><path d="M12 20V4" /><path d="M18 20v-7" /></svg><span class="menu-btn-label">Estatísticas: OFF</span></button>
         <button class="menu-btn" id="favoriteContextMenuBtn" onclick="toggleFavoriteContextMenuPreference()" title="Mostrar a ação de favoritar no menu de contexto dos botões"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h.01" /><path d="M3 18h.01" /><path d="M3 6h.01" /><path d="M8 12h13" /><path d="M8 18h13" /><path d="M8 6h13" /></svg><span class="menu-btn-label">Favoritar pelo Menu: OFF</span></button>
-        <button class="menu-btn" id="searchHistoryBtn" onclick="toggleSearchHistoryPreference()" title="Guardar neste dispositivo as pesquisas confirmadas que encontrarem resultados" aria-pressed="false"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 3v6h6" /><path d="M12 7v5l3 2" /></svg><span class="menu-btn-label">Histórico de Pesquisas: OFF</span></button>
+        <button class="menu-btn" id="searchHistoryBtn" onclick="toggleSearchHistoryPreference()" title="Guardar neste dispositivo as pesquisas que encontrarem resultados — Alt + H" aria-pressed="false"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 3v6h6" /><path d="M12 7v5l3 2" /></svg><span class="menu-btn-label">Histórico de Pesquisas: OFF</span></button>
       </div>
     </div>
 
@@ -324,6 +328,7 @@
           <tr><td><kbd>Alt</kbd> + <kbd>G</kbd></td><td>Ativar/desativar modo de edição</td></tr>
           <tr><td><kbd>Shift</kbd> <kbd>Shift</kbd></td><td>Ativar/desativar modo de organização (dois toques rápidos)</td></tr>
           <tr><td><kbd>Alt</kbd> + <kbd>C</kbd></td><td>Ativar/desativar criptografia do backup</td></tr>
+          <tr><td><kbd>Alt</kbd> + <kbd>H</kbd></td><td>Ativar/desativar histórico de pesquisas</td></tr>
           <tr><td><kbd>Ctrl</kbd> + <kbd>S</kbd></td><td>Exportar backup</td></tr>
           <tr><td><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>D</kbd></td><td>Alternar tema</td></tr>
           <tr><td><kbd>Ctrl</kbd> + <kbd>E</kbd></td><td>Expandir/minimizar seções</td></tr>

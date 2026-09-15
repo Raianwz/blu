@@ -176,7 +176,8 @@ textarea::placeholder {
   opacity: 0;
 }
 
-.search-history-popover {
+.search-history-popover,
+.search-history-tip {
   position: absolute;
   top: calc(100% + 8px);
   left: 0;
@@ -188,8 +189,51 @@ textarea::placeholder {
   box-shadow: 0 10px 28px var(--shadow);
 }
 
-.search-history-popover[hidden] {
+.search-history-popover[hidden],
+.search-history-tip[hidden] {
   display: none;
+}
+
+.search-history-tip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  color: var(--text2);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.search-history-tip span {
+  flex: 1;
+}
+
+.search-history-tip kbd {
+  padding: 1px 5px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface2);
+  color: var(--text);
+  font: inherit;
+  font-size: 10px;
+}
+
+.search-history-tip button {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--text2);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.search-history-tip button:hover {
+  background: var(--surface2);
+  color: var(--text);
 }
 
 .search-history-head {

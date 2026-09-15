@@ -350,7 +350,8 @@ Botões com o mesmo nome:
 
 ### Pesquisa
 
-- [x] Histórico opcional de pesquisas confirmadas que produziram resultados.
+- [x] Histórico de pesquisas desativado por padrão, registrando somente buscas que produziram resultados.
+- [x] Dica inicial e atalho `Alt+H` para ativar ou desativar o histórico.
 - [x] Controle para ativar ou desativar o histórico.
 - [x] Exclusão individual de buscas recentes.
 - [x] Limpar o histórico em “Limpar Tudo” e “Restaurar Configurações”.

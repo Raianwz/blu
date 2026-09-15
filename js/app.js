@@ -392,6 +392,13 @@ document.addEventListener('keydown', event => {
     return;
   }
 
+  // Alt+H — Ativar/desativar histórico de pesquisas
+  if (event.altKey && !event.ctrlKey && !event.metaKey && key === 'h') {
+    event.preventDefault();
+    toggleSearchHistoryPreference();
+    return;
+  }
+
   // / — Foca a busca (padrão Slack/GitHub/Notion)
   if (event.key === '/' && !typing) {
     event.preventDefault();
