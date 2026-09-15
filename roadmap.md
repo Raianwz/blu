@@ -38,6 +38,20 @@ Polimentos pendentes:
 
 ## Próximos recursos
 
+### Arquivar botões e seções
+
+Fundação do recurso:
+
+- [x] Adicionar `archived.buttons` e `archived.sections` ao estado principal.
+- [x] Normalizar e sanitizar itens arquivados vindos de backups.
+- [x] Incluir arquivados em autosave, snapshots, desfazer/refazer e detecção de backup pendente.
+- [x] Reconhecer o schema no diagnóstico de JSON.
+- [ ] Criar ações de arquivar, restaurar e excluir definitivamente.
+- [ ] Criar a tela de Arquivados com abas para botões e seções.
+- [x] Incluir arquivados por padrão no backup completo.
+- [ ] Adicionar “Incluir itens arquivados?” aos compartilhamentos e às exportações personalizadas.
+- [ ] Manter arquivados fora da pesquisa e da tela inicial comuns.
+
 ### Descontinuação dos Favoritos — antecipada
 
 Migração antecipada para abrir espaço ao recurso Arquivar.

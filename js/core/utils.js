@@ -163,7 +163,8 @@ function normalizeImportedData(parsed) {
 
   const base = {
     tags: normalizedTags,
-    sections: []
+    sections: [],
+    archived: { buttons: [], sections: [] }
   };
 
   if (Array.isArray(parsed.tags)) parsed.tags.forEach(addNormalizedTag);
@@ -200,6 +201,38 @@ function normalizeImportedData(parsed) {
           vis: ['public', 'private', 'other'].includes(button.vis) ? button.vis : 'other'
         }))
       : []
+  }));
+
+  const archivedSource = parsed?.archived && typeof parsed.archived === 'object' ? parsed.archived : {};
+  base.archived.buttons = (Array.isArray(archivedSource.buttons) ? archivedSource.buttons : []).map((record, index) => ({
+    item: {
+      id: String(record?.item?.id || ('ab' + Date.now() + index)),
+      name: sanitizeText(record?.item?.name ?? record?.item?.btnName ?? ''),
+      text: sanitizeText(record?.item?.text),
+      tag: addNormalizedTag(record?.item?.tag || ''),
+      vis: ['public', 'private', 'other'].includes(record?.item?.vis) ? record.item.vis : 'other'
+    },
+    sectionId: String(record?.sectionId || ''),
+    sectionName: sanitizeText(record?.sectionName || ''),
+    originalIndex: Math.max(0, Math.floor(Number(record?.originalIndex) || 0)),
+    archivedAt: Number.isNaN(Date.parse(record?.archivedAt)) ? new Date().toISOString() : new Date(record.archivedAt).toISOString()
+  }));
+
+  base.archived.sections = (Array.isArray(archivedSource.sections) ? archivedSource.sections : []).map((record, index) => ({
+    item: {
+      id: String(record?.item?.id || ('as' + Date.now() + index)),
+      name: sanitizeText(record?.item?.name || `Seção arquivada ${index + 1}`),
+      collapsed: !!record?.item?.collapsed,
+      buttons: (Array.isArray(record?.item?.buttons) ? record.item.buttons : []).map((button, buttonIndex) => ({
+        id: String(button?.id || ('ab' + Date.now() + buttonIndex)),
+        name: sanitizeText(button?.name ?? button?.btnName ?? ''),
+        text: sanitizeText(button?.text),
+        tag: addNormalizedTag(button?.tag || ''),
+        vis: ['public', 'private', 'other'].includes(button?.vis) ? button.vis : 'other'
+      }))
+    },
+    originalIndex: Math.max(0, Math.floor(Number(record?.originalIndex) || 0)),
+    archivedAt: Number.isNaN(Date.parse(record?.archivedAt)) ? new Date().toISOString() : new Date(record.archivedAt).toISOString()
   }));
 
   normalizedTags.sort((left, right) => left.localeCompare(right, 'pt-BR', {

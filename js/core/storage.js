@@ -11,6 +11,7 @@ const BASE_TITLE = 'Blû';
 
 let editMode = false;
 let tags = [];
+let archivedItems = { buttons: [], sections: [] };
 let history = [];
 let redoStack = [];
 const REDO_LIMIT = 10;
@@ -143,7 +144,11 @@ function collectState() {
     });
   });
 
-  return { tags: [...tags], sections };
+  return {
+    tags: [...tags],
+    sections,
+    archived: JSON.parse(JSON.stringify(archivedItems))
+  };
 }
 
 function createStateSnapshot(state = collectState()) {
@@ -160,7 +165,8 @@ function createStateSnapshot(state = collectState()) {
         tag: button.tag,
         vis: button.vis
       }))
-    }))
+    })),
+    archived: state.archived
   });
 
   return { state, stateString, comparableStateString };
@@ -369,6 +375,7 @@ function pushRedoState(stateString) {
 function restoreState(state) {
   const normalizedState = normalizeImportedData(state);
   tags = [...normalizedState.tags];
+  archivedItems = JSON.parse(JSON.stringify(normalizedState.archived));
   updateTagDatalist();
   renderAll(normalizedState.sections);
 
