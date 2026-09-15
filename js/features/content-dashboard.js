@@ -220,7 +220,7 @@ function createFavoriteCard(info, removable = false) {
     remove.className = 'favorite-card-remove';
     remove.textContent = '×';
     remove.title = 'Remover dos favoritos';
-    remove.onclick = () => toggleFavoriteButton(info.id);
+    remove.onclick = () => removeLegacyFavorite(info.id);
     card.appendChild(remove);
   }
   return card;
@@ -407,6 +407,8 @@ function renderContentDashboard() {
   }));
 
   const favoriteEntries = userData.favorites.map(getButtonInfo).filter(Boolean);
+  const favoritesCard = document.getElementById('dashboardFavoritesCard');
+  if (favoritesCard) favoritesCard.hidden = favoriteEntries.length === 0;
   favoritesEmpty.hidden = favoriteEntries.length > 0;
   favorites.replaceChildren(...favoriteEntries.map(info => createFavoriteCard(info, true)));
 
@@ -472,6 +474,6 @@ document.addEventListener('contextmenu', event => {
     createContextMenuItem('Copiar texto', 'copy', () => copyUserDataButton(buttonId)),
     createContextMenuItem('Visualizar botão', 'eye', () => viewContextButton(sourceButton)),
     createContextMenuSeparator(),
-    createContextMenuItem('Remover dos favoritos', 'star', () => toggleFavoriteButton(buttonId), { danger: true })
+    createContextMenuItem('Remover dos favoritos', 'star', () => removeLegacyFavorite(buttonId), { danger: true })
   ], event.clientX, event.clientY, card);
 });

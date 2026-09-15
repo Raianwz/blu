@@ -351,6 +351,7 @@ function dismissBackupBanner() {
 // --- Histórico (undo/redo) ---------------------------------
 
 function pushHistory() {
+  if (typeof favoriteRemovalUndo !== 'undefined') favoriteRemovalUndo = [];
   history.push(getCurrentStateSnapshot().stateString);
   if (history.length > 30) history.shift();
 
@@ -402,6 +403,7 @@ function recordRestoredStateItems(beforeState, afterState) {
 }
 
 function undoLastAction() {
+  if (typeof undoLegacyFavoriteRemoval === 'function' && undoLegacyFavoriteRemoval()) return;
   if (history.length === 0) return;
   document.querySelectorAll('#notifArea .notif.has-action').forEach(element => element.remove());
 

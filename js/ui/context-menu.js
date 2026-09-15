@@ -191,8 +191,8 @@ function getButtonContextMenuItems(buttonWrap) {
     createContextMenuItem('Editar botão', 'pencil', () => openEditBtn(sectionId, buttonId)),
     createContextMenuItem('Duplicar botão', 'copy_plus', () => duplicateContextButton(buttonWrap))
   ];
-  if (isFavoriteContextMenuEnabled()) {
-    items.push(createContextMenuItem(isFavoriteButton(buttonId) ? 'Remover dos favoritos' : 'Adicionar aos favoritos', 'star', () => toggleFavoriteButton(buttonId)));
+  if (isFavoriteButton(buttonId)) {
+    items.push(createContextMenuItem('Remover dos favoritos', 'star', () => removeLegacyFavorite(buttonId)));
   }
   items.push(
     createContextMenuSeparator(),

@@ -211,18 +211,26 @@ function isFavoriteButton(buttonId) {
   return userData.favorites.includes(String(buttonId));
 }
 
-function toggleFavoriteButton(buttonId) {
+let favoriteRemovalUndo = [];
+
+function removeLegacyFavorite(buttonId) {
   const id = String(buttonId || '');
-  if (!id) return;
-  if (isFavoriteButton(id)) {
-    userData.favorites = userData.favorites.filter(item => item !== id);
-    notify('Removido dos favoritos');
-  } else {
-    userData.favorites.push(id);
-    notify('Adicionado aos favoritos');
-  }
+  if (!id || !isFavoriteButton(id)) return;
+  favoriteRemovalUndo.push(id);
+  userData.favorites = userData.favorites.filter(item => item !== id);
   persistUserData();
   renderUserDataPanels();
+  notify('Removido dos favoritos — Ctrl+Z para desfazer');
+}
+
+function undoLegacyFavoriteRemoval() {
+  const id = favoriteRemovalUndo.pop();
+  if (!id) return false;
+  if (!userData.favorites.includes(id) && getButtonInfo(id)) userData.favorites.push(id);
+  persistUserData();
+  renderUserDataPanels();
+  notify('Favorito restaurado!');
+  return true;
 }
 
 function recordButtonCopy(buttonId) {
@@ -308,7 +316,7 @@ function renderFavoritesPanel() {
     remove.className = 'mbtn ghost';
     remove.type = 'button';
     remove.textContent = 'Remover';
-    remove.onclick = () => toggleFavoriteButton(info.id);
+    remove.onclick = () => removeLegacyFavorite(info.id);
     row.append(meta, copy, remove);
     list.appendChild(row);
   });

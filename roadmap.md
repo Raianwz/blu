@@ -38,18 +38,18 @@ Polimentos pendentes:
 
 ## Próximos recursos
 
-### Descontinuação dos Favoritos — 18/09/2026
+### Descontinuação dos Favoritos — antecipada
 
-Preparar em **17/09/2026** a atualização que descontinuará os Favoritos. A mudança deve ser publicada após a data definida, sem depender do relógio do dispositivo.
+Migração antecipada para abrir espaço ao recurso Arquivar.
 
 Comportamento após a descontinuação:
 
-- Impedir a inclusão de novos favoritos.
+- [x] Impedir a inclusão de novos favoritos.
 - Manter a leitura dos favoritos já existentes nos dados locais e em JSONs antigos.
-- Exibir os favoritos existentes somente na tela de **Estatísticas**.
-- Continuar permitindo a remoção individual dos favoritos existentes.
-- Remover a prateleira de Favoritos da tela inicial.
-- Remover as opções “Favoritos na Tela Inicial” e “Favoritar pelo Menu”.
+- [x] Exibir os favoritos existentes somente na tela de **Estatísticas**, enquanto houver itens legados.
+- [x] Continuar permitindo a remoção individual e o desfazer com `Ctrl+Z`.
+- [x] Remover a prateleira de Favoritos da tela inicial.
+- [x] Remover as opções “Favoritos na Tela Inicial” e “Favoritar pelo Menu”.
 - Não incluir o campo ou estado de favorito em novos JSONs exportados.
 - Preservar a compatibilidade de importação com arquivos e backups antigos que contenham favoritos.
 - Não apagar automaticamente os favoritos existentes; mantê-los até que o usuário os remova.
