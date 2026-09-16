@@ -1219,7 +1219,8 @@ body.content-dashboard-enabled .content-dashboard {
 .archive-label { color: var(--text2); font-size: 10px; font-weight: 700; text-transform: uppercase; }
 
 .archive-card-actions { display: flex; align-items: center; gap: 7px; filter: none; }
-.archive-delete {
+.archive-delete,
+.archive-view-item {
   width: 34px;
   height: 34px;
   display: inline-flex;
@@ -1232,12 +1233,22 @@ body.content-dashboard-enabled .content-dashboard {
   cursor: pointer;
 }
 
+.archive-view-item {
+  color: var(--text2);
+}
+
+.archive-view-item:hover {
+  border-color: var(--accent1);
+  color: var(--accent1);
+}
+
 .archive-delete:hover {
   border-color: var(--red);
   background: color-mix(in srgb, var(--red) 12%, var(--surface));
 }
 
-.archive-delete svg {
+.archive-delete svg,
+.archive-view-item svg {
   width: 16px;
   height: 16px;
 }

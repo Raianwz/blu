@@ -114,6 +114,42 @@ function formatArchivedDate(value) {
   return Number.isNaN(date.getTime()) ? '' : `Arquivado em ${date.toLocaleDateString('pt-BR')}`;
 }
 
+function viewArchivedItem(type, index) {
+  const record = archivedItems[type]?.[index];
+  if (!record) return;
+  const item = record.item;
+  const title = document.getElementById('buttonViewTitle');
+  const meta = document.getElementById('buttonViewMeta');
+  const text = document.getElementById('buttonViewText');
+  const copy = document.getElementById('buttonViewCopyBtn');
+  const restore = document.getElementById('archiveViewRestoreBtn');
+  const visibilityLabels = { public: '🌎 Público', private: '🔒 Privado', other: 'Outro' };
+
+  title.textContent = `🗃️ ${item.name}`;
+  if (type === 'buttons') {
+    meta.textContent = [record.sectionName, item.tag ? `Tag: ${item.tag}` : 'Sem tag', visibilityLabels[item.vis], formatArchivedDate(record.archivedAt)].filter(Boolean).join(' • ');
+    text.textContent = item.text;
+    restore.textContent = 'Restaurar botão';
+    restore.onclick = () => {
+      closeModal('buttonViewModal');
+      restoreArchivedButton(index);
+    };
+  } else {
+    meta.textContent = [`${item.buttons.length} botão(ões)`, formatArchivedDate(record.archivedAt)].filter(Boolean).join(' • ');
+    text.textContent = item.buttons.length
+      ? item.buttons.map(button => `${button.name}\n${button.text}`).join('\n\n──────────\n\n')
+      : 'Esta seção não possui botões.';
+    restore.textContent = 'Restaurar seção';
+    restore.onclick = () => {
+      closeModal('buttonViewModal');
+      restoreArchivedSection(index);
+    };
+  }
+  copy.hidden = true;
+  restore.hidden = false;
+  openModal('buttonViewModal');
+}
+
 function createArchiveCard(record, type, index) {
   const card = document.createElement('article');
   card.className = `archive-card archive-${type}`;
@@ -131,6 +167,13 @@ function createArchiveCard(record, type, index) {
   restore.type = 'button';
   restore.textContent = type === 'sections' ? 'Restaurar seção' : 'Restaurar';
   restore.onclick = () => type === 'sections' ? restoreArchivedSection(index) : restoreArchivedButton(index);
+  const view = document.createElement('button');
+  view.className = 'archive-view-item';
+  view.type = 'button';
+  view.innerHTML = iconSvg('eye');
+  view.title = type === 'sections' ? 'Visualizar conteúdo da seção' : 'Visualizar texto';
+  view.setAttribute('aria-label', `${view.title}: ${item.name}`);
+  view.onclick = () => viewArchivedItem(type, index);
   const remove = document.createElement('button');
   remove.className = 'archive-delete';
   remove.type = 'button';
@@ -138,7 +181,7 @@ function createArchiveCard(record, type, index) {
   remove.title = 'Excluir definitivamente';
   remove.setAttribute('aria-label', `Excluir definitivamente ${item.name}`);
   remove.onclick = () => deleteArchivedItem(type, index);
-  actions.append(restore, remove);
+  actions.append(restore, view, remove);
   card.append(visual, actions);
   return card;
 }
