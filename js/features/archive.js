@@ -132,7 +132,7 @@ function formatArchivedDate(value) {
   return Number.isNaN(date.getTime()) ? '' : `Arquivado em ${date.toLocaleDateString('pt-BR')}`;
 }
 
-function viewArchivedItem(type, index) {
+function viewArchivedItem(type, index, filteredButtons = null) {
   const record = archivedItems[type]?.[index];
   if (!record) return;
   const item = record.item;
@@ -156,10 +156,14 @@ function viewArchivedItem(type, index) {
       restoreArchivedButton(index);
     };
   } else {
-    meta.textContent = [`${item.buttons.length} botão(ões)`, formatArchivedDate(record.archivedAt)].filter(Boolean).join(' • ');
+    const visibleButtons = Array.isArray(filteredButtons) ? filteredButtons : item.buttons;
+    const countLabel = visibleButtons.length === item.buttons.length
+      ? `${item.buttons.length} botão(ões)`
+      : `${visibleButtons.length} de ${item.buttons.length} botão(ões)`;
+    meta.textContent = [countLabel, formatArchivedDate(record.archivedAt)].filter(Boolean).join(' • ');
     text.hidden = true;
     sectionPreview.hidden = false;
-    sectionPreview.replaceChildren(createArchivedSectionPreview(item));
+    sectionPreview.replaceChildren(createArchivedSectionPreview({ ...item, buttons: visibleButtons }, item.buttons.length));
     restore.textContent = 'Restaurar seção';
     restore.onclick = async () => {
       if (await restoreArchivedSection(index, { confirm: true })) closeModal('buttonViewModal');
@@ -170,12 +174,13 @@ function viewArchivedItem(type, index) {
   openModal('buttonViewModal');
 }
 
-function createArchivedSectionPreview(section) {
+function createArchivedSectionPreview(section, totalButtons = section.buttons.length) {
   const shell = document.createElement('section');
   shell.className = 'archive-section-shell';
   const header = document.createElement('header');
   header.className = 'archive-section-shell-head';
-  header.innerHTML = `<strong>🗃️ ${escapeHtml(section.name)}</strong><span class="section-count">${section.buttons.length}</span>`;
+  const countLabel = section.buttons.length === totalButtons ? String(totalButtons) : `${section.buttons.length}/${totalButtons}`;
+  header.innerHTML = `<strong>🗃️ ${escapeHtml(section.name)}</strong><span class="section-count">${countLabel}</span>`;
   const body = document.createElement('div');
   body.className = 'archive-section-shell-body';
   const detail = document.createElement('div');
@@ -233,15 +238,22 @@ function createArchivedSectionButtonRow(button, detail, viewButtons) {
   return row;
 }
 
-function createArchiveCard(record, type, index) {
+function createArchiveCard(record, type, index, matchedButtons = null) {
   const card = document.createElement('article');
   card.className = `archive-card archive-${type}`;
   const visual = document.createElement('div');
   visual.className = 'archive-card-visual';
   const item = record.item;
-  const meta = type === 'buttons'
-    ? [record.sectionName, item.tag, { public: 'Público', private: 'Privado', other: 'Outro' }[item.vis]].filter(Boolean).join(' · ')
-    : `${item.buttons.length} botão(ões)${item.buttons.length ? ` · ${item.buttons.slice(0, 3).map(button => button.name).join(', ')}` : ''}`;
+  let meta;
+  if (type === 'buttons') {
+    meta = [record.sectionName, item.tag, { public: 'Público', private: 'Privado', other: 'Outro' }[item.vis]].filter(Boolean).join(' · ');
+  } else {
+    const visibleSectionButtons = Array.isArray(matchedButtons) ? matchedButtons : item.buttons;
+    const sectionCount = visibleSectionButtons.length === item.buttons.length
+      ? `${item.buttons.length} botão(ões)`
+      : `${visibleSectionButtons.length} de ${item.buttons.length} botão(ões)`;
+    meta = `${sectionCount}${visibleSectionButtons.length ? ` · ${visibleSectionButtons.slice(0, 3).map(button => button.name).join(', ')}` : ''}`;
+  }
   visual.innerHTML = `<span class="archive-label">🗃 Arquivado</span><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(meta)}</small><time>${escapeHtml(formatArchivedDate(record.archivedAt))}</time>`;
   const actions = document.createElement('div');
   actions.className = 'archive-card-actions';
@@ -256,7 +268,7 @@ function createArchiveCard(record, type, index) {
   view.innerHTML = iconSvg('eye');
   view.title = type === 'sections' ? 'Visualizar conteúdo da seção' : 'Visualizar texto';
   view.setAttribute('aria-label', `${view.title}: ${item.name}`);
-  view.onclick = () => viewArchivedItem(type, index);
+  view.onclick = () => viewArchivedItem(type, index, matchedButtons);
   const remove = document.createElement('button');
   remove.className = 'archive-delete';
   remove.type = 'button';
@@ -276,13 +288,18 @@ function renderArchiveView() {
   if (!list || !empty) return;
   const query = normalizeSearchText(document.getElementById('archiveSearchInput')?.value || '');
   const records = archivedItems[activeArchiveTab] || [];
-  const visible = records.map((record, index) => ({ record, index })).filter(({ record }) => {
+  const visible = records.map((record, index) => {
     const item = record.item || {};
-    const text = activeArchiveTab === 'buttons'
-      ? `${item.name} ${item.text} ${item.tag} ${record.sectionName}`
-      : `${item.name} ${(item.buttons || []).map(button => `${button.name} ${button.text} ${button.tag}`).join(' ')}`;
-    return !query || normalizeSearchText(text).includes(query);
-  });
+    if (activeArchiveTab === 'buttons') {
+      const text = `${item.name} ${item.text} ${item.tag} ${record.sectionName}`;
+      return { record, index, matches: !query || normalizeSearchText(text).includes(query), matchedButtons: null };
+    }
+    const sectionMatches = !query || normalizeSearchText(item.name).includes(query);
+    const matchedButtons = sectionMatches
+      ? (item.buttons || [])
+      : (item.buttons || []).filter(button => normalizeSearchText(`${button.name} ${button.text} ${button.tag}`).includes(query));
+    return { record, index, matches: sectionMatches || matchedButtons.length > 0, matchedButtons };
+  }).filter(entry => entry.matches);
   document.getElementById('archiveButtonsCount').textContent = archivedItems.buttons.length;
   document.getElementById('archiveSectionsCount').textContent = archivedItems.sections.length;
   document.getElementById('archiveButtonsTab').classList.toggle('active', activeArchiveTab === 'buttons');
@@ -291,5 +308,5 @@ function renderArchiveView() {
   document.getElementById('archiveSectionsTab').setAttribute('aria-selected', String(activeArchiveTab === 'sections'));
   empty.textContent = query ? 'Nenhum item arquivado corresponde à pesquisa.' : `Nenhum${activeArchiveTab === 'sections' ? 'a seção arquivada' : ' botão arquivado'} ainda.`;
   empty.hidden = visible.length > 0;
-  list.replaceChildren(...visible.map(({ record, index }) => createArchiveCard(record, activeArchiveTab, index)));
+  list.replaceChildren(...visible.map(({ record, index, matchedButtons }) => createArchiveCard(record, activeArchiveTab, index, matchedButtons)));
 }
