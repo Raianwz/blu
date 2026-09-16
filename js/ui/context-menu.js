@@ -109,6 +109,8 @@ function viewContextButton(buttonWrap) {
   title.textContent = `👁️ ${data.name}`;
   meta.textContent = [data.tag ? `Tag: ${data.tag}` : 'Sem tag', visibilityLabels[data.vis] || 'Outro'].join(' • ');
   text.textContent = data.text;
+  text.hidden = false;
+  document.getElementById('archiveSectionPreview').hidden = true;
   document.getElementById('buttonViewCopyBtn').hidden = false;
   document.getElementById('archiveViewRestoreBtn').hidden = true;
   openModal('buttonViewModal');

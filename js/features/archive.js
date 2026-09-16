@@ -79,10 +79,16 @@ function restoreArchivedButton(index) {
   notifyUndo(`Botão restaurado em “${section.name}”!`);
 }
 
-function restoreArchivedSection(index) {
+async function restoreArchivedSection(index, { confirm = false } = {}) {
   const state = collectState();
   const record = state.archived.sections[index];
-  if (!record) return;
+  if (!record) return false;
+  if (confirm) {
+    const ok = await confirmDialog(`Restaurar “${record.item.name}” e seus ${record.item.buttons.length} botão(ões) na tela inicial?`, {
+      title: 'Restaurar seção arquivada', confirmText: 'Restaurar seção', focusCancel: true
+    });
+    if (!ok) return false;
+  }
   const targetIndex = Math.min(record.originalIndex, state.sections.length);
   state.sections.splice(targetIndex, 0, record.item);
   state.archived.sections.splice(index, 1);
@@ -90,6 +96,7 @@ function restoreArchivedSection(index) {
   restoreState(state);
   renderArchiveView();
   notifyUndo('Seção restaurada!');
+  return true;
 }
 
 async function deleteArchivedItem(type, index) {
@@ -123,12 +130,15 @@ function viewArchivedItem(type, index) {
   const text = document.getElementById('buttonViewText');
   const copy = document.getElementById('buttonViewCopyBtn');
   const restore = document.getElementById('archiveViewRestoreBtn');
+  const sectionPreview = document.getElementById('archiveSectionPreview');
   const visibilityLabels = { public: '🌎 Público', private: '🔒 Privado', other: 'Outro' };
 
   title.textContent = `🗃️ ${item.name}`;
   if (type === 'buttons') {
     meta.textContent = [record.sectionName, item.tag ? `Tag: ${item.tag}` : 'Sem tag', visibilityLabels[item.vis], formatArchivedDate(record.archivedAt)].filter(Boolean).join(' • ');
     text.textContent = item.text;
+    text.hidden = false;
+    sectionPreview.hidden = true;
     restore.textContent = 'Restaurar botão';
     restore.onclick = () => {
       closeModal('buttonViewModal');
@@ -136,18 +146,80 @@ function viewArchivedItem(type, index) {
     };
   } else {
     meta.textContent = [`${item.buttons.length} botão(ões)`, formatArchivedDate(record.archivedAt)].filter(Boolean).join(' • ');
-    text.textContent = item.buttons.length
-      ? item.buttons.map(button => `${button.name}\n${button.text}`).join('\n\n──────────\n\n')
-      : 'Esta seção não possui botões.';
+    text.hidden = true;
+    sectionPreview.hidden = false;
+    sectionPreview.replaceChildren(createArchivedSectionPreview(item));
     restore.textContent = 'Restaurar seção';
-    restore.onclick = () => {
-      closeModal('buttonViewModal');
-      restoreArchivedSection(index);
+    restore.onclick = async () => {
+      if (await restoreArchivedSection(index, { confirm: true })) closeModal('buttonViewModal');
     };
   }
   copy.hidden = true;
   restore.hidden = false;
   openModal('buttonViewModal');
+}
+
+function createArchivedSectionPreview(section) {
+  const shell = document.createElement('section');
+  shell.className = 'archive-section-shell';
+  const header = document.createElement('header');
+  header.className = 'archive-section-shell-head';
+  header.innerHTML = `<strong>🗃️ ${escapeHtml(section.name)}</strong><span class="section-count">${section.buttons.length}</span>`;
+  const body = document.createElement('div');
+  body.className = 'archive-section-shell-body';
+  const detail = document.createElement('div');
+  detail.className = 'archive-section-detail';
+  detail.hidden = true;
+  const viewButtons = [];
+  if (section.buttons.length) {
+    section.buttons.forEach(button => body.appendChild(createArchivedSectionButtonRow(button, detail, viewButtons)));
+  } else {
+    const empty = document.createElement('div');
+    empty.className = 'userdata-empty';
+    empty.textContent = 'Esta seção não possui botões.';
+    body.appendChild(empty);
+  }
+  shell.append(header, body, detail);
+  return shell;
+}
+
+function createArchivedSectionButtonRow(button, detail, viewButtons) {
+  const row = document.createElement('div');
+  row.className = `archive-section-button vis-${button.vis}`;
+  const icon = document.createElement('span');
+  icon.className = 'archive-section-button-icon';
+  icon.textContent = button.vis === 'public' ? '🌎' : button.vis === 'private' ? '🔒' : '🏷️';
+  const label = document.createElement('span');
+  label.className = 'archive-section-button-label';
+  label.textContent = button.name;
+  const view = document.createElement('button');
+  view.type = 'button';
+  view.innerHTML = iconSvg('eye');
+  view.title = `Visualizar texto de ${button.name}`;
+  view.setAttribute('aria-expanded', 'false');
+  viewButtons.push(view);
+  view.onclick = () => {
+    const opening = !view.classList.contains('active');
+    viewButtons.forEach(control => {
+      control.classList.remove('active');
+      control.setAttribute('aria-expanded', 'false');
+    });
+    if (!opening) {
+      detail.hidden = true;
+      detail.replaceChildren();
+      return;
+    }
+    view.classList.add('active');
+    view.setAttribute('aria-expanded', 'true');
+    const heading = document.createElement('strong');
+    heading.textContent = button.name;
+    const content = document.createElement('pre');
+    content.textContent = button.text;
+    detail.replaceChildren(heading, content);
+    detail.hidden = false;
+  };
+  row.append(icon, label, view);
+  return row;
 }
 
 function createArchiveCard(record, type, index) {
@@ -166,7 +238,7 @@ function createArchiveCard(record, type, index) {
   restore.className = 'mbtn primary';
   restore.type = 'button';
   restore.textContent = type === 'sections' ? 'Restaurar seção' : 'Restaurar';
-  restore.onclick = () => type === 'sections' ? restoreArchivedSection(index) : restoreArchivedButton(index);
+  restore.onclick = () => type === 'sections' ? restoreArchivedSection(index, { confirm: true }) : restoreArchivedButton(index);
   const view = document.createElement('button');
   view.className = 'archive-view-item';
   view.type = 'button';
