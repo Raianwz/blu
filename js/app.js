@@ -57,6 +57,7 @@ function init() {
   const data = normalizeImportedData(sourceData);
 
   tags = Array.isArray(data.tags) ? [...data.tags] : [];
+  archivedItems = JSON.parse(JSON.stringify(data.archived));
   renderAll(Array.isArray(data.sections) ? data.sections : []);
   if (importUndoState) {
     history.push(JSON.stringify(importUndoState));
