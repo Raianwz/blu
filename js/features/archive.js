@@ -11,13 +11,24 @@ function getArchiveCount() {
 function updateArchiveMenuCount() {
   const count = getArchiveCount();
   const badge = document.getElementById('archiveMenuCount');
+  const button = document.getElementById('archiveViewBtn');
   if (badge) {
     badge.textContent = count;
     badge.hidden = count === 0;
   }
+  if (button) {
+    const active = typeof activeContentView !== 'undefined' && activeContentView === 'archive';
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-pressed', String(active));
+    button.title = active ? 'Voltar à tela inicial' : 'Ver botões e seções arquivados';
+  }
 }
 
 function openArchiveView() {
+  if (typeof activeContentView !== 'undefined' && activeContentView === 'archive') {
+    showContentView('home');
+    return;
+  }
   showContentView('archive');
   renderArchiveView();
 }

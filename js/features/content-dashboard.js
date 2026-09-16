@@ -457,6 +457,7 @@ function showContentView(view) {
   renderFavoritesShelf();
   if (activeContentView === 'dashboard') renderContentDashboard();
   if (activeContentView === 'archive' && typeof renderArchiveView === 'function') renderArchiveView();
+  if (typeof updateArchiveMenuCount === 'function') updateArchiveMenuCount();
 }
 
 function initContentDashboard() {
