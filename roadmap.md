@@ -46,11 +46,11 @@ Fundação do recurso:
 - [x] Normalizar e sanitizar itens arquivados vindos de backups.
 - [x] Incluir arquivados em autosave, snapshots, desfazer/refazer e detecção de backup pendente.
 - [x] Reconhecer o schema no diagnóstico de JSON.
-- [ ] Criar ações de arquivar, restaurar e excluir definitivamente.
-- [ ] Criar a tela de Arquivados com abas para botões e seções.
+- [x] Criar ações de arquivar, restaurar e excluir definitivamente.
+- [x] Criar a tela de Arquivados com abas para botões e seções.
 - [x] Incluir arquivados por padrão no backup completo.
 - [ ] Adicionar “Incluir itens arquivados?” aos compartilhamentos e às exportações personalizadas.
-- [ ] Manter arquivados fora da pesquisa e da tela inicial comuns.
+- [x] Manter arquivados fora da pesquisa e da tela inicial comuns.
 
 ### Descontinuação dos Favoritos — antecipada
 

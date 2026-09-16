@@ -13,7 +13,7 @@
 // subir a versão abaixo (CACHE_VERSION). Isso cria um cache
 // novo e descarta o antigo na ativação.
 
-const CACHE_VERSION = 'v14';
+const CACHE_VERSION = 'v15';
 const CACHE_NAME = `blu-cache-${CACHE_VERSION}`;
 
 const APP_SHELL = [
@@ -32,6 +32,7 @@ const APP_SHELL = [
   '/js/core/storage.js',
   '/js/data/user-data.js',
   '/js/features/content-dashboard.js',
+  '/js/features/archive.js',
   '/js/ui/render.js',
   '/js/features/search.js',
   '/js/core/crypto.js',

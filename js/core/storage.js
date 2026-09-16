@@ -393,6 +393,8 @@ function restoreState(state) {
   archivedItems = JSON.parse(JSON.stringify(normalizedState.archived));
   updateTagDatalist();
   renderAll(normalizedState.sections);
+  if (typeof updateArchiveMenuCount === 'function') updateArchiveMenuCount();
+  if (typeof activeContentView !== 'undefined' && activeContentView === 'archive' && typeof renderArchiveView === 'function') renderArchiveView();
 
   if (editMode) {
     document.querySelectorAll('.btn-wrap').forEach(button => button.draggable = true);

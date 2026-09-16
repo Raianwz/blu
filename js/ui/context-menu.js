@@ -189,7 +189,8 @@ function getButtonContextMenuItems(buttonWrap) {
     createContextMenuItem('Visualizar botão', 'eye', () => viewContextButton(buttonWrap)),
     createContextMenuSeparator(),
     createContextMenuItem('Editar botão', 'pencil', () => openEditBtn(sectionId, buttonId)),
-    createContextMenuItem('Duplicar botão', 'copy_plus', () => duplicateContextButton(buttonWrap))
+    createContextMenuItem('Duplicar botão', 'copy_plus', () => duplicateContextButton(buttonWrap)),
+    createContextMenuItem('Arquivar botão', 'archive', () => archiveButton(sectionId, buttonId))
   ];
   if (isFavoriteButton(buttonId)) {
     items.push(createContextMenuItem('Remover dos favoritos', 'star', () => removeLegacyFavorite(buttonId)));
@@ -212,6 +213,7 @@ function getSectionContextMenuItems(section) {
     createContextMenuSeparator(),
     createContextMenuItem('Renomear seção', 'pencil', () => renameSection(sectionId)),
     createContextMenuItem('Duplicar seção', 'copy_plus', () => duplicateContextSection(section)),
+    createContextMenuItem('Arquivar seção', 'archive', () => archiveSection(sectionId)),
     createContextMenuSeparator(),
     createContextMenuItem('Mover para cima', 'arrow_up', () => moveSectionUp(header), { disabled: !section.previousElementSibling }),
     createContextMenuItem('Mover para baixo', 'arrow_down', () => moveSectionDown(header), { disabled: !section.nextElementSibling }),

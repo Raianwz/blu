@@ -445,14 +445,18 @@ function updateContentViewSwitcher() {
 
 function showContentView(view) {
   const dashboardEnabled = isContentDashboardEnabled();
-  activeContentView = view === 'dashboard' && dashboardEnabled ? 'dashboard' : 'home';
+  activeContentView = view === 'archive' ? 'archive' : (view === 'dashboard' && dashboardEnabled ? 'dashboard' : 'home');
   document.getElementById('main').hidden = activeContentView !== 'home';
   document.getElementById('contentDashboard').hidden = activeContentView !== 'dashboard';
+  document.getElementById('archiveView').hidden = activeContentView !== 'archive';
+  const switcher = document.getElementById('contentViewSwitcher');
+  if (switcher) switcher.hidden = !dashboardEnabled || activeContentView === 'archive';
   document.getElementById('homeViewBtn')?.classList.toggle('active', activeContentView === 'home');
   document.getElementById('dashboardViewBtn')?.classList.toggle('active', activeContentView === 'dashboard');
   document.getElementById('menuOverlay')?.classList.remove('open');
   renderFavoritesShelf();
   if (activeContentView === 'dashboard') renderContentDashboard();
+  if (activeContentView === 'archive' && typeof renderArchiveView === 'function') renderArchiveView();
 }
 
 function initContentDashboard() {

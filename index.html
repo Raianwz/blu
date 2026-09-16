@@ -85,6 +85,7 @@
       <div class="menu-submenu-body" id="submenu-conteudo">
         <button class="menu-btn" id="toggleSectionsBtn" onclick="toggleAllSections()" title="Expandir/minimizar seções — Ctrl + E"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22v-6" /> <path d="M12 8V2" /> <path d="M4 12H2" /> <path d="M10 12H8" /> <path d="M16 12h-2" /> <path d="M22 12h-2" /> <path d="m15 19-3 3-3-3" /> <path d="m15 5-3-3-3 3" /></svg><span class="menu-btn-label">Expandir Seções</span></button>
         <button class="menu-btn" id="contentDashboardBtn" onclick="toggleContentDashboardPreference()" title="Habilitar a página secundária de estatísticas"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 20V10" /><path d="M12 20V4" /><path d="M18 20v-7" /></svg><span class="menu-btn-label">Estatísticas: OFF</span></button>
+        <button class="menu-btn" id="archiveViewBtn" onclick="openArchiveView()" title="Ver botões e seções arquivados"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg><span class="menu-btn-label">Arquivados</span><span id="archiveMenuCount" class="section-count" hidden>0</span></button>
         <button class="menu-btn" id="searchHistoryBtn" onclick="toggleSearchHistoryPreference()" title="Guardar neste dispositivo as pesquisas que encontrarem resultados — Alt + H" aria-pressed="false"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 3v6h6" /><path d="M12 7v5l3 2" /></svg><span class="menu-btn-label">Histórico de Pesquisas: OFF</span></button>
       </div>
     </div>
@@ -394,6 +395,22 @@
     </div>
   </main>
 
+  <main id="archiveView" class="archive-view" hidden>
+    <header class="archive-view-header">
+      <div><span class="content-dashboard-kicker">Conteúdo guardado</span><h1>🗃️ Arquivados</h1><p>Itens arquivados não aparecem na tela inicial.</p></div>
+      <button class="mbtn secondary" type="button" onclick="showContentView('home')">Voltar ao início</button>
+    </header>
+    <div class="archive-toolbar">
+      <input id="archiveSearchInput" type="search" placeholder="Pesquisar nos arquivados..." autocomplete="off" oninput="renderArchiveView()">
+      <div class="archive-tabs" role="tablist" aria-label="Tipo de item arquivado">
+        <button id="archiveButtonsTab" class="active" type="button" role="tab" aria-selected="true" onclick="setArchiveTab('buttons')">Botões <span id="archiveButtonsCount">0</span></button>
+        <button id="archiveSectionsTab" type="button" role="tab" aria-selected="false" onclick="setArchiveTab('sections')">Seções <span id="archiveSectionsCount">0</span></button>
+      </div>
+    </div>
+    <div id="archiveEmpty" class="archive-empty"></div>
+    <div id="archiveList" class="archive-list"></div>
+  </main>
+
   <div class="modal-bg" id="activityModal">
     <div class="modal activity-modal">
       <div class="activity-modal-head"><div><h2>Atividade do Blû</h2><p>Histórico local das alterações estruturais</p></div><label>Mostrar<select id="activityFilter" onchange="renderActivityHistory()"><option value="all">Tudo</option><option value="button">Botões</option><option value="section">Seções</option><option value="created">Criações</option><option value="updated">Edições</option><option value="deleted">Remoções</option><option value="restored">Restaurações</option><option value="duplicated">Duplicações</option><option value="movement">Movimentações</option></select></label></div>
@@ -493,6 +510,7 @@
   <script src="js/core/storage.js"></script>
   <script src="js/data/user-data.js"></script>
   <script src="js/features/content-dashboard.js"></script>
+  <script src="js/features/archive.js"></script>
   <script src="js/ui/render.js"></script>
   <script src="js/features/search.js"></script>
   <script src="js/core/crypto.js"></script>
