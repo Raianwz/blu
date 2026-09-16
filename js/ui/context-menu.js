@@ -193,9 +193,11 @@ function getButtonContextMenuItems(buttonWrap) {
     createContextMenuItem('Visualizar botão', 'eye', () => viewContextButton(buttonWrap)),
     createContextMenuSeparator(),
     createContextMenuItem('Editar botão', 'pencil', () => openEditBtn(sectionId, buttonId)),
-    createContextMenuItem('Duplicar botão', 'copy_plus', () => duplicateContextButton(buttonWrap)),
-    createContextMenuItem('Arquivar botão', 'archive', () => archiveButton(sectionId, buttonId))
+    createContextMenuItem('Duplicar botão', 'copy_plus', () => duplicateContextButton(buttonWrap))
   ];
+  if (isArchiveContextMenuEnabled()) {
+    items.push(createContextMenuItem('Arquivar botão', 'archive', () => archiveButton(sectionId, buttonId)));
+  }
   if (isFavoriteButton(buttonId)) {
     items.push(createContextMenuItem('Remover dos favoritos', 'star', () => removeLegacyFavorite(buttonId)));
   }
@@ -211,19 +213,24 @@ function getSectionContextMenuItems(section) {
   const collapsed = section.classList.contains('collapsed');
   const header = section.querySelector('.section-head');
 
-  return [
+  const items = [
     createContextMenuItem('Adicionar botão', 'folder_plus', () => openAddBtn(sectionId)),
     createContextMenuItem(collapsed ? 'Expandir seção' : 'Recolher seção', collapsed ? 'unfold_vertical' : 'fold_vertical', () => toggleCollapse(section.querySelector('.section-collapse-btn'))),
     createContextMenuSeparator(),
     createContextMenuItem('Renomear seção', 'pencil', () => renameSection(sectionId)),
-    createContextMenuItem('Duplicar seção', 'copy_plus', () => duplicateContextSection(section)),
-    createContextMenuItem('Arquivar seção', 'archive', () => archiveSection(sectionId)),
+    createContextMenuItem('Duplicar seção', 'copy_plus', () => duplicateContextSection(section))
+  ];
+  if (isArchiveContextMenuEnabled()) {
+    items.push(createContextMenuItem('Arquivar seção', 'archive', () => archiveSection(sectionId)));
+  }
+  items.push(
     createContextMenuSeparator(),
     createContextMenuItem('Mover para cima', 'arrow_up', () => moveSectionUp(header), { disabled: !section.previousElementSibling }),
     createContextMenuItem('Mover para baixo', 'arrow_down', () => moveSectionDown(header), { disabled: !section.nextElementSibling }),
     createContextMenuSeparator(),
     createContextMenuItem('Excluir seção', 'trash_2', () => deleteSection(sectionId), { danger: true })
-  ];
+  );
+  return items;
 }
 
 document.addEventListener('contextmenu', event => {

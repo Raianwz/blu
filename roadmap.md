@@ -48,6 +48,7 @@ Fundação do recurso:
 - [x] Reconhecer o schema no diagnóstico de JSON.
 - [x] Criar ações de arquivar, restaurar e excluir definitivamente.
 - [x] Criar a tela de Arquivados com abas para botões e seções.
+- [x] Permitir ativar ou desativar as ações de arquivar no menu de contexto.
 - [x] Incluir arquivados por padrão no backup completo.
 - [ ] Adicionar “Incluir itens arquivados?” aos compartilhamentos e às exportações personalizadas.
 - [x] Manter arquivados fora da pesquisa e da tela inicial comuns.

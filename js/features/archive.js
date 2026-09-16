@@ -4,6 +4,26 @@
 
 let activeArchiveTab = 'buttons';
 
+function isArchiveContextMenuEnabled() {
+  return getSetting('archiveContextMenu', 'on') === 'on';
+}
+
+function updateArchiveContextMenuButtonUI() {
+  const button = document.getElementById('archiveContextMenuBtn');
+  if (!button) return;
+  const enabled = isArchiveContextMenuEnabled();
+  button.classList.toggle('active', enabled);
+  button.setAttribute('aria-pressed', String(enabled));
+  button.querySelector('.menu-btn-label').textContent = `Arquivar pelo Menu: ${enabled ? 'ON' : 'OFF'}`;
+}
+
+function toggleArchiveContextMenuPreference() {
+  const enabled = !isArchiveContextMenuEnabled();
+  setSetting('archiveContextMenu', enabled ? 'on' : 'off');
+  updateArchiveContextMenuButtonUI();
+  notify(`Arquivar pelo menu ${enabled ? 'ativado' : 'desativado'}`);
+}
+
 function getArchiveCount() {
   return (archivedItems.buttons?.length || 0) + (archivedItems.sections?.length || 0);
 }
@@ -22,6 +42,7 @@ function updateArchiveMenuCount() {
     button.setAttribute('aria-pressed', String(active));
     button.title = active ? 'Voltar à tela inicial' : 'Ver botões e seções arquivados';
   }
+  updateArchiveContextMenuButtonUI();
 }
 
 function openArchiveView() {
