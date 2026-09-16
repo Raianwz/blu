@@ -93,6 +93,21 @@ function migrateLegacySettings() {
     changed = true;
   }
 
+  // A primeira versão da dica marcava como vista apenas por aparecer.
+  // O novo estado só registra quando o usuário a dispensa explicitamente.
+  if (Object.prototype.hasOwnProperty.call(settings, 'searchHistoryTipSeen')) {
+    delete settings.searchHistoryTipSeen;
+    changed = true;
+  }
+
+  // Reapresenta uma vez a dica contextual para quem ainda nÃ£o ativou o
+  // histÃ³rico. A revisÃ£o impede que o X seja desfeito a cada carregamento.
+  if (settings.searchHistoryTipRevision !== 'focus-v1') {
+    if (settings.searchHistory !== 'on') delete settings.searchHistoryTipDismissed;
+    settings.searchHistoryTipRevision = 'focus-v1';
+    changed = true;
+  }
+
   try {
     Object.entries(legacyKeys).forEach(([name, key]) => {
       const legacyValue = localStorage.getItem(key);

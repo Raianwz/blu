@@ -81,13 +81,12 @@ function hideSearchHistoryTip() {
 
 function showSearchHistoryTip() {
   const tip = document.getElementById('searchHistoryTip');
-  if (!tip || isSearchHistoryEnabled() || getSetting('searchHistoryTipSeen', 'no') === 'yes') return;
-  setSetting('searchHistoryTipSeen', 'yes');
+  if (!tip || isSearchHistoryEnabled() || getSetting('searchHistoryTipDismissed', 'no') === 'yes') return;
   tip.hidden = false;
 }
 
 function dismissSearchHistoryTip() {
-  setSetting('searchHistoryTipSeen', 'yes');
+  setSetting('searchHistoryTipDismissed', 'yes');
   hideSearchHistoryTip();
 }
 
@@ -203,7 +202,7 @@ function clearSearchHistory({ silent = false } = {}) {
 function toggleSearchHistoryPreference() {
   const enabled = !isSearchHistoryEnabled();
   setSetting('searchHistory', enabled ? 'on' : 'off');
-  setSetting('searchHistoryTipSeen', 'yes');
+  setSetting('searchHistoryTipDismissed', 'yes');
   updateSearchHistoryButtonUI();
   if (typeof updateContentPreferenceButtons === 'function') updateContentPreferenceButtons();
   hideSearchHistory();
@@ -279,12 +278,16 @@ function initSearchGuidance() {
     renderSearchHistory();
     showSearchHistoryTip();
   });
-  input.addEventListener('blur', updateSearchGuidance);
+  input.addEventListener('blur', () => {
+    updateSearchGuidance();
+    setTimeout(() => {
+      if (!document.getElementById('searchWrap')?.contains(document.activeElement)) hideSearchHistoryTip();
+    }, 0);
+  });
   input.addEventListener('input', () => {
     if (input.value) stopSearchPlaceholderRotation();
     if (input.value) {
       hideSearchHistory();
-      hideSearchHistoryTip();
     }
     else renderSearchHistory();
   });
@@ -295,7 +298,6 @@ function initSearchGuidance() {
       hideSearchHistory();
     } else if (event.key === 'Escape') {
       hideSearchHistory();
-      hideSearchHistoryTip();
     }
   });
   type.addEventListener('change', updateSearchGuidance);
