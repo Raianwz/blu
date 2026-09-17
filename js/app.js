@@ -269,6 +269,14 @@ function toggleSubmenu(name) {
 }
 
 const ADVANCED_MENU_MIGRATION_KEY = 'blu:advancedMenuMigrated';
+const ADVANCED_MENU_MIGRATION_REVISION = 'preferences-v2';
+
+function hasCustomizedAdvancedPreference() {
+  return getSetting('editAnimation') === 'off'
+    || getSetting('dragPreview') === 'on'
+    || getSetting('advancedOrganizing') === 'on'
+    || getSetting('searchHistory') === 'on';
+}
 
 function applyAdvancedMenuPreference(enabled) {
   document.body.classList.toggle('menu-simple', !enabled);
@@ -293,16 +301,19 @@ function applyAdvancedMenuPreference(enabled) {
 
 function initAdvancedMenuPreference() {
   const stored = getSetting('advancedMenu');
-  if (stored === 'on' || stored === 'off') {
+  let migrationRevision = null;
+  try {
+    migrationRevision = localStorage.getItem(ADVANCED_MENU_MIGRATION_KEY);
+  } catch (_) {}
+
+  if (migrationRevision === ADVANCED_MENU_MIGRATION_REVISION && (stored === 'on' || stored === 'off')) {
     applyAdvancedMenuPreference(stored === 'on');
     return;
   }
 
-  let enabled = false;
+  const enabled = hasCustomizedAdvancedPreference();
   try {
-    const alreadyMigrated = localStorage.getItem(ADVANCED_MENU_MIGRATION_KEY) === '1';
-    enabled = !alreadyMigrated && !!localStorage.getItem(STORAGE_KEY);
-    localStorage.setItem(ADVANCED_MENU_MIGRATION_KEY, '1');
+    localStorage.setItem(ADVANCED_MENU_MIGRATION_KEY, ADVANCED_MENU_MIGRATION_REVISION);
   } catch (_) {}
 
   setSetting('advancedMenu', enabled ? 'on' : 'off');
