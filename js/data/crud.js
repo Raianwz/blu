@@ -1073,7 +1073,7 @@ async function importData() {
 
     if (parsed.format === 'blu-userdata') {
       if (Number(parsed.version) > USERDATA_FORMAT_VERSION) throw new Error('backup de dados pessoais criado por uma versão mais nova');
-      const ok = await confirmDialog('Isso substituirá os favoritos e as estatísticas locais. Seus botões não serão alterados. Continuar?', { title: '📥 Importar dados pessoais', danger: true, confirmText: 'Importar' });
+      const ok = await confirmDialog('Isso substituirá os favoritos e as estatísticas locais. Seus botões não serão alterados. Continuar?', { title: '📥 Importar estatísticas', danger: true, confirmText: 'Importar' });
       if (!ok) return;
       replaceUserData(parsed.userdata, getCurrentButtonIds());
       closeModal('importModal');

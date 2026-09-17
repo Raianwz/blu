@@ -373,10 +373,12 @@ Botões com o mesmo nome:
 
 ### Simplificação do menu
 
-- Avaliar um **Modo avançado** que revele menus e configurações menos utilizados.
-- Manter as ações essenciais visíveis para usuários comuns.
-- Definir quais configurações avançadas devem permanecer acessíveis pela pesquisa ou por atalhos.
-- Evitar que a mudança altere preferências já configuradas quando o modo avançado estiver desligado.
+- [x] Adicionar **Opções avançadas** para revelar menus e configurações menos utilizados.
+- [x] Manter as ações essenciais visíveis no menu simplificado.
+- [x] Preservar o menu completo para usuários existentes durante a migração.
+- [x] Evitar que o modo simplificado altere preferências ou desative recursos ocultos.
+- [ ] Revisar quais opções avançadas também devem permanecer acessíveis pela pesquisa ou por atalhos.
+- [ ] Reunir ações destrutivas dentro de Dados e apresentar as novidades da reorganização.
 
 ### Mobile
 

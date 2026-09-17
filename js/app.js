@@ -179,6 +179,9 @@ async function resetPreferences() {
 
   clearSearchHistory({ silent: true });
 
+  setSetting('advancedMenu', 'off');
+  applyAdvancedMenuPreference(false);
+
   applyTheme(!!systemThemeQuery?.matches);
   applyTextPreviewState(true);
   dragPreviewEnabled = false;
@@ -263,6 +266,54 @@ function toggleSubmenu(name) {
       }
     });
   }
+}
+
+const ADVANCED_MENU_MIGRATION_KEY = 'blu:advancedMenuMigrated';
+
+function applyAdvancedMenuPreference(enabled) {
+  document.body.classList.toggle('menu-simple', !enabled);
+
+  const button = document.getElementById('advancedMenuBtn');
+  if (button) {
+    button.classList.toggle('active', enabled);
+    button.setAttribute('aria-pressed', String(enabled));
+    button.querySelector('.menu-btn-label').textContent = `Opções Avançadas: ${enabled ? 'ON' : 'OFF'}`;
+  }
+
+  if (!enabled) {
+    ['acessibilidade', 'organizacao', 'janela', 'ferramentas'].forEach(name => {
+      const body = document.getElementById(`submenu-${name}`);
+      const toggle = document.querySelector(`.menu-submenu-toggle[data-submenu="${name}"]`);
+      body?.classList.remove('open');
+      toggle?.classList.remove('open');
+      toggle?.setAttribute('aria-expanded', 'false');
+    });
+  }
+}
+
+function initAdvancedMenuPreference() {
+  const stored = getSetting('advancedMenu');
+  if (stored === 'on' || stored === 'off') {
+    applyAdvancedMenuPreference(stored === 'on');
+    return;
+  }
+
+  let enabled = false;
+  try {
+    const alreadyMigrated = localStorage.getItem(ADVANCED_MENU_MIGRATION_KEY) === '1';
+    enabled = !alreadyMigrated && !!localStorage.getItem(STORAGE_KEY);
+    localStorage.setItem(ADVANCED_MENU_MIGRATION_KEY, '1');
+  } catch (_) {}
+
+  setSetting('advancedMenu', enabled ? 'on' : 'off');
+  applyAdvancedMenuPreference(enabled);
+}
+
+function toggleAdvancedMenuPreference() {
+  const enabled = getSetting('advancedMenu') !== 'on';
+  setSetting('advancedMenu', enabled ? 'on' : 'off');
+  applyAdvancedMenuPreference(enabled);
+  notify(`Opções avançadas ${enabled ? 'ativadas' : 'desativadas'}`);
 }
 
 function openPopout() {
@@ -448,6 +499,7 @@ setupDialogEvents();
 setupVersionBadgeHover();
 getOrCreateClientId();
 migrateLegacySettings();
+initAdvancedMenuPreference();
 initTheme();
 initEditAnimationPreference();
 initDragPreviewPreference();
