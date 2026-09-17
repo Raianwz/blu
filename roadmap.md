@@ -377,8 +377,10 @@ Botões com o mesmo nome:
 - [x] Manter as ações essenciais visíveis no menu simplificado.
 - [x] Preservar o menu completo para usuários existentes durante a migração.
 - [x] Evitar que o modo simplificado altere preferências ou desative recursos ocultos.
-- [ ] Revisar quais opções avançadas também devem permanecer acessíveis pela pesquisa ou por atalhos.
-- [ ] Reunir ações destrutivas dentro de Dados e apresentar as novidades da reorganização.
+- [x] Manter as ações de janela acessíveis pelos atalhos `Alt+J` e `Alt+P`.
+- [x] Reunir ações destrutivas dentro de Dados, em uma área visualmente separada.
+- [ ] Revisar quais outras opções avançadas também devem permanecer acessíveis pela pesquisa ou por atalhos.
+- [ ] Apresentar as novidades da reorganização aos usuários.
 
 ### Mobile
 

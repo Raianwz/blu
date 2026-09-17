@@ -607,6 +607,25 @@ body.menu-simple .menu-submenu:has(> [data-submenu="ferramentas"]) {
   color: #ffffff;
 }
 
+.menu-danger-zone {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 5px;
+  padding-top: 10px;
+  border-top: 1px solid color-mix(in srgb, var(--red) 38%, var(--border));
+}
+
+.menu-danger-label {
+  padding: 0 4px;
+  color: var(--red);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
 /* Indicador de criptografia no botao Exportar (Alt+C alterna) */
 .export-lock-icon {
   display: none;

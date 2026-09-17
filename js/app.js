@@ -396,6 +396,20 @@ document.addEventListener('keydown', event => {
   const key = event.key.toLowerCase();
   const typing = isTypingField(document.activeElement);
 
+  // Alt+J — Nova janela do Blû
+  if (event.altKey && !event.ctrlKey && !event.metaKey && key === 'j') {
+    event.preventDefault();
+    openPopout();
+    return;
+  }
+
+  // Alt+P — Pop-out em about:blank
+  if (event.altKey && !event.ctrlKey && !event.metaKey && key === 'p') {
+    event.preventDefault();
+    openPopoutBlank();
+    return;
+  }
+
   if ((event.ctrlKey || event.metaKey) && key === 'e') {
     if (!typing) {
       event.preventDefault();
