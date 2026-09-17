@@ -269,11 +269,10 @@ function toggleSubmenu(name) {
 }
 
 const ADVANCED_MENU_MIGRATION_KEY = 'blu:advancedMenuMigrated';
-const ADVANCED_MENU_MIGRATION_REVISION = 'preferences-v2';
+const ADVANCED_MENU_MIGRATION_REVISION = 'preferences-v3';
 
 function hasCustomizedAdvancedPreference() {
-  return getSetting('editAnimation') === 'off'
-    || getSetting('dragPreview') === 'on'
+  return getSetting('dragPreview') === 'on'
     || getSetting('advancedOrganizing') === 'on'
     || getSetting('searchHistory') === 'on';
 }
@@ -289,7 +288,7 @@ function applyAdvancedMenuPreference(enabled) {
   }
 
   if (!enabled) {
-    ['acessibilidade', 'organizacao', 'janela', 'ferramentas'].forEach(name => {
+    ['organizacao', 'janela', 'ferramentas'].forEach(name => {
       const body = document.getElementById(`submenu-${name}`);
       const toggle = document.querySelector(`.menu-submenu-toggle[data-submenu="${name}"]`);
       body?.classList.remove('open');

@@ -552,8 +552,6 @@ body.menu-simple #organizeModeBtn,
 body.menu-simple #hideVersionBtn,
 body.menu-simple #archiveContextMenuBtn,
 body.menu-simple #searchHistoryBtn,
-body.menu-simple [data-submenu="acessibilidade"],
-body.menu-simple #submenu-acessibilidade,
 body.menu-simple [data-submenu="organizacao"],
 body.menu-simple #submenu-organizacao,
 body.menu-simple [data-submenu="janela"],
@@ -563,7 +561,6 @@ body.menu-simple #submenu-ferramentas {
   display: none !important;
 }
 
-body.menu-simple .menu-submenu:has(> [data-submenu="acessibilidade"]),
 body.menu-simple .menu-submenu:has(> [data-submenu="organizacao"]),
 body.menu-simple .menu-submenu:has(> [data-submenu="janela"]),
 body.menu-simple .menu-submenu:has(> [data-submenu="ferramentas"]) {
