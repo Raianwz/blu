@@ -2269,6 +2269,7 @@ body.edit-mode .btn-del {
   cursor: pointer;
   font-size: 13px;
   font-weight: 600;
+  transition: transform .12s ease, box-shadow .16s ease, filter .16s ease, background .16s ease, border-color .16s ease, color .16s ease;
 }
 
 .mbtn.primary {
@@ -2282,9 +2283,65 @@ body.edit-mode .btn-del {
   border: 1px solid color-mix(in srgb, var(--text2) 38%, var(--border));
 }
 
+.mbtn:not(:disabled):hover {
+  filter: brightness(1.08);
+  box-shadow: 0 4px 12px color-mix(in srgb, #000 18%, transparent);
+  transform: translateY(-1px);
+}
+
+.mbtn.secondary:not(:disabled):hover {
+  border-color: color-mix(in srgb, var(--accent1) 55%, var(--border));
+  background: color-mix(in srgb, var(--accent1) 10%, var(--border));
+}
+
+.mbtn:not(:disabled):active {
+  filter: brightness(.92);
+  box-shadow: none;
+  transform: translateY(1px) scale(.98);
+}
+
+.mbtn:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent1) 42%, transparent);
+  outline-offset: 2px;
+}
+
 .mbtn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+
+.menu-btn:not(:disabled):active,
+.menu-submenu-toggle:not(:disabled):active {
+  filter: brightness(.9);
+  transform: translateY(1px) scale(.99);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mbtn,
+  .menu-btn,
+  .menu-submenu-toggle {
+    transition: none;
+  }
+
+  .mbtn:not(:disabled):hover,
+  .mbtn:not(:disabled):active,
+  .menu-btn:not(:disabled):active,
+  .menu-submenu-toggle:not(:disabled):active {
+    transform: none;
+  }
+}
+
+body.edit-animation-off .mbtn,
+body.edit-animation-off .menu-btn,
+body.edit-animation-off .menu-submenu-toggle {
+  transition: none;
+}
+
+body.edit-animation-off .mbtn:not(:disabled):hover,
+body.edit-animation-off .mbtn:not(:disabled):active,
+body.edit-animation-off .menu-btn:not(:disabled):active,
+body.edit-animation-off .menu-submenu-toggle:not(:disabled):active {
+  transform: none;
 }
 
 
