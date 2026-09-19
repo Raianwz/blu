@@ -16,7 +16,7 @@ const SEARCH_TYPE_PLACEHOLDERS = {
   category: 'Pesquisar por seção...',
   text: 'Pesquisar no conteúdo dos botões...'
 };
-const desktopSearchGuidanceMedia = window.matchMedia('(min-width: 761px) and (hover: hover) and (pointer: fine)');
+const desktopSearchGuidanceMedia = window.matchMedia('(hover: hover) and (pointer: fine)');
 const reducedMotionMedia = window.matchMedia('(prefers-reduced-motion: reduce)');
 const SEARCH_HISTORY_STORAGE_KEY = 'blu:searchHistory';
 const SEARCH_HISTORY_LIMIT = 6;
