@@ -3,6 +3,9 @@
 // ==========================================================
 
 const WHATS_NEW_VERSION = '1.9';
+// Ativar somente no fechamento da versão 1.9, junto ao último incremento
+// planejado do cache do service worker (v19 ou, no máximo, v20).
+const WHATS_NEW_PUBLIC = false;
 
 const WHATS_NEW_ITEMS = [
   {
@@ -66,13 +69,13 @@ function isWhatsNewPreviewEnvironment() {
 function updateWhatsNewButtonUI() {
   const button = document.getElementById('whatsNewBtn');
   const aboutButton = document.getElementById('aboutWhatsNewBtn');
-  const previewEnabled = isWhatsNewPreviewEnvironment();
+  const available = WHATS_NEW_PUBLIC || isWhatsNewPreviewEnvironment();
   const unseen = !hasSeenWhatsNew();
   if (button) {
-    button.hidden = !previewEnabled || !unseen;
+    button.hidden = !available || !unseen;
     button.setAttribute('aria-label', unseen ? 'Novidades não lidas' : 'Ver novidades desta versão');
   }
-  if (aboutButton) aboutButton.hidden = !previewEnabled;
+  if (aboutButton) aboutButton.hidden = !available;
 }
 
 function ensureWhatsNewModal() {
@@ -118,7 +121,7 @@ function shouldShowWhatsNew() {
   return !hasSeenWhatsNew();
 }
 
-function initWhatsNewPreview() {
+function initWhatsNew() {
   updateWhatsNewButtonUI();
 
   if (!isWhatsNewPreviewEnvironment() || window.name === 'BluePopOut') return;

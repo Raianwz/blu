@@ -400,6 +400,7 @@ Botões com o mesmo nome:
 - [ ] Apresentar as novidades da reorganização aos usuários.
   - [x] Preparar silenciosamente a tela e o controle de versão vista.
   - [x] Adicionar um acesso manual à tela.
+  - [x] Manter sino e acesso manual restritos ao ambiente de testes até o lançamento.
   - [ ] Ativar a abertura automática uma única vez na versão 1.9.
 
 ### Mobile
