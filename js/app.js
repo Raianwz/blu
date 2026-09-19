@@ -268,7 +268,6 @@ function toggleSubmenu(name) {
   }
 }
 
-const ADVANCED_MENU_MIGRATION_KEY = 'blu:advancedMenuMigrated';
 const ADVANCED_MENU_MIGRATION_REVISION = 'preferences-v3';
 
 function hasCustomizedAdvancedPreference() {
@@ -300,10 +299,7 @@ function applyAdvancedMenuPreference(enabled) {
 
 function initAdvancedMenuPreference() {
   const stored = getSetting('advancedMenu');
-  let migrationRevision = null;
-  try {
-    migrationRevision = localStorage.getItem(ADVANCED_MENU_MIGRATION_KEY);
-  } catch (_) {}
+  const migrationRevision = getMetaValue('migrations', 'advancedMenu');
 
   if (migrationRevision === ADVANCED_MENU_MIGRATION_REVISION && (stored === 'on' || stored === 'off')) {
     applyAdvancedMenuPreference(stored === 'on');
@@ -311,9 +307,7 @@ function initAdvancedMenuPreference() {
   }
 
   const enabled = hasCustomizedAdvancedPreference();
-  try {
-    localStorage.setItem(ADVANCED_MENU_MIGRATION_KEY, ADVANCED_MENU_MIGRATION_REVISION);
-  } catch (_) {}
+  setMetaValue('migrations', 'advancedMenu', ADVANCED_MENU_MIGRATION_REVISION);
 
   setSetting('advancedMenu', enabled ? 'on' : 'off');
   applyAdvancedMenuPreference(enabled);
@@ -523,6 +517,7 @@ setupDialogEvents();
 setupVersionBadgeHover();
 getOrCreateClientId();
 migrateLegacySettings();
+migrateLegacyMeta();
 initAdvancedMenuPreference();
 initTheme();
 initEditAnimationPreference();
@@ -530,6 +525,7 @@ initDragPreviewPreference();
 initAdvancedOrganizingPreference();
 initTextPreviewPreference();
 initSearchGuidance();
+initShareLinkEvidence();
 initShareConnectivity();
 registerServiceWorker();
 init();

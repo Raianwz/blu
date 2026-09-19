@@ -531,6 +531,19 @@ async function exportData() {
 const LAST_SHARE_KEY = 'blu:lastShare';
 const SHARE_MAX_PAYLOAD_BYTES = 600 * 1024;
 
+function hasCreatedShareLink() {
+  return getMetaValue('history', 'hasCreatedShareLink') === true;
+}
+
+function markShareLinkCreated() {
+  setMetaValue('history', 'hasCreatedShareLink', true);
+}
+
+function initShareLinkEvidence() {
+  if (hasCreatedShareLink()) return;
+  if (getLastShareRecord()?.id) markShareLinkCreated();
+}
+
 function getLastShareRecord() {
   try {
     const raw = localStorage.getItem(LAST_SHARE_KEY);
@@ -837,6 +850,7 @@ async function shareData(includeArchivedOverride) {
       includeArchived,
       expiresAt: Date.now() + expiresInSeconds * 1000
     });
+    markShareLinkCreated();
 
     console.info('[Compartilhamento] Link criado com sucesso.', { expiresInSeconds });
 

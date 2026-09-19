@@ -4,6 +4,7 @@
 
 const STORAGE_KEY = 'blu:data';
 const SETTINGS_STORAGE_KEY = 'blu:settings';
+const META_STORAGE_KEY = 'blu:meta';
 const CLIENT_ID_STORAGE_KEY = 'blu:clientId';
 const PENDING_IMPORT_UNDO_KEY = 'blu:pendingImportUndo';
 const VERSION = '1.8';
@@ -64,6 +65,67 @@ function setSetting(name, value) {
     const settings = loadSettings();
     settings[name] = value;
     localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+  } catch (_) {}
+}
+
+function loadMeta() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(META_STORAGE_KEY) || '{}');
+    const source = parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+    return {
+      version: 1,
+      migrations: source.migrations && typeof source.migrations === 'object' && !Array.isArray(source.migrations) ? source.migrations : {},
+      updates: source.updates && typeof source.updates === 'object' && !Array.isArray(source.updates) ? source.updates : {},
+      history: source.history && typeof source.history === 'object' && !Array.isArray(source.history) ? source.history : {}
+    };
+  } catch (_) {
+    return { version: 1, migrations: {}, updates: {}, history: {} };
+  }
+}
+
+function getMetaValue(group, name, fallback = null) {
+  const meta = loadMeta();
+  return Object.prototype.hasOwnProperty.call(meta[group] || {}, name) ? meta[group][name] : fallback;
+}
+
+function setMetaValue(group, name, value) {
+  try {
+    const meta = loadMeta();
+    if (!meta[group] || typeof meta[group] !== 'object') meta[group] = {};
+    meta[group][name] = value;
+    localStorage.setItem(META_STORAGE_KEY, JSON.stringify(meta));
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+function migrateLegacyMeta() {
+  const legacyKeys = ['blu:advancedMenuMigrated', 'blu:seenUpdates', 'blu:hasCreatedShareLink'];
+  try {
+    const meta = loadMeta();
+    const advancedMenu = localStorage.getItem(legacyKeys[0]);
+    const seenUpdates = localStorage.getItem(legacyKeys[1]);
+    const hasCreatedShareLink = localStorage.getItem(legacyKeys[2]);
+    let changed = false;
+
+    if (advancedMenu !== null && !Object.prototype.hasOwnProperty.call(meta.migrations, 'advancedMenu')) {
+      meta.migrations.advancedMenu = advancedMenu;
+      changed = true;
+    }
+    if (seenUpdates !== null && !Object.prototype.hasOwnProperty.call(meta.updates, 'seenVersion')) {
+      meta.updates.seenVersion = seenUpdates;
+      changed = true;
+    }
+    if (hasCreatedShareLink === '1' && !Object.prototype.hasOwnProperty.call(meta.history, 'hasCreatedShareLink')) {
+      meta.history.hasCreatedShareLink = true;
+      changed = true;
+    }
+
+    if (changed || legacyKeys.some(key => localStorage.getItem(key) !== null)) {
+      localStorage.setItem(META_STORAGE_KEY, JSON.stringify(meta));
+      legacyKeys.forEach(key => localStorage.removeItem(key));
+    }
   } catch (_) {}
 }
 

@@ -379,6 +379,23 @@ Botões com o mesmo nome:
 - [x] Evitar que o modo simplificado altere preferências ou desative recursos ocultos.
 - [x] Manter as ações de janela acessíveis pelos atalhos `Alt+J` e `Alt+P`.
 - [x] Reunir ações destrutivas dentro de Dados, em uma área visualmente separada.
+
+#### Acesso rápido personalizável
+
+- [x] Consolidar revisões internas, atualizações vistas e evidências históricas em `blu:meta`.
+- [x] Registrar permanentemente neste navegador se ao menos um link de compartilhamento já foi criado.
+- [x] Migrar a evidência a partir do registro antigo do último link compartilhado.
+- [ ] Limitar o Acesso rápido a quatro posições no topo do menu.
+- [ ] Manter `Modo de Edição`/`Modo de Organização` e `Nova Seção` nas duas posições fixas.
+- [ ] Reservar as duas posições restantes para itens fixados pelo usuário.
+- [ ] Manter `Gerenciar Tags` fixado por padrão.
+- [ ] Fixar `Compartilhar` durante a migração somente quando houver evidência de link criado.
+- [ ] Mover `Compartilhar` para `Dados` quando não estiver fixado, sem duplicar a ação.
+- [ ] Adicionar ao hambúrguer um menu de contexto para gerenciar os itens fixados.
+- [ ] Permitir fixar ou desfixar ações pelo menu de contexto de cada item elegível.
+- [ ] Fazer `Redefinir Preferências` recompor os padrões e preservar a evidência de compartilhamento.
+- [ ] Fazer `Limpar Tudo` apagar preferências, itens fixados e a evidência de compartilhamento.
+
 - [ ] Revisar quais outras opções avançadas também devem permanecer acessíveis pela pesquisa ou por atalhos.
 - [ ] Apresentar as novidades da reorganização aos usuários.
   - [x] Preparar silenciosamente a tela e o controle de versão vista.
