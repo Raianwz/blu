@@ -381,8 +381,13 @@ Botões com o mesmo nome:
 - [x] Reunir ações destrutivas dentro de Dados, em uma área visualmente separada.
 - [ ] Revisar quais outras opções avançadas também devem permanecer acessíveis pela pesquisa ou por atalhos.
 - [ ] Apresentar as novidades da reorganização aos usuários.
+  - [x] Preparar silenciosamente a tela e o controle de versão vista.
+  - [x] Adicionar um acesso manual à tela.
+  - [ ] Ativar a abertura automática uma única vez na versão 1.9.
 
 ### Mobile
+
+> Revisão suspensa temporariamente. Retomar em um ciclo futuro sem bloquear a versão 1.9.
 
 - Continuar testes reais em Android e iOS.
 - Revisar tooltips em toque.

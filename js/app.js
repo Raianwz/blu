@@ -536,3 +536,4 @@ init();
 pruneUserData();
 initContentDashboard();
 initQuickActions();
+initWhatsNewPreview();
