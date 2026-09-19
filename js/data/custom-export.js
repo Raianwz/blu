@@ -50,6 +50,7 @@ function applyCustomExportPreset(name) {
   customExportEl('customExportOrder').value = 'current';
   ['customExportRemoveEmpty', 'customExportNormalizeTags', 'customExportStripEmoji', 'customExportSimplifyBreaks', 'customExportCompactJson'].forEach(id => { customExportEl(id).checked = false; });
   customExportEl('customExportCsvBom').checked = true;
+  customExportEl('customExportIncludeArchived').checked = true;
   updateCustomExportUI(false);
 }
 
@@ -148,7 +149,8 @@ function getCustomExportConfig() {
     stripEmoji: customExportEl('customExportStripEmoji').checked,
     simplifyBreaks: customExportEl('customExportSimplifyBreaks').checked,
     compactJson: customExportEl('customExportCompactJson').checked,
-    csvBom: customExportEl('customExportCsvBom').checked
+    csvBom: customExportEl('customExportCsvBom').checked,
+    includeArchived: customExportEl('customExportIncludeArchived').checked
   };
 }
 
@@ -182,7 +184,26 @@ function prepareCustomExportData(config) {
   if (config.order === 'alphabetical') sections.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
   const tags = [...new Set((config.normalizeTags ? state.tags.map(normalizeTag) : state.tags).filter(Boolean))];
   if (config.order === 'alphabetical') tags.sort((a, b) => a.localeCompare(b, 'pt-BR'));
-  return { tags, sections, favoriteIds };
+  const archived = { buttons: [], sections: [] };
+  if (config.includeArchived && config.scope !== 'search') {
+    const acceptsArchivedButton = button => {
+      if (config.scope === 'favorites') return favoriteIds.has(button.id);
+      if (['public', 'private', 'other'].includes(config.scope)) return button.vis === config.scope;
+      if (config.scope === 'tags') return selected.has(button.tag) || selected.has(normalizeTag(button.tag));
+      return true;
+    };
+    (state.archived?.sections || []).forEach(record => {
+      if (config.scope === 'sections' && !selected.has(record.item.id)) return;
+      const copy = JSON.parse(JSON.stringify(record));
+      copy.item.buttons = copy.item.buttons.filter(acceptsArchivedButton);
+      if (copy.item.buttons.length || config.fields.has('includeEmpty')) archived.sections.push(copy);
+    });
+    (state.archived?.buttons || []).forEach(record => {
+      if (config.scope === 'sections' && !selected.has(record.sectionId)) return;
+      if (acceptsArchivedButton(record.item)) archived.buttons.push(JSON.parse(JSON.stringify(record)));
+    });
+  }
+  return { tags, sections, favoriteIds, archived };
 }
 
 function assignCustomExportField(target, key, value, config) {
@@ -203,6 +224,27 @@ function customExportButtonObject(button, section, config, favoriteIds) {
   return out;
 }
 
+function customExportArchivedObject(data, config) {
+  const f = config.fields;
+  return {
+    buttons: data.archived.buttons.map(record => ({
+      item: customExportButtonObject(record.item, { id: record.sectionId, name: record.sectionName }, config, data.favoriteIds),
+      sectionId: record.sectionId,
+      sectionName: record.sectionName,
+      originalIndex: record.originalIndex,
+      archivedAt: record.archivedAt
+    })),
+    sections: data.archived.sections.map(record => {
+      const item = {};
+      if (f.has('sectionId')) assignCustomExportField(item, 'id', record.item.id, config);
+      if (f.has('sectionName')) assignCustomExportField(item, 'name', record.item.name, config);
+      if (f.has('sectionCollapsed') && config.state !== 'omit') item.collapsed = record.item.collapsed;
+      if (f.has('buttons')) item.buttons = record.item.buttons.map(button => customExportButtonObject(button, record.item, config, data.favoriteIds));
+      return { item, originalIndex: record.originalIndex, archivedAt: record.archivedAt };
+    })
+  };
+}
+
 function buildCustomExportObject(data, config) {
   const f = config.fields; const root = {};
   if (f.has('metadata')) root.metadata = { app: 'Blû', exportedAt: new Date().toISOString(), format: config.format, scope: config.scope };
@@ -213,10 +255,12 @@ function buildCustomExportObject(data, config) {
     if (f.has('buttons')) {
       root.buttons = data.sections.flatMap(section => section.buttons.map(button => customExportButtonObject(button, section, config, data.favoriteIds)));
     }
+    if (config.includeArchived) root.archived = customExportArchivedObject(data, config);
     return root;
   }
   if (config.structure === 'flat') {
     root.buttons = f.has('buttons') ? data.sections.flatMap(section => section.buttons.map(button => customExportButtonObject(button, section, config, data.favoriteIds))) : [];
+    if (config.includeArchived) root.archived = customExportArchivedObject(data, config);
     return root;
   }
   root.sections = data.sections.map(section => {
@@ -228,16 +272,27 @@ function buildCustomExportObject(data, config) {
     if (f.has('buttons')) out.buttons = section.buttons.map(button => customExportButtonObject(button, section, config, data.favoriteIds));
     return out;
   });
+  if (config.includeArchived) root.archived = customExportArchivedObject(data, config);
   return root;
 }
 
 function getCustomExportRows(data, config) {
-  return data.sections.flatMap(section => section.buttons.map(button => {
+  const rows = data.sections.flatMap(section => section.buttons.map(button => {
     const object = customExportButtonObject(button, section, config, data.favoriteIds);
     if (config.fields.has('sectionId') && !('sectionId' in object)) object.sectionId = section.id;
     if (config.fields.has('sectionName') && !('section' in object)) object.section = section.name;
     return object;
   }));
+  if (config.includeArchived) {
+    data.archived.sections.forEach(record => record.item.buttons.forEach(button => {
+      rows.push({ ...customExportButtonObject(button, record.item, config, data.favoriteIds), archived: true, archivedAt: record.archivedAt });
+    }));
+    data.archived.buttons.forEach(record => {
+      const section = { id: record.sectionId, name: record.sectionName };
+      rows.push({ ...customExportButtonObject(record.item, section, config, data.favoriteIds), archived: true, archivedAt: record.archivedAt });
+    });
+  }
+  return rows;
 }
 
 function customExportCsv(rows, delimiter) {
@@ -270,6 +325,17 @@ function customExportReadable(data, config, markdown) {
     });
     lines.push('');
   });
+  if (config.includeArchived && (data.archived.sections.length || data.archived.buttons.length)) {
+    lines.push(markdown ? '# Itens arquivados' : 'ITENS ARQUIVADOS', '');
+    data.archived.sections.forEach(record => {
+      lines.push(markdown ? `## ${record.item.name}` : record.item.name.toUpperCase(), `Arquivado em: ${record.archivedAt}`);
+      record.item.buttons.forEach(button => lines.push(`${markdown ? '- ' : '• '}${button.name}${config.fields.has('buttonText') ? `\n  Texto: ${button.text}` : ''}`));
+      lines.push('');
+    });
+    data.archived.buttons.forEach(record => {
+      lines.push(`${markdown ? '- ' : '• '}${record.item.name} (${record.sectionName})${config.fields.has('buttonText') ? `\n  Texto: ${record.item.text}` : ''}`, `  Arquivado em: ${record.archivedAt}`);
+    });
+  }
   return lines.join('\n').trim();
 }
 
@@ -288,7 +354,7 @@ function isCustomExportImportCompatible(config) {
   const required = ['globalTags', 'sections', 'sectionId', 'sectionName', 'sectionCollapsed', 'buttons', 'buttonId', 'buttonName', 'buttonText', 'buttonTag', 'buttonVisibility', 'includeEmpty'];
   return config.format === 'json' && config.scope === 'all' && config.structure === 'hierarchy'
     && config.state === 'current' && config.order === 'current' && required.every(field => config.fields.has(field))
-    && !config.removeEmpty && !config.normalizeTags && !config.stripEmoji && !config.simplifyBreaks;
+    && config.includeArchived && !config.removeEmpty && !config.normalizeTags && !config.stripEmoji && !config.simplifyBreaks;
 }
 
 function updateCustomExportPreview() {
@@ -298,7 +364,8 @@ function updateCustomExportPreview() {
   const count = result.data.sections.reduce((total, section) => total + section.buttons.length, 0);
   const size = getUtf8ByteLength(result.content);
   customExportEl('customExportPreview').value = result.content || '(O arquivo não possui conteúdo com as opções atuais.)';
-  customExportEl('customExportSummary').textContent = `${result.data.sections.length} seção(ões) • ${count} botão(ões) • ${formatFileSize(size)} • ${result.config.format.toUpperCase()}`;
+  const archiveCount = result.data.archived.sections.length + result.data.archived.buttons.length;
+  customExportEl('customExportSummary').textContent = `${result.data.sections.length} seção(ões) • ${count} botão(ões)${result.config.includeArchived ? ` • ${archiveCount} arquivado(s)` : ''} • ${formatFileSize(size)} • ${result.config.format.toUpperCase()}`;
   const warnings = [];
   if (!result.content) warnings.push('Selecione ao menos um campo que produza conteúdo.');
   if (!isCustomExportImportCompatible(result.config)) warnings.push('Este arquivo é para consulta/uso externo e não representa um backup reimportável completo.');

@@ -632,21 +632,45 @@ function buildShareCountsHtml(state) {
   return html;
 }
 
+function getShareStateSnapshot(includeArchived = false) {
+  const state = JSON.parse(JSON.stringify(getCurrentStateSnapshot().state));
+  if (!includeArchived) state.archived = { buttons: [], sections: [] };
+  return createStateSnapshot(state);
+}
+
+function updateShareArchiveChoice() {
+  const includeArchived = document.getElementById('shareIncludeArchived')?.checked === true;
+  const snapshot = getShareStateSnapshot(includeArchived);
+  const counts = document.getElementById('shareCountsPreview');
+  if (counts) counts.innerHTML = buildShareCountsHtml(snapshot.state);
+  const sizeInfo = getShareSizeInfo(snapshot.state);
+  const confirmBtn = document.getElementById('confirmShareBtn');
+  if (confirmBtn) {
+    confirmBtn.dataset.payloadBlocked = String(sizeInfo.exceedsLimit);
+    confirmBtn.disabled = sizeInfo.exceedsLimit || !navigator.onLine;
+    confirmBtn.title = sizeInfo.exceedsLimit ? 'O payload ultrapassa o limite de 600 KB' : '';
+  }
+}
+
 // Monta e abre o modal — decide sozinho, a cada abertura, se mostra a
 // prévia de criação ou o link já ativo (comparando o estado atual com o
 // registro do último compartilhamento salvo).
-function openShareModal() {
+function openShareModal(includeArchived = (() => {
+  const record = getLastShareRecord();
+  return record ? record.includeArchived !== false : false;
+})()) {
   if (!navigator.onLine) {
     notify('Sem conexão: o compartilhamento está indisponível.', 'err');
     return;
   }
 
-  const snapshot = getCurrentStateSnapshot();
+  const snapshot = getShareStateSnapshot(includeArchived);
   const state = snapshot.state;
   const sizeInfo = getShareSizeInfo(state);
   const currentComparable = snapshot.comparableStateString;
   const lastShare = getLastShareRecord();
   const stillValid = !!(lastShare && lastShare.comparableState === currentComparable && lastShare.expiresAt > Date.now());
+  if (!stillValid && includeArchived) return openShareModal(false);
 
   const titleEl = document.getElementById('shareModalTitle');
   const bodyEl = document.getElementById('shareModalBody');
@@ -662,7 +686,7 @@ function openShareModal() {
         ${lastShare.id ? `<button id="customizeShareBtn" class="share-link-edit" type="button" title="${lastShare.alias ? 'Alterar apelido' : 'Personalizar link'}" aria-label="${lastShare.alias ? 'Alterar apelido do link' : 'Personalizar link'}">${iconSvg('pencil')}</button>` : ''}
       </div>
       <p class="share-expiry">⏱️ Expira em ${formatTimeRemaining(lastShare.expiresAt - Date.now())}</p>
-      ${countsHtml}
+      <div id="shareCountsPreview">${countsHtml}</div>
     `;
 
     footerEl.innerHTML = '';
@@ -670,7 +694,7 @@ function openShareModal() {
     regenBtn.className = 'mbtn secondary';
     regenBtn.id = 'regenerateShareBtn';
     regenBtn.textContent = 'Gerar novo link mesmo assim';
-    regenBtn.onclick = () => shareData();
+    regenBtn.onclick = () => shareData(includeArchived);
     regenBtn.dataset.payloadBlocked = String(sizeInfo.exceedsLimit);
     if (sizeInfo.exceedsLimit) regenBtn.title = 'O payload ultrapassa o limite de 600 KB';
 
@@ -685,7 +709,8 @@ function openShareModal() {
     titleEl.textContent = '🔗 Compartilhar Dados';
     bodyEl.innerHTML = `
       <p class="share-modal-desc">Isso vai gerar um link público (válido por 3 dias) com os dados abaixo:</p>
-      ${countsHtml}
+      ${getArchiveCount() ? `<label class="share-archive-choice"><input id="shareIncludeArchived" type="checkbox"> <span>Incluir itens arquivados?</span><small>${getArchiveCount()} item(ns) arquivado(s)</small></label>` : ''}
+      <div id="shareCountsPreview">${countsHtml}</div>
     `;
 
     footerEl.innerHTML = '';
@@ -707,6 +732,7 @@ function openShareModal() {
     }
 
     footerEl.append(cancelBtn, confirmBtn);
+    document.getElementById('shareIncludeArchived')?.addEventListener('change', updateShareArchiveChoice);
   }
 
   openModal('shareModal');
@@ -715,13 +741,16 @@ function openShareModal() {
 // Cria de fato um novo link (chamada pelos botões "Compartilhar" e "Gerar
 // novo link mesmo assim" dentro do modal — a decisão de reaproveitar ou
 // não já foi tomada em openShareModal() antes de chegar aqui).
-async function shareData() {
+async function shareData(includeArchivedOverride) {
   if (!navigator.onLine) {
     notify('Sem conexão: conecte-se à internet para compartilhar.', 'err');
     return;
   }
 
-  const snapshot = getCurrentStateSnapshot();
+  const includeArchived = typeof includeArchivedOverride === 'boolean'
+    ? includeArchivedOverride
+    : document.getElementById('shareIncludeArchived')?.checked === true;
+  const snapshot = getShareStateSnapshot(includeArchived);
   const state = snapshot.state;
   const jsonString = snapshot.stateString;
   const jsonBytes = getUtf8ByteLength(jsonString);
@@ -805,12 +834,13 @@ async function shareData() {
       url,
       originalUrl: url,
       alias: null,
+      includeArchived,
       expiresAt: Date.now() + expiresInSeconds * 1000
     });
 
     console.info('[Compartilhamento] Link criado com sucesso.', { expiresInSeconds });
 
-    openShareModal(); // reabre já mostrando o link recém-criado (Estado 2)
+    openShareModal(includeArchived); // reabre já mostrando o link recém-criado (Estado 2)
   } catch (error) {
     console.error('Erro ao compartilhar:', error);
     notify(error.userMessage || 'Não foi possível criar o link de compartilhamento.', 'err');

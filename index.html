@@ -239,6 +239,7 @@
             <label>Ordenação<select id="customExportOrder" onchange="markCustomExportCustomized()"><option value="current">Ordem atual</option><option value="alphabetical">Ordem alfabética</option></select></label>
             <label id="customExportDelimiterWrap" hidden>Separador CSV<select id="customExportDelimiter" onchange="markCustomExportCustomized()"><option value="semicolon">Ponto e vírgula</option><option value="comma">Vírgula</option></select></label>
           </div><div class="custom-export-check-grid compact">
+            <label><input id="customExportIncludeArchived" type="checkbox" checked onchange="markCustomExportCustomized()"> Incluir itens arquivados?</label>
             <label><input id="customExportRemoveEmpty" type="checkbox" onchange="markCustomExportCustomized()"> Remover campos vazios</label>
             <label><input id="customExportNormalizeTags" type="checkbox" onchange="markCustomExportCustomized()"> Normalizar tags</label>
             <label><input id="customExportStripEmoji" type="checkbox" onchange="markCustomExportCustomized()"> Remover emojis dos nomes</label>
