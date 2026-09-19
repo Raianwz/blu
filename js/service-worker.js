@@ -42,6 +42,7 @@ const APP_SHELL = [
   '/js/data/custom-export.js',
   '/js/ui/context-menu.js',
   '/js/ui/quick-actions.js',
+  '/js/features/whats-new.js',
   '/js/app.js'
 ];
 

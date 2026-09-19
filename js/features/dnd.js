@@ -355,6 +355,8 @@ window.addEventListener('keyup', event => {
 
 window.addEventListener('mousedown', event => {
   if (!editMode || !document.body.classList.contains('shift-mode')) return;
+  if (event.button !== 0) return;
+  if (event.target.closest('.section-move-controls, .section-collapse-btn, .section-add-btn')) return;
 
   const section = event.target.closest('.section-wrap');
   if (!section) return;

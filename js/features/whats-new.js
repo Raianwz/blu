@@ -23,6 +23,20 @@ const WHATS_NEW_ITEMS = [
     description: 'O modo simplificado destaca o essencial. Opções avançadas continuam disponíveis em Configurações.'
   },
   {
+    icon: '📌',
+    type: 'Novo',
+    status: 'new',
+    title: 'Acesso rápido personalizável',
+    description: 'Fixe ou desfixe Gerenciar Tags e Compartilhar pelo menu de contexto.'
+  },
+  {
+    icon: '👁️',
+    type: 'Melhoria',
+    status: 'moved',
+    title: 'Modos de prévia de texto',
+    description: 'Escolha entre a prévia Flutuante, a dica Nativa do navegador ou desative completamente.'
+  },
+  {
     icon: '🔎',
     type: 'Novo',
     status: 'new',
@@ -42,13 +56,6 @@ const WHATS_NEW_ITEMS = [
     status: 'changed',
     title: 'Dados reorganizados',
     description: 'Importação, exportação e limpeza agora ficam reunidas, com ações destrutivas visualmente separadas.'
-  },
-  {
-    icon: '👆',
-    type: 'Melhoria',
-    status: 'moved',
-    title: 'Ações mais responsivas',
-    description: 'Botões agora apresentam respostas mais claras ao passar o mouse, usar o teclado ou clicar.'
   }
 ];
 
