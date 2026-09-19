@@ -3,7 +3,6 @@
 // ==========================================================
 
 const WHATS_NEW_VERSION = '1.9';
-const WHATS_NEW_SEEN_KEY = 'blu:seenUpdates';
 
 const WHATS_NEW_ITEMS = [
   {
@@ -51,17 +50,11 @@ const WHATS_NEW_ITEMS = [
 ];
 
 function hasSeenWhatsNew(version = WHATS_NEW_VERSION) {
-  try {
-    return localStorage.getItem(WHATS_NEW_SEEN_KEY) === version;
-  } catch (_) {
-    return false;
-  }
+  return getMetaValue('updates', 'seenVersion') === version;
 }
 
 function markWhatsNewAsSeen(version = WHATS_NEW_VERSION) {
-  try {
-    localStorage.setItem(WHATS_NEW_SEEN_KEY, version);
-  } catch (_) {}
+  setMetaValue('updates', 'seenVersion', version);
   updateWhatsNewButtonUI();
 }
 
