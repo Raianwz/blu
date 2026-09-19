@@ -178,6 +178,7 @@ async function resetPreferences() {
   }
 
   clearSearchHistory({ silent: true });
+  resetQuickAccessPreferences({ notifyUser: false });
 
   setSetting('advancedMenu', 'off');
   applyAdvancedMenuPreference(false);
@@ -238,6 +239,139 @@ function initTheme() {
 
 function toggleMenu() {
   document.getElementById('menuOverlay').classList.toggle('open');
+}
+
+const QUICK_ACCESS_MIGRATION_REVISION = 'menu-pins-v1';
+const QUICK_ACCESS_MAX_CUSTOM = 2;
+const QUICK_ACCESS_ACTIONS = {
+  tags: { label: 'Gerenciar Tags', icon: 'tag' },
+  share: { label: 'Compartilhar', icon: 'share' }
+};
+
+function getDefaultQuickAccessPins() {
+  return hasCreatedShareLink() ? ['tags', 'share'] : ['tags'];
+}
+
+function sanitizeQuickAccessPins(value) {
+  const pins = Array.isArray(value) ? value : [];
+  return [...new Set(pins)].filter(id => QUICK_ACCESS_ACTIONS[id]).slice(0, QUICK_ACCESS_MAX_CUSTOM);
+}
+
+function getQuickAccessElements() {
+  const tags = document.querySelector(`[onclick="openTagModal('manage')"]`);
+  const share = document.getElementById('shareBtn');
+  if (tags) {
+    tags.id = 'tagManagerBtn';
+    tags.dataset.quickAction = 'tags';
+  }
+  if (share) share.dataset.quickAction = 'share';
+  return { tags, share };
+}
+
+function moveQuickAccessActionToOrigin(id, element) {
+  if (!element) return;
+  if (id === 'tags') document.getElementById('submenu-conteudo')?.prepend(element);
+  if (id === 'share') {
+    const dataMenu = document.getElementById('submenu-dados');
+    const dangerZone = dataMenu?.querySelector('.menu-danger-zone');
+    if (dataMenu) dataMenu.insertBefore(element, dangerZone || null);
+  }
+}
+
+function applyQuickAccessPins(pins) {
+  const normalized = sanitizeQuickAccessPins(pins);
+  const group = document.querySelector('#menuOverlay > .menu-group');
+  const elements = getQuickAccessElements();
+  Object.entries(elements).forEach(([id, element]) => {
+    if (!normalized.includes(id)) moveQuickAccessActionToOrigin(id, element);
+    element?.classList.remove('quick-access-pinned');
+    if (element) element.dataset.quickPinned = String(normalized.includes(id));
+  });
+  normalized.forEach(id => {
+    const element = elements[id];
+    if (!element || !group) return;
+    group.appendChild(element);
+    element.classList.add('quick-access-pinned');
+  });
+  return normalized;
+}
+
+function saveQuickAccessPins(pins, { notifyUser = true } = {}) {
+  const normalized = applyQuickAccessPins(pins);
+  setSetting('quickAccessPins', normalized);
+  if (notifyUser) notify('Acesso rápido atualizado');
+  return normalized;
+}
+
+function getQuickAccessPins() {
+  return sanitizeQuickAccessPins(getSetting('quickAccessPins', getDefaultQuickAccessPins()));
+}
+
+function toggleQuickAccessPin(id) {
+  const pins = getQuickAccessPins();
+  if (pins.includes(id)) return saveQuickAccessPins(pins.filter(pin => pin !== id));
+  if (pins.length >= QUICK_ACCESS_MAX_CUSTOM) {
+    notify('O Acesso rápido já possui quatro itens', 'err');
+    return pins;
+  }
+  return saveQuickAccessPins([...pins, id]);
+}
+
+function getQuickAccessContextItems() {
+  const pins = getQuickAccessPins();
+  return [
+    createContextMenuItem(`Acesso rápido · ${2 + pins.length}/4`, 'menu', () => {}, { disabled: true }),
+    createContextMenuSeparator(),
+    createContextMenuItem('Modo de Edição / Organização · Fixo', 'pencil', () => {}, { disabled: true }),
+    createContextMenuItem('Nova Seção · Fixo', 'folder_plus', () => {}, { disabled: true }),
+    createContextMenuSeparator(),
+    ...Object.entries(QUICK_ACCESS_ACTIONS).map(([id, action]) => {
+      const pinned = pins.includes(id);
+      const full = pins.length >= QUICK_ACCESS_MAX_CUSTOM;
+      return createContextMenuItem(`${pinned ? '✓ ' : ''}${action.label}`, action.icon, () => toggleQuickAccessPin(id), {
+        disabled: !pinned && full
+      });
+    }),
+    createContextMenuSeparator(),
+    createContextMenuItem('Restaurar padrão', 'undo', () => resetQuickAccessPreferences())
+  ];
+}
+
+function resetQuickAccessPreferences({ persist = true, notifyUser = true } = {}) {
+  const pins = getDefaultQuickAccessPins();
+  if (persist) setSetting('quickAccessPins', pins);
+  applyQuickAccessPins(pins);
+  if (notifyUser) notify('Acesso rápido restaurado');
+}
+
+function initQuickAccess() {
+  const migrated = getMetaValue('migrations', 'quickAccess') === QUICK_ACCESS_MIGRATION_REVISION;
+  if (!migrated) {
+    setSetting('quickAccessPins', getDefaultQuickAccessPins());
+    setMetaValue('migrations', 'quickAccess', QUICK_ACCESS_MIGRATION_REVISION);
+  }
+  applyQuickAccessPins(getQuickAccessPins());
+  const hamburger = document.getElementById('hamburger');
+  if (hamburger) hamburger.title = 'Menu · botão direito para personalizar o Acesso rápido';
+
+  document.addEventListener('contextmenu', event => {
+    const actionButton = event.target.closest('[data-quick-action]');
+    if (actionButton) {
+      event.preventDefault();
+      const id = actionButton.dataset.quickAction;
+      const pinned = getQuickAccessPins().includes(id);
+      openContextMenu([
+        createContextMenuItem(pinned ? 'Desfixar do Acesso rápido' : 'Fixar no Acesso rápido', QUICK_ACCESS_ACTIONS[id].icon, () => toggleQuickAccessPin(id), {
+          disabled: !pinned && getQuickAccessPins().length >= QUICK_ACCESS_MAX_CUSTOM
+        })
+      ], event.clientX, event.clientY, actionButton);
+      return;
+    }
+    if (event.target.closest('#hamburger')) {
+      event.preventDefault();
+      openContextMenu(getQuickAccessContextItems(), event.clientX, event.clientY, hamburger);
+    }
+  });
 }
 
 function toggleSubmenu(name) {
@@ -526,6 +660,7 @@ initAdvancedOrganizingPreference();
 initTextPreviewPreference();
 initSearchGuidance();
 initShareLinkEvidence();
+initQuickAccess();
 initShareConnectivity();
 registerServiceWorker();
 init();

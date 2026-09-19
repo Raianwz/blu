@@ -1192,6 +1192,7 @@ async function clearAll(event = null) {
   // preferências padrão voltam.
   clearBluLocalStorage({ includeClientId });
   clearSearchHistory({ silent: true });
+  resetQuickAccessPreferences({ persist: false, notifyUser: false });
   resetUserData();
   updateContentPreferenceButtons();
   updateContentViewSwitcher();
