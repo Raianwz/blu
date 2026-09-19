@@ -2,6 +2,7 @@
 // Renderização de seções e botões
 // ==========================================================
 
+let textPreviewMode = 'floating';
 let textPreviewEnabled = true;
 let textPreviewEl = null;
 let textPreviewTimer = null;
@@ -10,8 +11,16 @@ let textPreviewSource = null;
 function updateTextPreviewButtonUI() {
   const button = document.getElementById('textPreviewBtn');
   if (!button) return;
-  button.classList.toggle('active', textPreviewEnabled);
-  button.querySelector('.menu-btn-label').textContent = `Prévia dos Textos: ${textPreviewEnabled ? 'ON' : 'OFF'}`;
+  const labels = { floating: 'Flutuante', native: 'Nativa', off: 'OFF' };
+  const descriptions = {
+    floating: 'Mostra uma prévia flutuante ao passar o mouse ou tocar e segurar',
+    native: 'Usa a dica de texto nativa do navegador',
+    off: 'Não mostra o texto antes da cópia'
+  };
+  button.classList.toggle('active', textPreviewMode !== 'off');
+  button.setAttribute('aria-label', `Prévia dos textos: ${labels[textPreviewMode]}`);
+  button.title = `${descriptions[textPreviewMode]}. Clique para alterar.`;
+  button.querySelector('.menu-btn-label').textContent = `Prévia de Texto: ${labels[textPreviewMode]}`;
 }
 
 function getCopyButtonTitle(button) {
@@ -24,34 +33,37 @@ function getCopyButtonTitle(button) {
 
 function syncCopyButtonTitles() {
   document.querySelectorAll('.copy-btn, .favorite-card-copy').forEach(button => {
-    if (textPreviewEnabled) {
-      button.removeAttribute('title');
-    } else {
+    if (textPreviewMode === 'native') {
       const title = getCopyButtonTitle(button);
       if (title) button.title = title;
       else button.removeAttribute('title');
-    }
+    } else button.removeAttribute('title');
   });
 }
 
-function applyTextPreviewState(enabled, persist = false) {
-  textPreviewEnabled = !!enabled;
+function applyTextPreviewState(mode, persist = false) {
+  if (mode === true) mode = 'floating';
+  if (mode === false) mode = 'native';
+  textPreviewMode = ['floating', 'native', 'off'].includes(mode) ? mode : 'floating';
+  textPreviewEnabled = textPreviewMode === 'floating';
   updateTextPreviewButtonUI();
   syncCopyButtonTitles();
   if (!textPreviewEnabled) hideButtonPreview();
 
   if (persist) {
-    setSetting('textPreview', textPreviewEnabled ? 'on' : 'off');
+    setSetting('textPreview', textPreviewMode);
   }
 }
 
 function initTextPreviewPreference() {
   const stored = getSetting('textPreview');
-  applyTextPreviewState(stored !== 'off');
+  const migratedMode = stored === 'on' ? 'floating' : stored === 'off' ? 'native' : stored;
+  applyTextPreviewState(migratedMode);
 }
 
 function toggleTextPreview() {
-  applyTextPreviewState(!textPreviewEnabled, true);
+  const modes = ['floating', 'native', 'off'];
+  applyTextPreviewState(modes[(modes.indexOf(textPreviewMode) + 1) % modes.length], true);
 }
 
 function getTextPreviewEl() {
@@ -114,7 +126,7 @@ function bindButtonTextPreview(button, text, visibility = 'other') {
     ? `🔒 Privado\n\n${previewText(text)}`
     : previewText(text);
 
-  if (!textPreviewEnabled) {
+  if (textPreviewMode === 'native') {
     const title = getCopyButtonTitle(button);
     if (title) button.title = title;
   }

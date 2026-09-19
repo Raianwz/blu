@@ -155,7 +155,7 @@ function onDragEnd() {
   if (dragEl) {
     dragEl.classList.remove('dragging');
     const copyButton = dragEl.querySelector('.copy-btn');
-    if (copyButton && !textPreviewEnabled) {
+    if (copyButton && textPreviewMode === 'native') {
       const title = getCopyButtonTitle(copyButton);
       if (title) copyButton.title = title;
     }
