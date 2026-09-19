@@ -123,10 +123,9 @@ function shouldShowWhatsNew() {
 
 function initWhatsNew() {
   updateWhatsNewButtonUI();
-
-  if (!isWhatsNewPreviewEnvironment() || window.name === 'BluePopOut') return;
-
-  // Durante o desenvolvimento, reabre a cada recarregamento e não interfere
-  // no controle que será usado quando a versão 1.9 for publicada.
-  setTimeout(() => openWhatsNew({ markSeen: false }), 0);
+  const button = document.getElementById('whatsNewBtn');
+  const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  if (!button || button.hidden || window.name === 'BluePopOut' || hasSeenWhatsNew() || reducedMotion) return;
+  requestAnimationFrame(() => button.classList.add('whats-new-attention'));
+  button.addEventListener('animationend', () => button.classList.remove('whats-new-attention'), { once: true });
 }

@@ -402,7 +402,7 @@ Botões com o mesmo nome:
   - [x] Adicionar um acesso manual à tela.
   - [x] Manter sino e acesso manual restritos ao ambiente de testes até o lançamento.
   - [ ] Atualizar `VERSION`, Marca e Versão visível para `1.9` no fechamento do lançamento.
-  - [ ] Ativar a abertura automática uma única vez na versão 1.9.
+  - [x] Não abrir automaticamente; sinalizar novidades não lidas com uma animação breve no sino.
 
 ### Mobile
 

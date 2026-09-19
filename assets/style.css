@@ -136,6 +136,23 @@ textarea::placeholder {
   color: var(--accent1);
 }
 
+#whatsNewBtn.whats-new-attention .menu-icon {
+  transform-origin: 50% 12%;
+  animation: whatsNewBellRing 0.8s ease-in-out 4;
+}
+
+@keyframes whatsNewBellRing {
+  0%, 100% { transform: rotate(0); }
+  20% { transform: rotate(-8deg); }
+  40% { transform: rotate(7deg); }
+  60% { transform: rotate(-5deg); }
+  80% { transform: rotate(3deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #whatsNewBtn.whats-new-attention .menu-icon { animation: none; }
+}
+
 .hamburger-icon {
   width: 20px;
   height: 20px;
