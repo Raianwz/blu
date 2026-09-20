@@ -204,7 +204,7 @@ function setupDialogEvents() {
 // ==========================================================
 const STORAGE_KEY = 'blu:data';
 const SETTINGS_STORAGE_KEY = 'blu:settings';
-const VERSION = '1.6.1 LTS';
+const VERSION = '1.6.2 LTS';
 const BASE_TITLE = 'Blû';
 
 let editMode = false;
@@ -1150,8 +1150,17 @@ function toggleExportEncryption() {
   notify(encryptExportEnabled ? '🔒 Criptografia ativada para o próximo export' : 'Criptografia desativada');
 }
 
+const protectedEditModals = new Set(['btnModal', 'sectionModal']);
+const modalInitialValues = new Map();
+let modalDismissPending = false;
+
 function openModal(id) {
-  document.getElementById(id).classList.add('open');
+  const modal = document.getElementById(id);
+  modal.classList.add('open');
+
+  if (protectedEditModals.has(id)) {
+    modalInitialValues.set(id, getModalFormValues(modal));
+  }
 
   if (id === 'tagModal') {
     const filterInput = document.getElementById('tagFilterInput');
@@ -1165,6 +1174,44 @@ function openModal(id) {
 
 function closeModal(id) {
   document.getElementById(id).classList.remove('open');
+  modalInitialValues.delete(id);
+}
+
+function getModalFormValues(modal) {
+  return JSON.stringify([...modal.querySelectorAll('input, textarea, select')].map(field => ({
+    id: field.id,
+    value: field.value,
+    checked: field.type === 'checkbox' || field.type === 'radio' ? field.checked : undefined
+  })));
+}
+
+function modalHasUnsavedFormChanges(id) {
+  const modal = document.getElementById(id);
+  const initial = modalInitialValues.get(id);
+  return Boolean(modal && initial !== undefined && initial !== getModalFormValues(modal));
+}
+
+async function requestModalDismiss(id) {
+  const modal = document.getElementById(id);
+  if (!modal?.classList.contains('open') || modalDismissPending) return;
+
+  if (!protectedEditModals.has(id) || !modalHasUnsavedFormChanges(id)) {
+    closeModal(id);
+    return;
+  }
+
+  modalDismissPending = true;
+  const confirmed = await confirmDialog(
+    'As alterações feitas neste formulário ainda não foram salvas. Deseja sair mesmo assim?',
+    {
+      title: 'Descartar alterações?',
+      confirmText: 'Sair sem salvar',
+      cancelText: 'Continuar editando',
+      danger: true
+    }
+  );
+  modalDismissPending = false;
+  if (confirmed) closeModal(id);
 }
 
 // --- Seções --------------------------------------------------
@@ -1499,6 +1546,10 @@ function updateTagDatalist() {
 
 async function exportData() {
   const state = collectState();
+  if (!state.tags.length && !state.sections.length) {
+    notify('Adicione ao menos uma seção, botão ou tag antes de exportar', 'err');
+    return;
+  }
   let jsonString = JSON.stringify(state, null, 2);
 
   const shouldEncrypt = encryptExportEnabled;
@@ -2834,7 +2885,19 @@ document.addEventListener('keydown', event => {
   }
 
   if (event.key === 'Escape') {
-    ['btnModal', 'sectionModal', 'tagModal', 'importModal', 'customExportModal', 'dialogModal', 'shortcutsModal', 'jsonModal', 'buttonViewModal', 'aboutModal'].forEach(closeModal);
+    if (document.getElementById('dialogModal')?.classList.contains('open')) {
+      closeDialog(false);
+      return;
+    }
+
+    const openModals = [...document.querySelectorAll('.modal-bg.open')];
+    const topModal = openModals[openModals.length - 1];
+    if (topModal) {
+      event.preventDefault();
+      requestModalDismiss(topModal.id);
+      return;
+    }
+
     closeContextMenu();
     document.getElementById('menuOverlay').classList.remove('open');
   }
@@ -2847,7 +2910,9 @@ document.addEventListener('keydown', event => {
 
 document.querySelectorAll('.modal-bg').forEach(background => {
   background.addEventListener('click', event => {
-    if (event.target === background) background.classList.remove('open');
+    if (event.target === background && background.id !== 'dialogModal') {
+      requestModalDismiss(background.id);
+    }
   });
 });
 
@@ -2957,11 +3022,23 @@ init();
   }); }
   function delimited(records, separator) { const headers = [...new Set(records.flatMap(Object.keys))]; if (!headers.length) return ''; const cell = value => `"${String(typeof value === 'object' ? JSON.stringify(value) : value ?? '').replace(/"/g, '""')}"`; return [headers.map(cell).join(separator), ...records.map(row => headers.map(key => cell(row[key])).join(separator))].join('\r\n'); }
   function readable(data, options, markdown) { const f = options.fields; const lines = []; if (f.has('metadata')) lines.push(markdown ? '# Exportação do Blû Sprinklr' : 'Exportação do Blû Sprinklr', `Gerado em: ${new Date().toLocaleString('pt-BR')}`, ''); if (f.has('globalTags')) lines.push(`Tags: ${data.tags.join(', ') || 'Nenhuma'}`, ''); data.sections.forEach(section => { if (f.has('sectionName')) lines.push(markdown ? `## ${section.name}` : section.name); if (f.has('sectionId')) lines.push(`ID da seção: ${section.id}`); if (f.has('sectionCount')) lines.push(`Botões: ${section.buttons.length}`); if (f.has('buttons')) section.buttons.forEach(button => { lines.push(`${markdown ? '- ' : '• '}${f.has('buttonName') ? button.name : 'Botão'}`); if (f.has('buttonId')) lines.push(`  ID: ${button.id}`); if (f.has('buttonText')) lines.push(`  Texto: ${button.text}`); if (f.has('buttonTag')) lines.push(`  Tag: ${button.tag}`); if (f.has('buttonVisibility')) lines.push(`  Visibilidade: ${button.vis}`); if (f.has('buttonSection')) lines.push(`  Seção: ${section.name}`); }); lines.push(''); }); return lines.join('\n').trim(); }
-  function generate() { const options = config(); const data = prepare(options); const records = rows(data, options); let content; if (options.format === 'json') content = JSON.stringify(objectData(data, options), null, options.compactJson ? 0 : 2); else if (options.format === 'csv') content = delimited(records, options.delimiter); else content = readable(data, options, options.format === 'markdown'); return { options, data, content, preview: content }; }
+  function hasUsefulContent(data, options) {
+    const f = options.fields;
+    if (f.has('globalTags') && data.tags.length) return true;
+
+    const sectionFields = ['sectionId', 'sectionName', 'sectionCollapsed', 'sectionCount'];
+    if (f.has('sections') && data.sections.length && sectionFields.some(field => f.has(field))) return true;
+
+    const buttonFields = ['buttonId', 'buttonName', 'buttonText', 'buttonTag', 'buttonVisibility', 'buttonSection'];
+    return f.has('buttons')
+      && buttonFields.some(field => f.has(field))
+      && data.sections.some(section => section.buttons.length);
+  }
+  function generate() { const options = config(); const data = prepare(options); const records = rows(data, options); let content; if (options.format === 'json') content = JSON.stringify(objectData(data, options), null, options.compactJson ? 0 : 2); else if (options.format === 'csv') content = delimited(records, options.delimiter); else content = readable(data, options, options.format === 'markdown'); return { options, data, content, preview: content, useful: hasUsefulContent(data, options) }; }
   function label(format) { return { text: 'TXT', markdown: 'MARKDOWN', csv: 'CSV', json: 'JSON' }[format]; }
-  function updatePreview() { if (!el('customExportPreview')) return; dependencies(); const result = generate(); const count = result.data.sections.reduce((sum, section) => sum + section.buttons.length, 0); el('customExportPreview').value = result.preview || '(O arquivo não possui conteúdo com as opções atuais.)'; el('customExportSummary').textContent = `${result.data.sections.length} seção(ões) • ${count} botão(ões) • ${fileSize(byteLength(result.content))} • ${label(result.options.format)}`; el('customExportWarnings').innerHTML = '<div class="custom-export-warning">⚠️ Este arquivo é para consulta/uso externo e não representa necessariamente um backup reimportável completo.</div>'; const button = el('customExportDownloadBtn'); button.disabled = !result.content; button.textContent = `Exportar ${label(result.options.format)}`; }
+  function updatePreview() { if (!el('customExportPreview')) return; dependencies(); const result = generate(); const count = result.data.sections.reduce((sum, section) => sum + section.buttons.length, 0); el('customExportPreview').value = result.useful ? result.preview : '(O arquivo não possui conteúdo útil com as opções atuais.)'; el('customExportSummary').textContent = `${result.data.sections.length} seção(ões) • ${count} botão(ões) • ${fileSize(byteLength(result.content))} • ${label(result.options.format)}`; el('customExportWarnings').innerHTML = result.useful ? '<div class="custom-export-warning">⚠️ Este arquivo é para consulta/uso externo e não representa necessariamente um backup reimportável completo.</div>' : '<div class="custom-export-warning">⚠️ Selecione ao menos um campo com conteúdo antes de exportar.</div>'; const button = el('customExportDownloadBtn'); button.disabled = !result.useful; button.textContent = `Exportar ${label(result.options.format)}`; }
   function download(content, type, extension) { const blob = new Blob([content], { type }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = `blu-sprinklr-${new Date().toISOString().slice(0, 10)}.${extension}`; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); }
-  window.downloadCustomExport = function () { const result = generate(); if (!result.content) return; const map = { json: ['application/json', 'json'], text: ['text/plain', 'txt'], markdown: ['text/markdown', 'md'], csv: ['text/csv', 'csv'] }; const [mime, extension] = map[result.options.format]; const content = result.options.format === 'csv' && result.options.csvBom ? `\uFEFF${result.content}` : result.content; download(content, mime, extension); notify(`Exportação ${label(result.options.format)} concluída!`); };
+  window.downloadCustomExport = function () { const result = generate(); if (!result.useful) { notify('Selecione ao menos um campo com conteúdo antes de exportar', 'err'); return; } const map = { json: ['application/json', 'json'], text: ['text/plain', 'txt'], markdown: ['text/markdown', 'md'], csv: ['text/csv', 'csv'] }; const [mime, extension] = map[result.options.format]; const content = result.options.format === 'csv' && result.options.csvBom ? `\uFEFF${result.content}` : result.content; download(content, mime, extension); notify(`Exportação ${label(result.options.format)} concluída!`); };
   document.addEventListener('change', event => { if (event.target.matches('#customExportModal [data-export-field]')) markCustomExportCustomized(); });
 })();
 

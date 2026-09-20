@@ -4,9 +4,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="shortcut icon" href="/sprinklr/blu.svg?sprinklr-version=1.6.1" type="image/svg+xml">
+  <link rel="shortcut icon" href="/sprinklr/blu.svg?sprinklr-version=1.6.2" type="image/svg+xml">
   <title>Blû</title>
-  <link rel="stylesheet" href="/sprinklr/style.css?sprinklr-version=1.6.1">
+  <link rel="stylesheet" href="/sprinklr/style.css?sprinklr-version=1.6.2">
 </head>
 
 <body>
@@ -189,7 +189,7 @@
           <option value="public">&#127758; Público</option>
           <option value="private">&#128274; Privado</option>
         </select></div>
-      <div class="modal-footer"><button class="mbtn cancel" onclick="closeModal('btnModal')">Cancelar</button><button
+      <div class="modal-footer"><button class="mbtn cancel" onclick="requestModalDismiss('btnModal')">Cancelar</button><button
           class="mbtn primary" onclick="saveBtn()">Salvar</button></div>
     </div>
   </div>
@@ -199,7 +199,7 @@
       <h2>&#128193; Nova Seção</h2>
       <div class="form-group"><label>Nome da Seção</label><input id="sName" placeholder="Ex: Saudações"></div>
       <div class="modal-footer"><button class="mbtn cancel"
-          onclick="closeModal('sectionModal')">Cancelar</button><button class="mbtn primary"
+          onclick="requestModalDismiss('sectionModal')">Cancelar</button><button class="mbtn primary"
           onclick="saveSection()">Criar</button></div>
     </div>
   </div>
@@ -420,7 +420,7 @@
 
   <div id="notifArea"></div>
   <button id="appVersion" type="button" onclick="openAboutModal()">Blû</button>
-  <script src="/sprinklr/bundle.js?sprinklr-version=1.6.1"></script>
+  <script src="/sprinklr/bundle.js?sprinklr-version=1.6.2"></script>
 </body>
 
 </html>
