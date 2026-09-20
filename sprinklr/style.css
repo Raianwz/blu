@@ -1252,11 +1252,13 @@ body.edit-mode .btn-del {
 }
 
 .drag-placeholder {
+  width: var(--drag-placeholder-width, 80px);
+  height: var(--drag-placeholder-height, 40px);
+  flex: 0 0 auto;
+  box-sizing: border-box;
   border: 2px dashed var(--accent1);
   border-radius: 8px;
   background: rgba(102, 126, 234, 0.07);
-  min-width: 80px;
-  height: 40px;
   pointer-events: none;
 }
 
@@ -1297,14 +1299,19 @@ body.shift-mode .section-move-controls {
   opacity: .6
 }
 
-.drag-placeholder {
+.section-drag-placeholder {
   height: 0;
   border-top: 2px dashed #f59e0b;
   margin: 6px 0
 }
 
-body.shift-locked .drag-placeholder {
+body.shift-locked .section-drag-placeholder {
   border-top: 2px dashed #22c55e
+}
+
+body.drag-preview-off .drag-placeholder,
+body.drag-preview-off .section-drag-placeholder {
+  display: none;
 }
 
 

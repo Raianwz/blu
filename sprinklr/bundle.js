@@ -1787,12 +1787,41 @@ async function clearAll() {
   markCurrentStateAsExported();
   clearBluLocalStorage();
   applyTheme(!!systemThemeQuery?.matches);
+  dragPreviewEnabled = false;
+  applyDragPreviewState();
 }
 
 /* ------------------ dnd.js ------------------ */
 // (copied verbatim)
 let dragEl = null;
 let placeholder = null;
+
+let dragPreviewEnabled = false;
+
+function updateDragPreviewButtonUI() {
+  const button = document.getElementById('dragPreviewBtn');
+  if (!button) return;
+  button.classList.toggle('active', dragPreviewEnabled);
+  button.setAttribute('aria-pressed', String(dragPreviewEnabled));
+  button.querySelector('.menu-btn-label').textContent = `Mostrar Destino: ${dragPreviewEnabled ? 'ON' : 'OFF'}`;
+}
+
+function applyDragPreviewState() {
+  document.body.classList.toggle('drag-preview-off', !dragPreviewEnabled);
+  updateDragPreviewButtonUI();
+}
+
+function initDragPreviewPreference() {
+  dragPreviewEnabled = getSetting('dragPreview') === 'on';
+  applyDragPreviewState();
+}
+
+function toggleDragPreview() {
+  dragPreviewEnabled = !dragPreviewEnabled;
+  setSetting('dragPreview', dragPreviewEnabled ? 'on' : 'off');
+  applyDragPreviewState();
+  notify(`Mostrar destino ${dragPreviewEnabled ? 'ativado' : 'desativado'}`);
+}
 
 function setupDrop(body) {
   body.addEventListener('dragover', onDragOver);
@@ -1810,7 +1839,10 @@ function onDragStart(event) {
   dragEl = this;
   this.classList.add('dragging');
   placeholder = document.createElement('div');
-  // placeholder.className = 'drag-placeholder';
+  const rect = this.getBoundingClientRect();
+  placeholder.className = 'drag-placeholder';
+  placeholder.style.setProperty('--drag-placeholder-width', `${rect.width}px`);
+  placeholder.style.setProperty('--drag-placeholder-height', `${rect.height}px`);
   event.dataTransfer.effectAllowed = 'move';
 }
 
@@ -1828,8 +1860,11 @@ function onDragOver(event) {
 
   const body = event.currentTarget;
   const after = getDragAfter(body, event.clientX);
-  if (after) body.insertBefore(placeholder, after);
-  else body.appendChild(placeholder);
+  if (after) {
+    if (placeholder.nextElementSibling !== after) body.insertBefore(placeholder, after);
+  } else if (body.lastElementChild !== placeholder) {
+    body.appendChild(placeholder);
+  }
 }
 
 function onDrop(event) {
@@ -1903,7 +1938,7 @@ function updateShiftMode() {
 function getSectionPlaceholder() {
   if (!sectionPlaceholderEl) {
     sectionPlaceholderEl = document.createElement('div');
-    sectionPlaceholderEl.className = 'drag-placeholder';
+    sectionPlaceholderEl.className = 'section-drag-placeholder';
   }
   return sectionPlaceholderEl;
 }
@@ -1987,7 +2022,7 @@ window.addEventListener('mousemove', event => {
 window.addEventListener('mouseup', () => {
   if (!isDraggingSection || !draggingSectionEl) return;
 
-  const ph = document.querySelector('.drag-placeholder');
+  const ph = document.querySelector('.section-drag-placeholder');
   if (ph && ph.parentNode) {
     ph.parentNode.insertBefore(draggingSectionEl, ph);
     ph.remove();
@@ -2710,6 +2745,8 @@ async function resetPreferences() {
   }
   applyTheme(!!systemThemeQuery?.matches);
   applyTextPreviewState(true);
+  dragPreviewEnabled = false;
+  applyDragPreviewState();
   applyEditAnimationPreference();
   updateSearchGuidance();
   document.getElementById('menuOverlay')?.classList.remove('open');
@@ -2785,7 +2822,8 @@ function upgradeSprinklrMenu() {
       document.getElementById('toggleSectionsBtn'),
       document.getElementById('themeSettingRow'),
       document.getElementById('textPreviewBtn'),
-      document.getElementById('editAnimationBtn')
+      document.getElementById('editAnimationBtn'),
+      document.getElementById('dragPreviewBtn')
     ]),
     createSprinklrSubmenu('ferramentas', 'Ferramentas', 'wrench', [
       findByOnclick("openModal('shortcutsModal')"),
@@ -2968,6 +3006,7 @@ migrateLegacySettings();
 initTheme();
 initTextPreviewPreference();
 initEditAnimationPreference();
+initDragPreviewPreference();
 initSearchGuidance();
 upgradeSprinklrMenu();
 init();
