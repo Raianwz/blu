@@ -767,6 +767,33 @@ body.edit-mode .btn-wrap.dragging {
 .button-view-meta { margin-bottom: 10px; color: var(--text2); font-size: 12px; }
 .button-view-text { max-height: 50vh; overflow: auto; padding: 12px; border-radius: 8px; background: var(--surface2); color: var(--text); white-space: pre-wrap; overflow-wrap: anywhere; }
 
+#buttonViewModal .mbtn {
+  border: 1px solid transparent;
+  transition: transform .12s ease, border-color .16s ease, background-color .16s ease, box-shadow .16s ease, filter .16s ease;
+}
+
+#buttonViewModal .mbtn.secondary:hover,
+#buttonViewModal .mbtn.secondary:focus-visible {
+  border-color: var(--accent1);
+  background: color-mix(in srgb, var(--accent1) 10%, var(--surface2));
+  color: var(--accent1);
+}
+
+#buttonViewModal .mbtn.primary:hover,
+#buttonViewModal .mbtn.primary:focus-visible {
+  filter: brightness(1.08);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent1) 25%, transparent);
+}
+
+#buttonViewModal .mbtn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent1) 25%, transparent);
+}
+
+#buttonViewModal .mbtn:active {
+  transform: translateY(1px) scale(.98);
+}
+
 .btn-edit,
 .btn-del {
   display: none;
@@ -1572,3 +1599,102 @@ kbd {
 .custom-export-warnings { display: flex; max-height: 96px; flex-shrink: 0; flex-direction: column; gap: 5px; margin-top: 7px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--tag-scroll-thumb) var(--tag-scroll-track); }
 .custom-export-warning { padding: 8px 10px; border: 1px solid rgba(245,158,11,.55); border-radius: 8px; background: rgba(245,158,11,.08); color: var(--yellow); font-size: 11px; }
 .custom-export-footer { flex-shrink: 0; padding-top: 12px; border-top: 1px solid var(--border); }
+
+/* Rolagem consistente nas telas e campos internos. */
+.diagnostic-issues,
+.json-modal-panel.active,
+.json-diagnostic-issues,
+.json-view-text,
+.button-view-text,
+#tagListWrap,
+.shortcuts-scroll,
+.custom-export-options-scroll,
+.custom-export-scope-list,
+#customExportPreview,
+.custom-export-warnings,
+.form-group textarea {
+  scrollbar-color: var(--tag-scroll-thumb) var(--tag-scroll-track);
+  scrollbar-width: auto;
+}
+
+.diagnostic-issues::-webkit-scrollbar,
+.json-modal-panel.active::-webkit-scrollbar,
+.json-diagnostic-issues::-webkit-scrollbar,
+.json-view-text::-webkit-scrollbar,
+.button-view-text::-webkit-scrollbar,
+#tagListWrap::-webkit-scrollbar,
+.shortcuts-scroll::-webkit-scrollbar,
+.custom-export-options-scroll::-webkit-scrollbar,
+.custom-export-scope-list::-webkit-scrollbar,
+#customExportPreview::-webkit-scrollbar,
+.custom-export-warnings::-webkit-scrollbar,
+.form-group textarea::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.diagnostic-issues::-webkit-scrollbar-track,
+.json-modal-panel.active::-webkit-scrollbar-track,
+.json-diagnostic-issues::-webkit-scrollbar-track,
+.json-view-text::-webkit-scrollbar-track,
+.button-view-text::-webkit-scrollbar-track,
+#tagListWrap::-webkit-scrollbar-track,
+.shortcuts-scroll::-webkit-scrollbar-track,
+.custom-export-options-scroll::-webkit-scrollbar-track,
+.custom-export-scope-list::-webkit-scrollbar-track,
+#customExportPreview::-webkit-scrollbar-track,
+.custom-export-warnings::-webkit-scrollbar-track,
+.form-group textarea::-webkit-scrollbar-track {
+  margin: 6px 0;
+  border-radius: 8px;
+  background: var(--tag-scroll-track);
+}
+
+.diagnostic-issues::-webkit-scrollbar-thumb,
+.json-modal-panel.active::-webkit-scrollbar-thumb,
+.json-diagnostic-issues::-webkit-scrollbar-thumb,
+.json-view-text::-webkit-scrollbar-thumb,
+.button-view-text::-webkit-scrollbar-thumb,
+#tagListWrap::-webkit-scrollbar-thumb,
+.shortcuts-scroll::-webkit-scrollbar-thumb,
+.custom-export-options-scroll::-webkit-scrollbar-thumb,
+.custom-export-scope-list::-webkit-scrollbar-thumb,
+#customExportPreview::-webkit-scrollbar-thumb,
+.custom-export-warnings::-webkit-scrollbar-thumb,
+.form-group textarea::-webkit-scrollbar-thumb {
+  min-width: 28px;
+  min-height: 28px;
+  border: 2px solid var(--tag-scroll-thumb-border);
+  border-radius: 8px;
+  background-color: var(--tag-scroll-thumb);
+}
+
+.diagnostic-issues::-webkit-scrollbar-thumb:hover,
+.json-modal-panel.active::-webkit-scrollbar-thumb:hover,
+.json-diagnostic-issues::-webkit-scrollbar-thumb:hover,
+.json-view-text::-webkit-scrollbar-thumb:hover,
+.button-view-text::-webkit-scrollbar-thumb:hover,
+#tagListWrap::-webkit-scrollbar-thumb:hover,
+.shortcuts-scroll::-webkit-scrollbar-thumb:hover,
+.custom-export-options-scroll::-webkit-scrollbar-thumb:hover,
+.custom-export-scope-list::-webkit-scrollbar-thumb:hover,
+#customExportPreview::-webkit-scrollbar-thumb:hover,
+.custom-export-warnings::-webkit-scrollbar-thumb:hover,
+.form-group textarea::-webkit-scrollbar-thumb:hover {
+  background-color: var(--tag-scroll-thumb-hover);
+}
+
+.diagnostic-issues::-webkit-scrollbar-corner,
+.json-modal-panel.active::-webkit-scrollbar-corner,
+.json-diagnostic-issues::-webkit-scrollbar-corner,
+.json-view-text::-webkit-scrollbar-corner,
+.button-view-text::-webkit-scrollbar-corner,
+#tagListWrap::-webkit-scrollbar-corner,
+.shortcuts-scroll::-webkit-scrollbar-corner,
+.custom-export-options-scroll::-webkit-scrollbar-corner,
+.custom-export-scope-list::-webkit-scrollbar-corner,
+#customExportPreview::-webkit-scrollbar-corner,
+.custom-export-warnings::-webkit-scrollbar-corner,
+.form-group textarea::-webkit-scrollbar-corner {
+  background: transparent;
+}

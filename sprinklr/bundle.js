@@ -2426,9 +2426,13 @@ function getContextButtonData(wrap) {
 
 function viewContextButton(wrap) {
   const data = getContextButtonData(wrap);
+  const visibilityLabels = { public: '🌎 Público', private: '🔒 Privado', other: 'Outro' };
   viewedButtonText = data.text;
-  document.getElementById('buttonViewTitle').textContent = data.name;
-  document.getElementById('buttonViewMeta').textContent = `${data.tag || 'Sem tag'} · ${data.vis}`;
+  document.getElementById('buttonViewTitle').textContent = `👁️ ${data.name}`;
+  document.getElementById('buttonViewMeta').textContent = [
+    data.tag ? `Tag: ${data.tag}` : 'Sem tag',
+    visibilityLabels[data.vis] || 'Outro'
+  ].join(' • ');
   document.getElementById('buttonViewText').textContent = data.text;
   openModal('buttonViewModal');
 }
