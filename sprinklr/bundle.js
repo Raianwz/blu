@@ -67,6 +67,7 @@ const ICONS = {
   chevron_down: `<path d="m6 9 6 6 6-6" />`,
   arrow_up: `<path d="m18 15-6-6-6 6" />`,
   arrow_down: `<path d="m6 9 6 6 6-6" />`,
+  sliders_horizontal: `<path d="M3 6h7" /><path d="M14 6h7" /><circle cx="12" cy="6" r="2" /><path d="M3 12h3" /><path d="M10 12h11" /><circle cx="8" cy="12" r="2" /><path d="M3 18h11" /><path d="M18 18h3" /><circle cx="16" cy="18" r="2" />`,
   palette: `<path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z" /><circle cx="13.5" cy="6.5" r=".5" fill="currentColor" /><circle cx="17.5" cy="10.5" r=".5" fill="currentColor" /><circle cx="6.5" cy="12.5" r=".5" fill="currentColor" /><circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />`,
   wrench: `<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z" />`,
   copy: `<rect width="14" height="14" x="8" y="8" rx="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />`,
@@ -518,10 +519,26 @@ function redoLastAction() {
 /* ------------------ render.js (shim) ------------------ */
 // ==========================================================
 
+let textPreviewMode = 'floating';
 let textPreviewEnabled = true;
 let textPreviewEl = null;
 let textPreviewTimer = null;
 let textPreviewSource = null;
+
+function updateTextPreviewButtonUI() {
+  const button = document.getElementById('textPreviewBtn');
+  if (!button) return;
+  const labels = { floating: 'Flutuante', native: 'Nativa', off: 'OFF' };
+  const descriptions = {
+    floating: 'Mostra uma prévia flutuante ao passar o mouse',
+    native: 'Usa a dica de texto nativa do navegador',
+    off: 'Não mostra o texto antes da cópia'
+  };
+  button.classList.toggle('active', textPreviewMode !== 'off');
+  button.setAttribute('aria-label', `Prévia dos textos: ${labels[textPreviewMode]}`);
+  button.title = `${descriptions[textPreviewMode]}. Clique para alterar.`;
+  button.querySelector('.menu-btn-label').textContent = `Prévia de Texto: ${labels[textPreviewMode]}`;
+}
 
 function getTextPreviewEl() {
   if (textPreviewEl) return textPreviewEl;
@@ -541,29 +558,41 @@ function getCopyButtonTitle(button) {
 
 function syncCopyButtonTitles() {
   document.querySelectorAll('.copy-btn').forEach(button => {
-    const title = getCopyButtonTitle(button);
-    if (textPreviewEnabled && title.length <= 220) button.removeAttribute('title');
-    else if (title) button.title = title;
+    if (textPreviewMode === 'native') {
+      const title = getCopyButtonTitle(button);
+      if (title) button.title = title;
+      else button.removeAttribute('title');
+    } else button.removeAttribute('title');
   });
 }
 
-function applyTextPreviewState(enabled, persist = false) {
-  textPreviewEnabled = !!enabled;
-  const button = document.getElementById('textPreviewBtn');
-  button?.classList.toggle('active', textPreviewEnabled);
-  const label = button?.querySelector('.menu-btn-label');
-  if (label) label.textContent = `Prévia de Texto: ${textPreviewEnabled ? 'ON' : 'OFF'}`;
+function applyTextPreviewState(mode, persist = false) {
+  if (mode === true) mode = 'floating';
+  if (mode === false) mode = 'native';
+  textPreviewMode = ['floating', 'native', 'off'].includes(mode) ? mode : 'floating';
+  textPreviewEnabled = textPreviewMode === 'floating';
+  updateTextPreviewButtonUI();
   syncCopyButtonTitles();
   if (!textPreviewEnabled) hideButtonPreview();
-  if (persist) setSetting('textPreview', textPreviewEnabled ? 'on' : 'off');
+  if (persist) setSetting('textPreview', textPreviewMode);
 }
 
 function initTextPreviewPreference() {
-  applyTextPreviewState(getSetting('textPreview') !== 'off');
+  const stored = getSetting('textPreview');
+  const migrationComplete = getSetting('textPreviewModeMigrated') === true;
+  const mode = migrationComplete
+    ? stored
+    : stored === 'on' ? 'floating' : stored === 'off' ? 'native' : stored;
+  if (!migrationComplete) {
+    if (mode) setSetting('textPreview', mode);
+    setSetting('textPreviewModeMigrated', true);
+  }
+  applyTextPreviewState(mode);
 }
 
 function toggleTextPreview() {
-  applyTextPreviewState(!textPreviewEnabled, true);
+  const modes = ['floating', 'native', 'off'];
+  applyTextPreviewState(modes[(modes.indexOf(textPreviewMode) + 1) % modes.length], true);
 }
 
 function showButtonPreview(button) {
@@ -654,8 +683,9 @@ function createBtnEl(button, sectionId) {
   copyBtn.dataset.preview = vis === 'private'
     ? `🔒 Privado\n\n${previewText(wrap.dataset.text)}`
     : previewText(wrap.dataset.text);
-  const nativeTitle = vis === 'private' ? `🔒 Privado\n\n${wrap.dataset.text || ''}` : (wrap.dataset.text || '');
-  if (!textPreviewEnabled || nativeTitle.length > 220) copyBtn.title = nativeTitle;
+  if (textPreviewMode === 'native') {
+    copyBtn.title = vis === 'private' ? `🔒 Privado\n\n${wrap.dataset.text || ''}` : (wrap.dataset.text || '');
+  }
   copyBtn.innerHTML = `${visIcon ? `<span>${visIcon}</span>` : ''}<span class="btn-label">${escapeHtml(button.name || '')}</span>`;
   copyBtn.onclick = () => doCopy(wrap.dataset.text || '', copyBtn);
 
@@ -2777,7 +2807,7 @@ function upgradeSprinklrMenu() {
       findByOnclick("openModal('importModal')"),
       findByOnclick('openCustomExportModal()')
     ]),
-    createSprinklrSubmenu('aparencia', 'Aparência', 'palette', [
+    createSprinklrSubmenu('aparencia', 'Configurações', 'sliders_horizontal', [
       document.getElementById('toggleSectionsBtn'),
       document.getElementById('themeSettingRow'),
       document.getElementById('textPreviewBtn'),
