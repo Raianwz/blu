@@ -40,14 +40,14 @@
   <div id="menuOverlay">
     <div class="menu-group">
       <button class="menu-btn" id="editModeBtn" onclick="toggleEditMode()"
-        title="Ativar/desativar modo edição — Alt + G"><svg class="menu-icon" viewBox="0 0 24 24" fill="none"
+        title="Ativar/desativar modo de edição — Alt + G"><svg class="menu-icon" viewBox="0 0 24 24" fill="none"
           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path
             d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />
           <path d="m15 5 4 4" />
-        </svg><span class="menu-btn-label">Modo Edição: OFF</span></button>
-      <button class="menu-btn" id="shiftLockBtn" onclick="toggleShiftLock()"
-        title="Ativar/desativar Modo de Organização — ShiftLock" aria-pressed="false" disabled><svg class="menu-icon"
+        </svg><span class="menu-btn-label">Modo de Edição: OFF</span></button>
+      <button class="menu-btn menu-edit-subitem" id="shiftLockBtn" onclick="toggleShiftLock()"
+        title="Ativar/desativar modo de organização (requer modo de edição) — duplo Shift" aria-pressed="false" disabled><svg class="menu-icon"
           viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
           stroke-linejoin="round" aria-hidden="true">
           <path d="M12 2v20" />
@@ -56,7 +56,7 @@
           <path d="M2 12h20" />
           <path d="m5 9-3 3 3 3" />
           <path d="m9 5 3-3 3 3" />
-        </svg><span class="menu-btn-label">Modo Organização</span></button>
+        </svg><span class="menu-btn-label">Modo de Organização: OFF</span></button>
       <button class="menu-btn" onclick="openModal('sectionModal')" title="Criar nova seção — Alt + N"><svg
           class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -78,24 +78,24 @@
 
     <div class="menu-group">
       <button class="menu-btn" id="exportBtn" onclick="exportData()"
-        title="Exportar JSON — Ctrl + S | Criptografia: Alt + C"><svg class="menu-icon" viewBox="0 0 24 24" fill="none"
+        title="Exportar Backup — Ctrl + S | Criptografia: Alt + C"><svg class="menu-icon" viewBox="0 0 24 24" fill="none"
           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M12 15V3" />
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
           <path d="m7 10 5 5 5-5" />
-        </svg><span class="menu-btn-label">Exportar</span><svg id="exportLockIcon" class="menu-icon export-lock-icon"
+        </svg><span class="menu-btn-label">Exportar Backup</span><svg id="exportLockIcon" class="menu-icon export-lock-icon"
           viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
           stroke-linejoin="round" aria-hidden="true" title="Criptografia ativada">
           <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
           <path d="M7 11V7a5 5 0 0 1 10 0v4" />
         </svg><span class="menu-btn-dot" aria-hidden="true"></span></button>
-      <button class="menu-btn" onclick="openModal('importModal')" title="Importar JSON"><svg class="menu-icon"
+      <button class="menu-btn" onclick="openModal('importModal')" title="Importar Backup"><svg class="menu-icon"
           viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
           stroke-linejoin="round" aria-hidden="true">
           <path d="M12 3v12" />
           <path d="m17 8-5-5-5 5" />
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-        </svg><span class="menu-btn-label">Importar</span></button>
+        </svg><span class="menu-btn-label">Importar Backup</span></button>
       <button class="menu-btn" onclick="openCustomExportModal()" title="Escolher dados e formato da exportação"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg><span class="menu-btn-label">Exportação Personalizada</span></button>
     </div>
 

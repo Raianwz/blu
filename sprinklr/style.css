@@ -379,6 +379,28 @@ textarea::placeholder {
   pointer-events: none;
 }
 
+.menu-edit-subitem {
+  display: none;
+  position: relative;
+  width: calc(100% - 18px);
+  margin-left: 18px;
+}
+
+body.edit-mode .menu-edit-subitem {
+  display: flex;
+}
+
+.menu-edit-subitem::before {
+  content: '';
+  position: absolute;
+  top: -7px;
+  bottom: 50%;
+  left: -11px;
+  border-left: 2px solid var(--border);
+  border-bottom: 2px solid var(--border);
+  border-bottom-left-radius: 6px;
+}
+
 /* Indicador de criptografia no botao Exportar (Alt+C alterna) */
 .export-lock-icon {
   display: none;

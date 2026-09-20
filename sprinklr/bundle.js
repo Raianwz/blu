@@ -383,7 +383,7 @@ function updateUnsavedChangesUI() {
 
   if (exportBtn) {
     exportBtn.classList.toggle('active', dirty);
-    exportBtn.title = dirty ? 'Exportar JSON — há alterações sem backup' : 'Exportar JSON';
+    exportBtn.title = dirty ? 'Exportar Backup — há alterações sem backup' : 'Exportar Backup';
   }
 
   document.title = dirty ? `● ${BASE_TITLE}` : BASE_TITLE;
@@ -1865,6 +1865,15 @@ let draggingSectionEl = null;
 let sectionPlaceholderEl = null;
 let isDraggingSection = false;
 
+function updateShiftLockButtonUI() {
+  const button = document.getElementById('shiftLockBtn');
+  if (!button) return;
+  button.disabled = !editMode;
+  button.classList.toggle('active', shiftLocked);
+  button.setAttribute('aria-pressed', String(shiftLocked));
+  button.querySelector('.menu-btn-label').textContent = `Modo de Organização: ${shiftLocked ? 'ON' : 'OFF'}`;
+}
+
 // Toggle programático do ShiftLock via botão
 function toggleShiftLock() {
   // Só permite alternar quando o modo de edição estiver ativo
@@ -1872,16 +1881,7 @@ function toggleShiftLock() {
 
   shiftLocked = !shiftLocked;
   updateShiftMode();
-
-  // Atualiza o atributo aria e o visual do botão (se existir)
-  const btn = document.getElementById('shiftLockBtn');
-  if (btn) {
-    btn.setAttribute('aria-pressed', String(shiftLocked));
-    btn.classList.toggle('active', shiftLocked);
-    btn.querySelector('.menu-btn-label').textContent = shiftLocked ? 'Organização: ON' : 'Modo Organização';
-  }
-
-  notify(shiftLocked ? 'Modo Organização ativado' : 'Modo Organização desativado');
+  notify(shiftLocked ? 'Modo de organização ativado' : 'Modo de organização desativado');
 }
 
 function updateShiftMode() {
@@ -1890,12 +1890,14 @@ function updateShiftMode() {
     shiftLocked = false;
     document.body.classList.remove('shift-mode', 'shift-locked');
     applyButtonReorderControls();
+    updateShiftLockButtonUI();
     return;
   }
 
   document.body.classList.toggle('shift-mode', shiftActive || shiftLocked);
   document.body.classList.toggle('shift-locked', shiftLocked);
   applyButtonReorderControls();
+  updateShiftLockButtonUI();
 }
 
 function getSectionPlaceholder() {
@@ -2590,12 +2592,7 @@ function getDemoState() {
   };
 }
 
-const shiftBtnInit = document.getElementById('shiftLockBtn');
-if (shiftBtnInit) {
-  shiftBtnInit.disabled = !editMode;
-  shiftBtnInit.setAttribute('aria-pressed', shiftLocked ? 'true' : 'false');
-  if (shiftLocked) shiftBtnInit.classList.add('active');
-}
+updateShiftLockButtonUI();
 
 function init() {
   const saved = loadPersistedState();
@@ -2617,38 +2614,15 @@ function toggleEditMode() {
   document.querySelectorAll('.btn-wrap').forEach(button => button.draggable = editMode);
 
   const button = document.getElementById('editModeBtn');
-  if (button) button.querySelector('.menu-btn-label').textContent = `Modo Edição: ${editMode ? 'ON' : 'OFF'}`;
+  if (button) button.querySelector('.menu-btn-label').textContent = `Modo de Edição: ${editMode ? 'ON' : 'OFF'}`;
   if (button) button.classList.toggle('active', editMode);
 
   // Remover previews visíveis ao alternar para modo edição
   hideButtonPreview();
 
-// Atualiza visibilidade/estado do botão Modo Organização (visível, habilitado apenas com editMode ON)
-const shiftBtn = document.getElementById('shiftLockBtn');
-if (shiftBtn) {
-  // sempre visível; habilita apenas quando editMode = true
-  shiftBtn.style.display = 'inline-flex';
-  shiftBtn.disabled = !editMode;
-
-  if (!editMode) {
-    // ao desligar o modo edição, garante que o ShiftLock seja desativado
-    shiftLocked = false;
-    updateShiftMode();
-    shiftBtn.setAttribute('aria-pressed', 'false');
-    shiftBtn.classList.remove('active');
-    shiftBtn.querySelector('.menu-btn-label').textContent = 'Modo Organização';
-  } else {
-    // quando editMode liga, atualiza o rótulo/estado conforme shiftLocked atual
-    shiftBtn.setAttribute('aria-pressed', shiftLocked ? 'true' : 'false');
-    shiftBtn.classList.toggle('active', shiftLocked);
-    shiftBtn.querySelector('.menu-btn-label').textContent = shiftLocked ? 'Organização: ON' : 'Modo Organização';
-  }
-}
-
-
-
+  if (!editMode) shiftLocked = false;
   updateShiftMode();
-  notify(editMode ? 'Modo edição ativado' : 'Modo edição desativado');
+  notify(editMode ? 'Modo de edição ativado' : 'Modo de edição desativado');
 }
 
 const systemThemeQuery = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
