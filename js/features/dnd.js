@@ -8,43 +8,6 @@ let dragEl = null;
 let placeholder = null;
 let draggedButtonOrigin = null;
 let dragOrganizingFrame = 0;
-let advancedOrganizingEnabled = false;
-
-function updateAdvancedOrganizingButtonUI() {
-  const button = document.getElementById('advancedOrganizingBtn');
-  if (!button) return;
-  button.classList.toggle('active', advancedOrganizingEnabled);
-  button.setAttribute('aria-pressed', String(advancedOrganizingEnabled));
-  button.querySelector('.menu-btn-label').textContent = `Estabilizar ao Arrastar: ${advancedOrganizingEnabled ? 'ON' : 'OFF'}`;
-}
-
-function initAdvancedOrganizingPreference() {
-  advancedOrganizingEnabled = getSetting('advancedOrganizing') === 'on';
-  updateAdvancedOrganizingButtonUI();
-}
-
-function toggleAdvancedOrganizing() {
-  advancedOrganizingEnabled = !advancedOrganizingEnabled;
-  setSetting('advancedOrganizing', advancedOrganizingEnabled ? 'on' : 'off');
-  updateAdvancedOrganizingButtonUI();
-  notify(`Estabilização ao arrastar ${advancedOrganizingEnabled ? 'ativada' : 'desativada'}`);
-}
-
-function prepareAdvancedDragLayout() {
-  if (!advancedOrganizingEnabled) return;
-
-  document.querySelectorAll('.section-body').forEach(body => {
-    body.style.setProperty('--advanced-drag-body-height', `${body.getBoundingClientRect().height}px`);
-  });
-  document.body.classList.add('advanced-drag-organizing');
-}
-
-function clearAdvancedDragLayout() {
-  document.body.classList.remove('advanced-drag-organizing');
-  document.querySelectorAll('.section-body').forEach(body => {
-    body.style.removeProperty('--advanced-drag-body-height');
-  });
-}
 
 function setDragOrganizing(active) {
   if (!active && dragOrganizingFrame) {
@@ -52,7 +15,6 @@ function setDragOrganizing(active) {
     dragOrganizingFrame = 0;
   }
   document.body.classList.toggle('drag-organizing', active);
-  if (!active) clearAdvancedDragLayout();
 }
 
 function scheduleNativeDragOrganizing(element, targetPlaceholder) {
@@ -144,7 +106,7 @@ function onDragStart(event) {
   };
   hideButtonPreview();
   this.querySelector('.copy-btn')?.removeAttribute('title');
-  prepareAdvancedDragLayout();
+  window.BluExperiments?.emit('button-drag:start');
   this.classList.add('dragging');
   placeholder = createDragPlaceholder(this, 'drag-placeholder');
   event.dataTransfer.effectAllowed = 'move';
@@ -161,6 +123,7 @@ function onDragEnd() {
     }
   }
   placeholder?.remove();
+  window.BluExperiments?.emit('button-drag:end');
   setDragOrganizing(false);
   dragEl = null;
   placeholder = null;
@@ -173,7 +136,7 @@ function onDragOver(event) {
   event.dataTransfer.dropEffect = 'move';
 
   const body = event.currentTarget;
-  const after = getDragAfter(body, event.clientX);
+  const after = getDragAfter(body, event.clientX, event.clientY);
 
   // dragover dispara dezenas de vezes por segundo enquanto o mouse se move.
   // Só mexe no DOM quando a posição-alvo realmente muda — do contrário o
@@ -215,12 +178,15 @@ function onDrop(event) {
   updateUnsavedChangesUI();
 }
 
-function getDragAfter(container, x) {
+function getDragAfter(container, x, y) {
   const elements = [...container.querySelectorAll('.btn-wrap:not(.dragging):not(.drag-placeholder)')];
+  const axis = window.BluExperiments?.resolve('button-drag:axis', 'horizontal') || 'horizontal';
 
   return elements.reduce((closest, element) => {
     const box = element.getBoundingClientRect();
-    const offset = x - box.left - box.width / 2;
+    const offset = axis === 'vertical'
+      ? y - box.top - box.height / 2
+      : x - box.left - box.width / 2;
 
     if (offset < 0 && offset > closest.offset) return { offset, element };
     return closest;
@@ -364,7 +330,6 @@ window.addEventListener('mousedown', event => {
   draggingSectionEl = section;
   draggedSectionOriginPosition = [...section.parentNode.children].indexOf(section) + 1;
   isDraggingSection = true;
-  prepareAdvancedDragLayout();
   section.classList.add('dragging');
   setDragOrganizing(true);
 });
@@ -563,7 +528,7 @@ function beginPointerDrag(candidate) {
   pointerDragCandidate = null;
   suppressPointerClick = true;
   hideButtonPreview();
-  prepareAdvancedDragLayout();
+  if (candidate.type === 'button') window.BluExperiments?.emit('button-drag:start');
   candidate.element.classList.add('dragging', 'pointer-dragging');
   setDragOrganizing(true);
 
@@ -588,8 +553,11 @@ function updatePointerButtonDrag(x, y) {
     return;
   }
   const rect = targetButton.getBoundingClientRect();
-  const insertAfter = y > rect.top + rect.height / 2
-    || (y >= rect.top && y <= rect.bottom && x > rect.left + rect.width / 2);
+  const axis = window.BluExperiments?.resolve('button-drag:axis', 'horizontal') || 'horizontal';
+  const insertAfter = axis === 'vertical'
+    ? y > rect.top + rect.height / 2
+    : y > rect.top + rect.height / 2
+      || (y >= rect.top && y <= rect.bottom && x > rect.left + rect.width / 2);
   body.insertBefore(placeholder, insertAfter ? targetButton.nextSibling : targetButton);
 }
 
@@ -630,6 +598,7 @@ function finishPointerDrag(cancelled = false) {
   sectionPlaceholderEl = null;
   isDraggingSection = false;
   pointerDragState = null;
+  if (type === 'button') window.BluExperiments?.emit('button-drag:end');
   setDragOrganizing(false);
 
   if (moved) {

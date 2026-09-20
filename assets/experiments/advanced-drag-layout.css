@@ -1,0 +1,10 @@
+/* Este arquivo só é carregado quando o experimento está ativo. */
+body.blu-experiment-advanced-drag-layout.blu-experiment-button-drag.drag-organizing .section-body {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+}
+
+body.blu-experiment-advanced-drag-layout.blu-experiment-button-drag.drag-organizing .drag-placeholder {
+  flex: none;
+}

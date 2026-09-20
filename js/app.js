@@ -187,8 +187,7 @@ async function resetPreferences() {
   applyTextPreviewState(true);
   dragPreviewEnabled = false;
   applyDragPreviewState();
-  advancedOrganizingEnabled = false;
-  updateAdvancedOrganizingButtonUI();
+  window.resetBluExperiments?.();
   applyEditAnimationPreference();
   updateSearchHistoryButtonUI();
 
@@ -656,7 +655,7 @@ initAdvancedMenuPreference();
 initTheme();
 initEditAnimationPreference();
 initDragPreviewPreference();
-initAdvancedOrganizingPreference();
+window.initBluExperiments?.();
 initTextPreviewPreference();
 initSearchGuidance();
 initShareLinkEvidence();

@@ -37,6 +37,7 @@ const APP_SHELL = [
   '/js/features/search.js',
   '/js/core/crypto.js',
   '/js/data/crud.js',
+  '/js/experiments/runtime.js',
   '/js/features/dnd.js',
   '/js/data/json-tools.js',
   '/js/data/custom-export.js',
