@@ -519,6 +519,10 @@ body.edit-mode .btn-wrap {
   cursor: grab;
 }
 
+body.edit-mode.edit-animation-off .btn-wrap {
+  animation: none;
+}
+
 body.edit-mode .btn-wrap:hover,
 body.edit-mode .section-wrap:hover .btn-wrap {
   animation: none;

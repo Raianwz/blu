@@ -204,7 +204,7 @@ function setupDialogEvents() {
 // ==========================================================
 const STORAGE_KEY = 'blu:data';
 const SETTINGS_STORAGE_KEY = 'blu:settings';
-const VERSION = '1.6.2 LTS';
+const VERSION = '1.6.3 LTS';
 const BASE_TITLE = 'Blû';
 
 let editMode = false;
@@ -836,7 +836,7 @@ const SEARCH_TYPE_PLACEHOLDERS = {
   category: 'Pesquisar por seção...',
   text: 'Pesquisar no conteúdo dos botões...'
 };
-const desktopSearchGuidanceMedia = window.matchMedia('(min-width: 761px) and (hover: hover) and (pointer: fine)');
+const desktopSearchGuidanceMedia = window.matchMedia('(hover: hover) and (pointer: fine)');
 const reducedMotionMedia = window.matchMedia('(prefers-reduced-motion: reduce)');
 let searchPlaceholderIndex = 0;
 let searchPlaceholderTimer = null;
@@ -2303,7 +2303,7 @@ async function copySprinklrJsonReport() {
   const size = getJsonSizeData(state);
   const buttonCount = state.sections.reduce((sum, section) => sum + section.buttons.length, 0);
   const lines = [
-    'Blû Sprinklr — Diagnóstico JSON',
+    'Blû Offline — Diagnóstico JSON',
     `Seções: ${state.sections.length}`,
     `Botões: ${buttonCount}`,
     `Tags: ${state.tags.length}`,
@@ -2654,6 +2654,42 @@ function initTheme() {
   });
 }
 
+const editAnimationMedia = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+let editAnimationEnabled = true;
+
+function updateEditAnimationButtonUI() {
+  const button = document.getElementById('editAnimationBtn');
+  if (!button) return;
+  button.classList.toggle('active', editAnimationEnabled);
+  button.setAttribute('aria-pressed', String(editAnimationEnabled));
+  button.querySelector('.menu-btn-label').textContent = `Animação na Edição: ${editAnimationEnabled ? 'ON' : 'OFF'}`;
+}
+
+function applyEditAnimationPreference(value = getSetting('editAnimation')) {
+  editAnimationEnabled = value === 'on' || (value !== 'off' && !editAnimationMedia?.matches);
+  document.body.classList.toggle('edit-animation-off', !editAnimationEnabled);
+  updateEditAnimationButtonUI();
+}
+
+function toggleEditAnimationPreference() {
+  editAnimationEnabled = !editAnimationEnabled;
+  setSetting('editAnimation', editAnimationEnabled ? 'on' : 'off');
+  applyEditAnimationPreference(editAnimationEnabled ? 'on' : 'off');
+  notify(`Animação na edição ${editAnimationEnabled ? 'ativada' : 'desativada'}`);
+}
+
+function initEditAnimationPreference() {
+  applyEditAnimationPreference();
+  const handleMotionPreferenceChange = () => {
+    if (getSetting('editAnimation') === null) applyEditAnimationPreference();
+  };
+  if (editAnimationMedia?.addEventListener) {
+    editAnimationMedia.addEventListener('change', handleMotionPreferenceChange);
+  } else {
+    editAnimationMedia?.addListener(handleMotionPreferenceChange);
+  }
+}
+
 async function resetPreferences() {
   const ok = await confirmDialog(
     'As configurações de aparência e comportamento voltarão ao padrão. Seus botões, seções e organização não serão alterados.',
@@ -2666,6 +2702,7 @@ async function resetPreferences() {
   }
   applyTheme(!!systemThemeQuery?.matches);
   applyTextPreviewState(true);
+  applyEditAnimationPreference();
   updateSearchGuidance();
   document.getElementById('menuOverlay')?.classList.remove('open');
   notify('Preferências redefinidas');
@@ -2739,7 +2776,8 @@ function upgradeSprinklrMenu() {
     createSprinklrSubmenu('aparencia', 'Aparência', 'palette', [
       document.getElementById('toggleSectionsBtn'),
       document.getElementById('themeSettingRow'),
-      document.getElementById('textPreviewBtn')
+      document.getElementById('textPreviewBtn'),
+      document.getElementById('editAnimationBtn')
     ]),
     createSprinklrSubmenu('ferramentas', 'Ferramentas', 'wrench', [
       findByOnclick("openModal('shortcutsModal')"),
@@ -2921,12 +2959,13 @@ setupVersionBadgeHover();
 migrateLegacySettings();
 initTheme();
 initTextPreviewPreference();
+initEditAnimationPreference();
 initSearchGuidance();
 upgradeSprinklrMenu();
 init();
 
 /* ------------------ custom-export.js ------------------ */
-// Exportação personalizada local do Blû Sprinklr.
+// Exportação personalizada local do Blû Offline.
 (function () {
   const presets = {
     index: { format: 'json', scope: 'all', structure: 'hierarchy', fields: ['sections', 'sectionName', 'buttons', 'buttonName', 'includeEmpty'] },
@@ -3010,7 +3049,7 @@ init();
   }
   function objectData(data, options) {
     const root = {}; const f = options.fields;
-    if (f.has('metadata')) root.metadata = { app: 'Blû Sprinklr', exportedAt: new Date().toISOString(), format: options.format, scope: options.scope };
+    if (f.has('metadata')) root.metadata = { app: 'Blû Offline', exportedAt: new Date().toISOString(), format: options.format, scope: options.scope };
     if (f.has('globalTags')) root.tags = data.tags;
     if (!f.has('sections')) { if (f.has('buttons')) root.buttons = data.sections.flatMap(section => section.buttons.map(button => buttonObject(button, section, options))); return root; }
     if (options.structure === 'flat') { root.buttons = f.has('buttons') ? data.sections.flatMap(section => section.buttons.map(button => buttonObject(button, section, options))) : []; return root; }
@@ -3021,7 +3060,7 @@ init();
     return section.buttons.map(button => { const out = buttonObject(button, section, options); if (options.fields.has('sectionId') && !out.sectionId) out.sectionId = section.id; if (options.fields.has('sectionName') && !out.section) out.section = section.name; return out; });
   }); }
   function delimited(records, separator) { const headers = [...new Set(records.flatMap(Object.keys))]; if (!headers.length) return ''; const cell = value => `"${String(typeof value === 'object' ? JSON.stringify(value) : value ?? '').replace(/"/g, '""')}"`; return [headers.map(cell).join(separator), ...records.map(row => headers.map(key => cell(row[key])).join(separator))].join('\r\n'); }
-  function readable(data, options, markdown) { const f = options.fields; const lines = []; if (f.has('metadata')) lines.push(markdown ? '# Exportação do Blû Sprinklr' : 'Exportação do Blû Sprinklr', `Gerado em: ${new Date().toLocaleString('pt-BR')}`, ''); if (f.has('globalTags')) lines.push(`Tags: ${data.tags.join(', ') || 'Nenhuma'}`, ''); data.sections.forEach(section => { if (f.has('sectionName')) lines.push(markdown ? `## ${section.name}` : section.name); if (f.has('sectionId')) lines.push(`ID da seção: ${section.id}`); if (f.has('sectionCount')) lines.push(`Botões: ${section.buttons.length}`); if (f.has('buttons')) section.buttons.forEach(button => { lines.push(`${markdown ? '- ' : '• '}${f.has('buttonName') ? button.name : 'Botão'}`); if (f.has('buttonId')) lines.push(`  ID: ${button.id}`); if (f.has('buttonText')) lines.push(`  Texto: ${button.text}`); if (f.has('buttonTag')) lines.push(`  Tag: ${button.tag}`); if (f.has('buttonVisibility')) lines.push(`  Visibilidade: ${button.vis}`); if (f.has('buttonSection')) lines.push(`  Seção: ${section.name}`); }); lines.push(''); }); return lines.join('\n').trim(); }
+  function readable(data, options, markdown) { const f = options.fields; const lines = []; if (f.has('metadata')) lines.push(markdown ? '# Exportação do Blû Offline' : 'Exportação do Blû Offline', `Gerado em: ${new Date().toLocaleString('pt-BR')}`, ''); if (f.has('globalTags')) lines.push(`Tags: ${data.tags.join(', ') || 'Nenhuma'}`, ''); data.sections.forEach(section => { if (f.has('sectionName')) lines.push(markdown ? `## ${section.name}` : section.name); if (f.has('sectionId')) lines.push(`ID da seção: ${section.id}`); if (f.has('sectionCount')) lines.push(`Botões: ${section.buttons.length}`); if (f.has('buttons')) section.buttons.forEach(button => { lines.push(`${markdown ? '- ' : '• '}${f.has('buttonName') ? button.name : 'Botão'}`); if (f.has('buttonId')) lines.push(`  ID: ${button.id}`); if (f.has('buttonText')) lines.push(`  Texto: ${button.text}`); if (f.has('buttonTag')) lines.push(`  Tag: ${button.tag}`); if (f.has('buttonVisibility')) lines.push(`  Visibilidade: ${button.vis}`); if (f.has('buttonSection')) lines.push(`  Seção: ${section.name}`); }); lines.push(''); }); return lines.join('\n').trim(); }
   function hasUsefulContent(data, options) {
     const f = options.fields;
     if (f.has('globalTags') && data.tags.length) return true;
@@ -3037,7 +3076,7 @@ init();
   function generate() { const options = config(); const data = prepare(options); const records = rows(data, options); let content; if (options.format === 'json') content = JSON.stringify(objectData(data, options), null, options.compactJson ? 0 : 2); else if (options.format === 'csv') content = delimited(records, options.delimiter); else content = readable(data, options, options.format === 'markdown'); return { options, data, content, preview: content, useful: hasUsefulContent(data, options) }; }
   function label(format) { return { text: 'TXT', markdown: 'MARKDOWN', csv: 'CSV', json: 'JSON' }[format]; }
   function updatePreview() { if (!el('customExportPreview')) return; dependencies(); const result = generate(); const count = result.data.sections.reduce((sum, section) => sum + section.buttons.length, 0); el('customExportPreview').value = result.useful ? result.preview : '(O arquivo não possui conteúdo útil com as opções atuais.)'; el('customExportSummary').textContent = `${result.data.sections.length} seção(ões) • ${count} botão(ões) • ${fileSize(byteLength(result.content))} • ${label(result.options.format)}`; el('customExportWarnings').innerHTML = result.useful ? '<div class="custom-export-warning">⚠️ Este arquivo é para consulta/uso externo e não representa necessariamente um backup reimportável completo.</div>' : '<div class="custom-export-warning">⚠️ Selecione ao menos um campo com conteúdo antes de exportar.</div>'; const button = el('customExportDownloadBtn'); button.disabled = !result.useful; button.textContent = `Exportar ${label(result.options.format)}`; }
-  function download(content, type, extension) { const blob = new Blob([content], { type }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = `blu-sprinklr-${new Date().toISOString().slice(0, 10)}.${extension}`; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); }
+  function download(content, type, extension) { const blob = new Blob([content], { type }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = `blu-offline-${new Date().toISOString().slice(0, 10)}.${extension}`; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); }
   window.downloadCustomExport = function () { const result = generate(); if (!result.useful) { notify('Selecione ao menos um campo com conteúdo antes de exportar', 'err'); return; } const map = { json: ['application/json', 'json'], text: ['text/plain', 'txt'], markdown: ['text/markdown', 'md'], csv: ['text/csv', 'csv'] }; const [mime, extension] = map[result.options.format]; const content = result.options.format === 'csv' && result.options.csvBom ? `\uFEFF${result.content}` : result.content; download(content, mime, extension); notify(`Exportação ${label(result.options.format)} concluída!`); };
   document.addEventListener('change', event => { if (event.target.matches('#customExportModal [data-export-field]')) markCustomExportCustomized(); });
 })();
