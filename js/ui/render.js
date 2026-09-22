@@ -20,7 +20,7 @@ function toggleButtonVisualPreference() {
 function buttonVisibilityMarkup(visibility) {
   if (visibility !== 'public' && visibility !== 'private') return '';
   const emoji = visibility === 'public' ? '🌎' : '🔒';
-  const paths = BLU_LUCIDE_ICONS[visibility === 'public' ? 'globe' : 'lock'];
+  const paths = BLU_LUCIDE_ICONS[visibility === 'public' ? 'globe' : 'lock-keyhole'];
   return `<span class="button-visibility" role="img" aria-label="${visibility === 'public' ? 'Público' : 'Privado'}"><span class="button-visibility-emoji" aria-hidden="true">${emoji}</span><svg class="button-visibility-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg></span>`;
 }
 
