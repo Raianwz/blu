@@ -1902,6 +1902,12 @@ body.edit-mode .btn-del {
   color: var(--text);
 }
 
+#buttonViewTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .whats-new-modal {
   --import-muted: #596071;
   --import-green: #047857;

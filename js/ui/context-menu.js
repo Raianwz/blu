@@ -106,7 +106,7 @@ function viewContextButton(buttonWrap) {
 
   viewedButtonText = data.text;
   viewedButtonId = data.id;
-  title.textContent = `👁️ ${data.name}`;
+  title.innerHTML = `${iconSvg('eye')}<span>${escapeHtml(data.name)}</span>`;
   meta.textContent = [data.tag ? `Tag: ${data.tag}` : 'Sem tag', visibilityLabels[data.vis] || 'Outro'].join(' • ');
   text.textContent = data.text;
   text.hidden = false;
