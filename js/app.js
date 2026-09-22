@@ -185,6 +185,7 @@ async function resetPreferences() {
 
   applyTheme(!!systemThemeQuery?.matches);
   applyTextPreviewState(true);
+  applyButtonVisualPreference();
   dragPreviewEnabled = false;
   applyDragPreviewState();
   window.resetBluExperiments?.();
@@ -657,6 +658,7 @@ initEditAnimationPreference();
 initDragPreviewPreference();
 window.initBluExperiments?.();
 initTextPreviewPreference();
+applyButtonVisualPreference();
 initSearchGuidance();
 initShareLinkEvidence();
 initQuickAccess();

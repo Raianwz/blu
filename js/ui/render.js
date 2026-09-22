@@ -2,6 +2,28 @@
 // Renderização de seções e botões
 // ==========================================================
 
+function applyButtonVisualPreference() {
+  const modern = getSetting('buttonVisual') === 'new';
+  document.body.classList.toggle('button-visual-new', modern);
+  const button = document.getElementById('buttonVisualBtn');
+  if (!button) return;
+  button.classList.toggle('active', modern);
+  button.setAttribute('aria-pressed', String(modern));
+  button.querySelector('.menu-btn-label').textContent = `Visual dos Botões: ${modern ? 'Novo' : 'Clássico'}`;
+}
+
+function toggleButtonVisualPreference() {
+  setSetting('buttonVisual', getSetting('buttonVisual') === 'new' ? 'classic' : 'new');
+  applyButtonVisualPreference();
+}
+
+function buttonVisibilityMarkup(visibility) {
+  if (visibility !== 'public' && visibility !== 'private') return '';
+  const emoji = visibility === 'public' ? '🌎' : '🔒';
+  const paths = BLU_LUCIDE_ICONS[visibility === 'public' ? 'globe' : 'lock'];
+  return `<span class="button-visibility" role="img" aria-label="${visibility === 'public' ? 'Público' : 'Privado'}"><span class="button-visibility-emoji" aria-hidden="true">${emoji}</span><svg class="button-visibility-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg></span>`;
+}
+
 let textPreviewMode = 'floating';
 let textPreviewEnabled = true;
 let textPreviewEl = null;
@@ -237,12 +259,11 @@ function createBtnEl(button, sectionId) {
   wrap.draggable = editMode;
 
   const vis = wrap.dataset.vis;
-  const visIcon = vis === 'public' ? '🌎' : vis === 'private' ? '🔒' : '';
   const visClass = `vis-${vis}`;
 
   const copyBtn = document.createElement('button');
   copyBtn.className = `copy-btn ${visClass}`;
-  copyBtn.innerHTML = `${visIcon ? `<span>${visIcon}</span>` : ''}<span class="btn-label">${escapeHtml(button.name || '')}</span>`;
+  copyBtn.innerHTML = `${buttonVisibilityMarkup(vis)}<span class="btn-label">${escapeHtml(button.name || '')}</span>`;
   copyBtn.onclick = () => doCopy(wrap.dataset.text || '', copyBtn);
   bindButtonTextPreview(copyBtn, wrap.dataset.text, vis);
 

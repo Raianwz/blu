@@ -84,6 +84,7 @@
     <div class="menu-submenu">
       <button class="menu-submenu-toggle" type="button" data-submenu="conteudo" onclick="toggleSubmenu('conteudo')" aria-expanded="false" aria-controls="submenu-conteudo"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.21 15.89A10 10 0 1 1 8.11 2.99" /><path d="M22 12A10 10 0 0 0 12 2v10z" /></svg><span class="menu-btn-label">Conteúdo</span><svg class="menu-icon chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg></button>
       <div class="menu-submenu-body" id="submenu-conteudo">
+        <button class="menu-btn" id="buttonVisualBtn" onclick="toggleButtonVisualPreference()" title="Alternar indicadores dos botões entre emojis e SVG" aria-pressed="false"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="8" cy="12" r="2"/><path d="M13 12h5"/></svg><span class="menu-btn-label">Visual dos Botões: Clássico</span></button>
         <button class="menu-btn" id="toggleSectionsBtn" onclick="toggleAllSections()" title="Expandir/minimizar seções — Ctrl + E"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22v-6" /> <path d="M12 8V2" /> <path d="M4 12H2" /> <path d="M10 12H8" /> <path d="M16 12h-2" /> <path d="M22 12h-2" /> <path d="m15 19-3 3-3-3" /> <path d="m15 5-3-3-3 3" /></svg><span class="menu-btn-label">Expandir Seções</span></button>
         <button class="menu-btn" id="archiveViewBtn" onclick="openArchiveView()" title="Ver botões e seções arquivados" aria-pressed="false"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg><span class="menu-btn-label">Arquivados</span><span id="archiveMenuCount" class="section-count" hidden>0</span></button>
         <button class="menu-btn" id="contentDashboardBtn" onclick="toggleContentDashboardPreference()" title="Habilitar a página secundária de estatísticas"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 20V10" /><path d="M12 20V4" /><path d="M18 20v-7" /></svg><span class="menu-btn-label">Estatísticas: OFF</span></button>
@@ -512,6 +513,7 @@
   <script src="js/data/user-data.js"></script>
   <script src="js/features/content-dashboard.js"></script>
   <script src="js/features/archive.js"></script>
+  <script src="libs/lucide/lucide-icons.js"></script>
   <script src="js/ui/render.js"></script>
   <script src="js/features/search.js"></script>
   <script src="js/core/crypto.js"></script>

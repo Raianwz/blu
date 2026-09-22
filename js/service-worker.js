@@ -34,6 +34,7 @@ const APP_SHELL = [
   '/js/features/content-dashboard.js',
   '/js/features/archive.js',
   '/js/ui/render.js',
+  '/libs/lucide/lucide-icons.js',
   '/js/features/search.js',
   '/js/core/crypto.js',
   '/js/data/crud.js',

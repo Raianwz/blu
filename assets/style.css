@@ -1751,6 +1751,18 @@ body.edit-mode.drag-organizing .section-wrap:not(.section-drag-placeholder) {
   max-width: 340px;
 }
 
+.button-visibility-svg {
+  display: none;
+  width: 18px;
+  height: 18px;
+  vertical-align: middle;
+}
+
+body.button-visual-new .button-visibility-emoji { display: none; }
+body.button-visual-new .button-visibility-svg { display: inline-block; }
+body.button-visual-new .copy-btn .button-visibility-svg { color: #fff; }
+body.button-visual-new .copy-btn.vis-private .button-visibility-svg { color: #fff0b3; }
+
 .copy-btn:hover {
   filter: brightness(1.08);
 }

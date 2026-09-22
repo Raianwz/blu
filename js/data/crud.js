@@ -1202,6 +1202,7 @@ async function clearAll(event = null) {
   // preferências que acabaram de ser removidas.
   applyTheme(!!systemThemeQuery?.matches);
   applyTextPreviewState(true);
+  applyButtonVisualPreference();
   dragPreviewEnabled = false;
   applyDragPreviewState();
 }
