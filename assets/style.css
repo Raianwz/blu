@@ -1764,6 +1764,8 @@ body.button-visual-new {
   --btn-public-2: #2563eb;
   --btn-private-1: #475569;
   --btn-private-2: #475569;
+  --btn-default-1: #7c3aed;
+  --btn-default-2: #7c3aed;
 }
 
 body.button-visual-new .button-visibility-emoji { display: none; }
