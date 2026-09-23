@@ -205,6 +205,7 @@ function toggleFavoritesShelfCollapsed() {
 function createFavoriteCard(info, removable = false) {
   const card = document.createElement('div');
   card.className = `favorite-card vis-${info.vis}`;
+  applyOtherButtonColor(card, info.vis, info.customVis);
   card.dataset.favoriteId = info.id;
   const copy = document.createElement('button');
   copy.type = 'button';

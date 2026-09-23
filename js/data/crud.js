@@ -47,8 +47,15 @@ function openModal(id) {
 }
 
 function closeModal(id) {
-  document.getElementById(id).classList.remove('open');
+  const modal = document.getElementById(id);
+  const wasOpen = modal.classList.contains('open');
+  modal.classList.remove('open');
   modalInitialValues.delete(id);
+  if (id === 'buttonIconModal' || id === 'buttonColorModal') {
+    const trigger = document.getElementById(id === 'buttonIconModal' ? 'buttonIconTrigger' : 'buttonColorTrigger');
+    trigger.setAttribute('aria-expanded', 'false');
+    if (wasOpen && document.getElementById('btnModal').classList.contains('open') && !document.getElementById('buttonIconOptions').hidden) trigger.focus();
+  }
 }
 
 function getModalFormValues(modal) {

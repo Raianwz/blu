@@ -271,6 +271,7 @@ function createBtnEl(button, sectionId) {
 
   const copyBtn = document.createElement('button');
   copyBtn.className = `copy-btn ${visClass}`;
+  applyOtherButtonColor(copyBtn, vis, button.customVis);
   copyBtn.innerHTML = `${buttonVisibilityMarkup(vis, button.customVis)}<span class="btn-label">${escapeHtml(button.name || '')}</span>`;
   copyBtn.onclick = () => doCopy(wrap.dataset.text || '', copyBtn);
   bindButtonTextPreview(copyBtn, wrap.dataset.text, vis);

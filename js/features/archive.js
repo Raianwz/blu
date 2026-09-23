@@ -223,6 +223,7 @@ function createArchivedSectionPreview(section, totalButtons = section.buttons.le
 function createArchivedSectionButtonRow(button, detail, viewButtons) {
   const row = document.createElement('div');
   row.className = `archive-section-button vis-${button.vis}`;
+  applyOtherButtonColor(row, button.vis, button.customVis);
   const icon = document.createElement('span');
   icon.className = 'archive-section-button-icon';
   icon.textContent = button.vis === 'public' ? '🌎' : button.vis === 'private' ? '🔒' : '🏷️';

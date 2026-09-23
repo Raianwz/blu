@@ -138,15 +138,17 @@
       <div class="form-group"><label>Tag / Grupo</label><input id="bTag" list="tagOptions" placeholder="(opcional)"><datalist id="tagOptions"></datalist></div>
       <div class="form-group"><label>Visibilidade</label><select id="bVis" onchange="updateButtonIconPickerVisibility()"><option value="other">Outro (padrão)</option><option value="public">&#127758; Público</option><option value="private">&#128274; Privado</option></select></div>
       <div class="form-group" id="buttonIconOptions" hidden>
-        <label id="buttonIconLabel">Ícone do botão</label>
         <input type="hidden" id="bCustomIcon" value="">
-        <p class="button-icon-hint">Exibido apenas no visual Novo. Não altera a visibilidade.</p>
-        <div class="button-icon-picker-wrap">
-          <button type="button" id="buttonIconTrigger" class="button-icon-trigger" aria-expanded="false" aria-controls="buttonIconPicker" onclick="toggleButtonIconPicker()">
-            <span id="buttonIconTriggerPreview"></span><span id="buttonIconTriggerText">Sem ícone</span><span class="button-icon-chevron" aria-hidden="true">⌄</span>
+        <input type="hidden" id="bCustomColor" value="">
+        <div class="button-appearance-controls">
+          <button type="button" id="buttonIconTrigger" class="button-appearance-trigger" aria-haspopup="dialog" aria-expanded="false" aria-controls="buttonIconModal" onclick="toggleButtonIconPicker()">
+            <span id="buttonIconTriggerPreview"></span><span id="buttonIconTriggerText">Sem ícone</span>
           </button>
-          <div id="buttonIconPicker" role="group" aria-labelledby="buttonIconLabel" hidden></div>
+          <button type="button" id="buttonColorTrigger" class="button-appearance-trigger" aria-haspopup="dialog" aria-expanded="false" aria-controls="buttonColorModal" onclick="openButtonColorPicker()">
+            <span id="buttonColorTriggerPreview" class="button-color-swatch"></span><span id="buttonColorTriggerText">Cor padrão</span>
+          </button>
         </div>
+        <p class="button-icon-hint">O ícone aparece no visual Novo. A cor funciona nos dois visuais.</p>
       </div>
       <div class="modal-footer"><button class="mbtn secondary" onclick="closeModal('btnModal')">Cancelar</button><button class="mbtn primary" onclick="saveBtn()">Salvar</button></div>
     </div>
@@ -461,6 +463,23 @@
         <div><dt>Armazenamento</dt><dd>Local neste dispositivo</dd></div>
       </dl>
       <div class="modal-footer"><button class="mbtn primary" type="button" onclick="closeModal('aboutModal')">Fechar</button></div>
+    </div>
+  </div>
+
+  <div class="modal-bg" id="buttonIconModal">
+    <div class="modal button-appearance-modal" role="dialog" aria-modal="true" aria-labelledby="buttonIconLabel">
+      <h2 id="buttonIconLabel">Escolher ícone</h2>
+      <input id="buttonIconSearch" type="search" placeholder="Buscar ícone" aria-label="Buscar ícone" oninput="filterButtonIconPicker()">
+      <div id="buttonIconPicker" role="group" aria-labelledby="buttonIconLabel"></div>
+      <div class="modal-footer"><button type="button" class="mbtn secondary" onclick="closeModal('buttonIconModal')">Fechar</button></div>
+    </div>
+  </div>
+
+  <div class="modal-bg" id="buttonColorModal">
+    <div class="modal button-appearance-modal" role="dialog" aria-modal="true" aria-labelledby="buttonColorLabel">
+      <h2 id="buttonColorLabel">Escolher cor</h2>
+      <div id="buttonColorPicker" role="group" aria-labelledby="buttonColorLabel"></div>
+      <div class="modal-footer"><button type="button" class="mbtn secondary" onclick="closeModal('buttonColorModal')">Fechar</button></div>
     </div>
   </div>
 
