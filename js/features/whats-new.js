@@ -37,6 +37,13 @@ const WHATS_NEW_ITEMS = [
     description: 'Escolha entre a prévia Flutuante, a dica Nativa do navegador ou desative completamente.'
   },
   {
+    icon: '🎨',
+    type: 'Novo',
+    status: 'new',
+    title: 'Visual dos botões',
+    description: 'Indicadores mais claros para Público e Privado. Em Outro, escolha uma cor e um ícone para cada botão.'
+  },
+  {
     icon: '🔎',
     type: 'Novo',
     status: 'new',
@@ -85,6 +92,16 @@ function updateWhatsNewButtonUI() {
   if (aboutButton) aboutButton.hidden = !available;
 }
 
+function updateWhatsNewVisualToggle() {
+  const toggle = document.getElementById('whatsNewButtonVisualSwitch');
+  if (toggle) toggle.checked = isNewButtonVisualEnabled();
+}
+
+function setWhatsNewButtonVisual(enabled) {
+  setSetting('buttonVisual', enabled ? 'new' : 'classic');
+  applyButtonVisualPreference();
+}
+
 function ensureWhatsNewModal() {
   const existing = document.getElementById('whatsNewModal');
   if (existing) return existing;
@@ -105,6 +122,16 @@ function ensureWhatsNewModal() {
           <p>Confira os principais recursos, ajustes e melhorias desta atualização.</p>
         </header>
         <div class="whats-new-list">${items}</div>
+        <div class="whats-new-visual-setting">
+          <div>
+            <strong>Visual novo dos botões</strong>
+            <p>Ativado por padrão nesta versão. Você pode desativá-lo aqui ou em Menu &gt; Conteúdo.</p>
+          </div>
+          <label class="whats-new-visual-switch">
+            <input id="whatsNewButtonVisualSwitch" type="checkbox" role="switch" aria-label="Ativar visual novo dos botões" onchange="setWhatsNewButtonVisual(this.checked)">
+            <span aria-hidden="true"></span>
+          </label>
+        </div>
         <div class="modal-footer"><button class="mbtn primary" type="button" onclick="closeModal('whatsNewModal')">Entendi</button></div>
       </div>
     </div>
@@ -119,6 +146,7 @@ function ensureWhatsNewModal() {
 
 function openWhatsNew({ markSeen = true } = {}) {
   ensureWhatsNewModal();
+  updateWhatsNewVisualToggle();
   document.getElementById('menuOverlay')?.classList.remove('open');
   openModal('whatsNewModal');
   if (markSeen) markWhatsNewAsSeen();

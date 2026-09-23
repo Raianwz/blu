@@ -2,18 +2,24 @@
 // Renderização de seções e botões
 // ==========================================================
 
+function isNewButtonVisualEnabled() {
+  const defaultVisual = WHATS_NEW_PUBLIC || isWhatsNewPreviewEnvironment() ? 'new' : 'classic';
+  return getSetting('buttonVisual', defaultVisual) === 'new';
+}
+
 function applyButtonVisualPreference() {
-  const modern = getSetting('buttonVisual') === 'new';
+  const modern = isNewButtonVisualEnabled();
   document.body.classList.toggle('button-visual-new', modern);
   const button = document.getElementById('buttonVisualBtn');
   if (!button) return;
   button.classList.toggle('active', modern);
   button.setAttribute('aria-pressed', String(modern));
   button.querySelector('.menu-btn-label').textContent = `Visual dos Botões: ${modern ? 'Novo' : 'Clássico'}`;
+  updateWhatsNewVisualToggle();
 }
 
 function toggleButtonVisualPreference() {
-  setSetting('buttonVisual', getSetting('buttonVisual') === 'new' ? 'classic' : 'new');
+  setSetting('buttonVisual', isNewButtonVisualEnabled() ? 'classic' : 'new');
   applyButtonVisualPreference();
 }
 
