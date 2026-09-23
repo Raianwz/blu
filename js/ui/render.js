@@ -9,6 +9,11 @@ function isNewButtonVisualEnabled() {
 function applyButtonVisualPreference() {
   const modern = isNewButtonVisualEnabled();
   document.body.classList.toggle('button-visual-new', modern);
+  const iconPicker = document.getElementById('buttonIconPicker');
+  if (iconPicker) {
+    updateButtonColorPicker();
+    updateButtonColorTrigger(iconPicker.dataset.color || '');
+  }
   const button = document.getElementById('buttonVisualBtn');
   if (!button) return;
   button.classList.toggle('active', modern);

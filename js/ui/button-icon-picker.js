@@ -6,8 +6,11 @@ const BLU_OTHER_COLORS = Object.freeze([
   { color: '#15803D', label: 'Verde' },
   { color: '#0F766E', label: 'Turquesa' },
   { color: '#C2410C', label: 'Laranja' },
+  { color: '#B91C1C', label: 'Vermelho' },
+  { color: '#856B00', label: 'Amarelo' },
   { color: '#BE185D', label: 'Rosa' },
-  { color: '#4338CA', label: 'Índigo' }
+  { color: '#4338CA', label: 'Índigo' },
+  { color: '#3B3330', label: 'Carvão' }
 ]);
 
 const BLU_OTHER_GRADIENTS = Object.freeze([
@@ -15,14 +18,19 @@ const BLU_OTHER_GRADIENTS = Object.freeze([
   { color: 'gradient-aurora', label: 'Gradiente aurora', background: 'linear-gradient(135deg, #5B21B6, #9D174D)' },
   { color: 'gradient-forest', label: 'Gradiente floresta', background: 'linear-gradient(135deg, #166534, #0F766E)' },
   { color: 'gradient-ember', label: 'Gradiente brasa', background: 'linear-gradient(135deg, #9A3412, #9D174D)' },
+  { color: 'gradient-gold', label: 'Gradiente dourado', background: 'linear-gradient(135deg, #996100, #AD5300)' },
+  { color: 'gradient-ocean', label: 'Gradiente oceano', background: 'linear-gradient(135deg, #0F766E, #4338CA)' },
   { color: 'gradient-night', label: 'Gradiente noite', background: 'linear-gradient(135deg, #312E81, #164E63)' }
 ]);
 
 function normalizeCustomVis(value) {
   const requestedIcon = value?.icon === 'bootstrap:bluetooth' ? 'blu:b' : value?.icon;
   const icon = BLU_BUTTON_ICONS.some(entry => entry.id === requestedIcon) ? requestedIcon : null;
-  let color = BLU_OTHER_GRADIENTS.find(entry => entry.color === value?.color)?.color
-    || BLU_OTHER_COLORS.find(entry => entry.color.toLowerCase() === String(value?.color || '').toLowerCase())?.color || null;
+  const savedColor = String(value?.color || '').toLowerCase();
+  // Keep existing yellow buttons when refining the palette.
+  const requestedColor = savedColor === '#806700' ? '#856b00' : savedColor;
+  let color = BLU_OTHER_GRADIENTS.find(entry => entry.color === requestedColor)?.color
+    || BLU_OTHER_COLORS.find(entry => entry.color.toLowerCase() === requestedColor)?.color || null;
   // Earlier icon-only records carried purple even when no color was chosen.
   const colorSelected = Boolean(color && (value?.colorSelected === true || color !== '#7C3AED'));
   if (!colorSelected) color = null;
@@ -80,6 +88,8 @@ function filterButtonIconPicker() {
 }
 
 function openButtonColorPicker() {
+  updateButtonColorPicker();
+  updateButtonColorTrigger(document.getElementById('buttonIconPicker').dataset.color || '');
   openModal('buttonColorModal');
   document.getElementById('buttonColorTrigger').setAttribute('aria-expanded', 'true');
   document.querySelector('#buttonColorPicker [aria-pressed="true"]')?.focus();
@@ -91,11 +101,18 @@ function updateButtonIconTrigger(icon) {
   document.getElementById('buttonIconTriggerText').textContent = entry?.label || 'Sem ícone';
 }
 
+function defaultOtherButtonColor() {
+  return document.body.classList.contains('button-visual-new')
+    ? BLU_OTHER_COLORS[0] : BLU_OTHER_GRADIENTS[0];
+}
+
 function updateButtonColorTrigger(color) {
-  const entry = [...BLU_OTHER_COLORS, ...BLU_OTHER_GRADIENTS].find(item => item.color === color);
+  const defaultColor = defaultOtherButtonColor();
+  const entry = color === defaultColor.color ? null
+    : [...BLU_OTHER_COLORS, ...BLU_OTHER_GRADIENTS].find(item => item.color === color);
   document.getElementById('buttonColorTriggerText').textContent = entry?.label || 'Cor padrão';
   document.getElementById('buttonColorTriggerPreview').style.background = entry?.background || entry?.color
-    || (document.body.classList.contains('button-visual-new') ? '#7C3AED' : BLU_OTHER_GRADIENTS[0].background);
+    || defaultColor.background || defaultColor.color;
 }
 
 function initButtonIconPicker(value) {
@@ -155,9 +172,15 @@ function initButtonIconPicker(value) {
 
 function updateButtonColorPicker() {
   const picker = document.getElementById('buttonColorPicker');
-  const selected = document.getElementById('buttonIconPicker').dataset.color;
+  const defaultColor = defaultOtherButtonColor();
+  const savedColor = document.getElementById('buttonIconPicker').dataset.color || '';
+  const selected = savedColor === defaultColor.color ? '' : savedColor;
+  const options = [
+    { color: '', label: 'Padrão', background: defaultColor.background || defaultColor.color },
+    ...[...BLU_OTHER_COLORS, ...BLU_OTHER_GRADIENTS].filter(entry => entry.color !== defaultColor.color)
+  ];
   picker.replaceChildren();
-  [{ color: '', label: 'Padrão' }, ...BLU_OTHER_COLORS, ...BLU_OTHER_GRADIENTS].forEach(entry => {
+  options.forEach(entry => {
     const choice = document.createElement('button');
     choice.type = 'button';
     choice.className = 'button-color-choice';

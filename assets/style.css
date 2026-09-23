@@ -405,12 +405,14 @@ textarea::placeholder {
 
 #menuOverlay::-webkit-scrollbar,
 .shortcuts-scroll::-webkit-scrollbar,
+.button-appearance-modal .button-picker-scroll::-webkit-scrollbar,
 .whats-new-list::-webkit-scrollbar {
   width: 10px;
 }
 
 #menuOverlay::-webkit-scrollbar-track,
 .shortcuts-scroll::-webkit-scrollbar-track,
+.button-appearance-modal .button-picker-scroll::-webkit-scrollbar-track,
 .whats-new-list::-webkit-scrollbar-track {
   background: var(--tag-scroll-track);
   border-radius: 8px;
@@ -419,6 +421,7 @@ textarea::placeholder {
 
 #menuOverlay::-webkit-scrollbar-thumb,
 .shortcuts-scroll::-webkit-scrollbar-thumb,
+.button-appearance-modal .button-picker-scroll::-webkit-scrollbar-thumb,
 .whats-new-list::-webkit-scrollbar-thumb {
   background-color: var(--tag-scroll-thumb);
   border-radius: 8px;
@@ -428,6 +431,7 @@ textarea::placeholder {
 
 #menuOverlay::-webkit-scrollbar-thumb:hover,
 .shortcuts-scroll::-webkit-scrollbar-thumb:hover,
+.button-appearance-modal .button-picker-scroll::-webkit-scrollbar-thumb:hover,
 .whats-new-list::-webkit-scrollbar-thumb:hover {
   background-color: var(--tag-scroll-thumb-hover);
 }
@@ -1780,7 +1784,27 @@ body:not(.button-visual-new) #buttonIconTrigger { display: none; }
 
 #buttonIconModal,
 #buttonColorModal { z-index: 810; }
-.button-appearance-modal { max-width: 430px; max-height: calc(100dvh - 32px); overflow-y: auto; }
+.modal.button-appearance-modal {
+  display: flex;
+  flex-direction: column;
+  max-width: 460px;
+  height: min(540px, calc(100dvh - 32px));
+  overflow: hidden;
+}
+
+.button-appearance-modal > h2,
+.button-appearance-modal > .button-icon-search-wrap,
+.button-appearance-modal > .button-color-hint,
+.button-appearance-modal > .modal-footer { flex-shrink: 0; }
+
+.button-color-hint {
+  display: flex;
+  align-items: center;
+  min-height: 38px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: var(--text2);
+}
 .button-icon-search-wrap { position: relative; margin-bottom: 12px; }
 .button-icon-search-wrap > svg {
   position: absolute;
@@ -1815,18 +1839,25 @@ body:not(.button-visual-new) #buttonIconTrigger { display: none; }
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent1) 18%, transparent);
 }
 
-#buttonIconPicker {
+.button-picker-scroll {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  flex: 1;
+  min-height: 0;
+  align-content: start;
   gap: 6px;
-  max-height: min(340px, 48dvh);
   overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-width: auto;
+  scrollbar-color: var(--tag-scroll-thumb) var(--tag-scroll-track);
   padding: 8px;
   border: 1px solid var(--border);
   border-radius: 10px;
   background: var(--surface);
   box-shadow: 0 8px 24px var(--shadow);
 }
+
+#buttonIconPicker { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 
 .button-icon-hint {
   color: var(--text2);
@@ -1875,10 +1906,7 @@ body:not(.button-visual-new) #buttonIconTrigger { display: none; }
 .button-icon-choice:active { filter: brightness(.85); }
 
 #buttonColorPicker {
-  display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 6px;
-  margin-top: 7px;
 }
 
 .button-color-choice {

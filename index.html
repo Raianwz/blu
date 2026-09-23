@@ -473,7 +473,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.34-4.34"/></svg>
         <input id="buttonIconSearch" type="search" placeholder="Buscar ícone" aria-label="Buscar ícone" oninput="filterButtonIconPicker()">
       </div>
-      <div id="buttonIconPicker" role="group" aria-labelledby="buttonIconLabel"></div>
+      <div id="buttonIconPicker" class="button-picker-scroll" role="group" aria-labelledby="buttonIconLabel"></div>
       <div class="modal-footer"><button type="button" class="mbtn secondary" onclick="closeModal('buttonIconModal')">Fechar</button></div>
     </div>
   </div>
@@ -481,7 +481,8 @@
   <div class="modal-bg" id="buttonColorModal">
     <div class="modal button-appearance-modal" role="dialog" aria-modal="true" aria-labelledby="buttonColorLabel">
       <h2 id="buttonColorLabel">Escolher cor</h2>
-      <div id="buttonColorPicker" role="group" aria-labelledby="buttonColorLabel"></div>
+      <p class="button-color-hint">Escolha uma cor sólida ou um gradiente.</p>
+      <div id="buttonColorPicker" class="button-picker-scroll" role="group" aria-labelledby="buttonColorLabel"></div>
       <div class="modal-footer"><button type="button" class="mbtn secondary" onclick="closeModal('buttonColorModal')">Fechar</button></div>
     </div>
   </div>
