@@ -4,5 +4,10 @@ const BLU_BRAND_ICONS = Object.freeze([
     id: 'blu:b',
     label: 'Blû',
     src: new URL('b_blu_fill.svg', document.currentScript.src).href
+  },
+  {
+    id: 'blu:legacy',
+    label: 'Blû legado',
+    src: new URL('b_blu_legacy.svg', document.currentScript.src).href
   }
 ]);
