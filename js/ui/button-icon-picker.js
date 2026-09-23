@@ -15,12 +15,40 @@ function customButtonIconMarkup(id, className = '') {
   return entry ? `<svg class="${className}" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">${entry.paths}</svg>` : '';
 }
 
+function closeButtonIconPicker({ focusTrigger = false } = {}) {
+  const picker = document.getElementById('buttonIconPicker');
+  const trigger = document.getElementById('buttonIconTrigger');
+  if (!picker || !trigger || picker.hidden) return;
+  picker.hidden = true;
+  trigger.setAttribute('aria-expanded', 'false');
+  if (focusTrigger) trigger.focus();
+}
+
+function toggleButtonIconPicker() {
+  const picker = document.getElementById('buttonIconPicker');
+  if (!picker.hidden) {
+    closeButtonIconPicker();
+    return;
+  }
+  picker.hidden = false;
+  document.getElementById('buttonIconTrigger').setAttribute('aria-expanded', 'true');
+  picker.querySelector('[aria-pressed="true"]')?.focus();
+}
+
+function updateButtonIconTrigger(icon) {
+  const entry = BLU_BUTTON_ICONS.find(item => item.id === icon);
+  document.getElementById('buttonIconTriggerPreview').innerHTML = customButtonIconMarkup(icon);
+  document.getElementById('buttonIconTriggerText').textContent = entry?.label || 'Sem ícone';
+}
+
 function initButtonIconPicker(value) {
   const picker = document.getElementById('buttonIconPicker');
   const custom = normalizeCustomVis(value);
   picker.dataset.color = custom.color;
   picker.dataset.icon = custom.icon || '';
   document.getElementById('bCustomIcon').value = picker.dataset.icon;
+  closeButtonIconPicker();
+  updateButtonIconTrigger(custom.icon);
   picker.replaceChildren();
   [{ id: null, label: 'Sem ícone' }, ...BLU_BUTTON_ICONS].forEach(entry => {
     const choice = document.createElement('button');
@@ -36,9 +64,11 @@ function initButtonIconPicker(value) {
     choice.addEventListener('click', () => {
       picker.dataset.icon = entry.id || '';
       document.getElementById('bCustomIcon').value = picker.dataset.icon;
+      updateButtonIconTrigger(entry.id);
       picker.querySelectorAll('button').forEach(button => {
         button.setAttribute('aria-pressed', String(button === choice));
       });
+      closeButtonIconPicker({ focusTrigger: true });
     });
     picker.appendChild(choice);
   });
@@ -46,8 +76,21 @@ function initButtonIconPicker(value) {
 }
 
 function updateButtonIconPickerVisibility() {
-  document.getElementById('buttonIconOptions').hidden = document.getElementById('bVis').value !== 'other';
+  const visible = document.getElementById('bVis').value === 'other';
+  document.getElementById('buttonIconOptions').hidden = !visible;
+  if (!visible) closeButtonIconPicker();
 }
+
+document.addEventListener('pointerdown', event => {
+  if (!event.target.closest('.button-icon-picker-wrap')) closeButtonIconPicker();
+});
+
+document.addEventListener('keydown', event => {
+  if (event.key !== 'Escape' || document.getElementById('buttonIconPicker')?.hidden !== false) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  closeButtonIconPicker({ focusTrigger: true });
+}, true);
 
 function selectedButtonCustomVis() {
   const picker = document.getElementById('buttonIconPicker');

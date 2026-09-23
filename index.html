@@ -141,7 +141,12 @@
         <label id="buttonIconLabel">Ícone do botão</label>
         <input type="hidden" id="bCustomIcon" value="">
         <p class="button-icon-hint">Exibido apenas no visual Novo. Não altera a visibilidade.</p>
-        <div id="buttonIconPicker" role="group" aria-labelledby="buttonIconLabel"></div>
+        <div class="button-icon-picker-wrap">
+          <button type="button" id="buttonIconTrigger" class="button-icon-trigger" aria-expanded="false" aria-controls="buttonIconPicker" onclick="toggleButtonIconPicker()">
+            <span id="buttonIconTriggerPreview"></span><span id="buttonIconTriggerText">Sem ícone</span><span class="button-icon-chevron" aria-hidden="true">⌄</span>
+          </button>
+          <div id="buttonIconPicker" role="group" aria-labelledby="buttonIconLabel" hidden></div>
+        </div>
       </div>
       <div class="modal-footer"><button class="mbtn secondary" onclick="closeModal('btnModal')">Cancelar</button><button class="mbtn primary" onclick="saveBtn()">Salvar</button></div>
     </div>
