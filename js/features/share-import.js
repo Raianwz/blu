@@ -30,12 +30,14 @@ function shareImportButtonFingerprint(button) {
     button.name,
     button.text,
     normalizeTag(button.tag),
-    button.vis
+    button.vis,
+    button.vis === 'other' ? normalizeCustomVis(button.customVis) : null
   ]);
 }
 
 function shareImportChangedFields(localButton, incomingButton) {
-  return ['name', 'text', 'tag', 'vis'].filter(field => {
+  return ['name', 'text', 'tag', 'vis', 'customVis'].filter(field => {
+    if (field === 'customVis') return JSON.stringify(localButton.vis === 'other' ? normalizeCustomVis(localButton.customVis) : null) !== JSON.stringify(incomingButton.vis === 'other' ? normalizeCustomVis(incomingButton.customVis) : null);
     const left = field === 'tag' ? normalizeTag(localButton[field]) : localButton[field];
     const right = field === 'tag' ? normalizeTag(incomingButton[field]) : incomingButton[field];
     return left !== right;
@@ -210,12 +212,12 @@ function renderCustomImportSummary() {
 function customImportDifferenceHtml(item) {
   if (!item.local) return '';
   const rows = [];
-  const labels = { name: 'Nome', text: 'Texto', tag: 'Tag', vis: 'Visibilidade' };
+  const labels = { name: 'Nome', text: 'Texto', tag: 'Tag', vis: 'Visibilidade', customVis: 'Aparência' };
   item.fields.forEach(field => rows.push(`
     <div class="custom-import-diff-row">
       <strong>${labels[field]}</strong>
-      <span><small>Meu</small>${escapeHtml(item.local[field]) || '—'}</span>
-      <span><small>Compartilhado</small>${escapeHtml(item.incoming[field]) || '—'}</span>
+      <span><small>Meu</small>${escapeHtml(field === 'customVis' ? normalizeCustomVis(item.local.customVis).icon || 'Sem ícone' : item.local[field]) || '—'}</span>
+      <span><small>Compartilhado</small>${escapeHtml(field === 'customVis' ? normalizeCustomVis(item.incoming.customVis).icon || 'Sem ícone' : item.incoming[field]) || '—'}</span>
     </div>`));
   if (item.localSection?.id !== item.incomingSection.id) rows.push(`
     <div class="custom-import-diff-row">

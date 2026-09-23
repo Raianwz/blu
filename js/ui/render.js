@@ -17,7 +17,8 @@ function toggleButtonVisualPreference() {
   applyButtonVisualPreference();
 }
 
-function buttonVisibilityMarkup(visibility) {
+function buttonVisibilityMarkup(visibility, customVis) {
+  if (visibility === 'other') return customButtonIconMarkup(normalizeCustomVis(customVis).icon, 'button-visibility-svg');
   if (visibility !== 'public' && visibility !== 'private') return '';
   const emoji = visibility === 'public' ? '🌎' : '🔒';
   const paths = BLU_LUCIDE_ICONS[visibility === 'public' ? 'globe' : 'lock-keyhole'];
@@ -262,6 +263,7 @@ function createBtnEl(button, sectionId) {
   wrap.dataset.tag = normalizeTag(button.tag);
   wrap.dataset.text = sanitizeText(button.text);
   wrap.dataset.vis = sanitizeText(button.vis || 'other') || 'other';
+  if (wrap.dataset.vis === 'other') wrap.dataset.customVis = JSON.stringify(normalizeCustomVis(button.customVis));
   wrap.draggable = editMode;
 
   const vis = wrap.dataset.vis;
@@ -269,7 +271,7 @@ function createBtnEl(button, sectionId) {
 
   const copyBtn = document.createElement('button');
   copyBtn.className = `copy-btn ${visClass}`;
-  copyBtn.innerHTML = `${buttonVisibilityMarkup(vis)}<span class="btn-label">${escapeHtml(button.name || '')}</span>`;
+  copyBtn.innerHTML = `${buttonVisibilityMarkup(vis, button.customVis)}<span class="btn-label">${escapeHtml(button.name || '')}</span>`;
   copyBtn.onclick = () => doCopy(wrap.dataset.text || '', copyBtn);
   bindButtonTextPreview(copyBtn, wrap.dataset.text, vis);
 

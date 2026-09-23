@@ -81,7 +81,8 @@ function getContextButtonData(buttonWrap) {
     name: buttonWrap.querySelector('.btn-label')?.textContent || '',
     text: buttonWrap.dataset.text || '',
     tag: buttonWrap.dataset.tag || '',
-    vis: buttonWrap.dataset.vis || 'other'
+    vis: buttonWrap.dataset.vis || 'other',
+    ...(buttonWrap.dataset.vis === 'other' ? { customVis: customVisFromElement(buttonWrap) } : {})
   };
 }
 
