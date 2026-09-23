@@ -1851,7 +1851,24 @@ body:not(.button-visual-new) #buttonIconTrigger { display: none; }
 }
 
 .button-icon-choice svg { width: 18px; height: 18px; }
-#buttonIconPicker .button-icon-choice[hidden] { display: none; }
+#buttonIconPicker [hidden] { display: none; }
+
+#buttonIconPicker .button-icon-group-title {
+  grid-column: 1 / -1;
+  margin: 8px 0 2px;
+  color: var(--text2);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.button-icon-empty {
+  grid-column: 1 / -1;
+  margin: 12px 0;
+  text-align: center;
+  color: var(--text2);
+  font-size: 13px;
+}
+
 .button-icon-choice:hover { border-color: var(--accent1); }
 .button-icon-choice[aria-pressed="true"] { border-color: var(--accent1); background: var(--accent1); color: #fff; }
 .button-icon-choice:focus-visible { outline: 2px solid var(--accent1); outline-offset: 2px; }

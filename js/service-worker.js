@@ -13,7 +13,7 @@
 // subir a versão abaixo (CACHE_VERSION). Isso cria um cache
 // novo e descarta o antigo na ativação.
 
-const CACHE_VERSION = 'v20';
+const CACHE_VERSION = 'v21';
 const CACHE_NAME = `blu-cache-${CACHE_VERSION}`;
 
 const APP_SHELL = [
@@ -29,6 +29,8 @@ const APP_SHELL = [
   '/js/core/debug.js',
   '/js/core/utils.js',
   '/libs/bootstrap-icons/button-icons.js',
+  '/libs/blu/blu-icons.js',
+  '/libs/blu/b_blu_fill.svg',
   '/js/ui/button-icon-picker.js',
   '/js/ui/dialogs.js',
   '/js/core/storage.js',

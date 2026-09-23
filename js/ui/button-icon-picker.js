@@ -1,4 +1,6 @@
 // Appearance is optional and never changes visibility permissions.
+const BLU_BUTTON_ICONS = Object.freeze([...BLU_BRAND_ICONS, ...BLU_BOOTSTRAP_ICONS]);
+
 const BLU_OTHER_COLORS = Object.freeze([
   { color: '#7C3AED', label: 'Roxo' },
   { color: '#15803D', label: 'Verde' },
@@ -17,7 +19,8 @@ const BLU_OTHER_GRADIENTS = Object.freeze([
 ]);
 
 function normalizeCustomVis(value) {
-  const icon = BLU_BUTTON_ICONS.some(entry => entry.id === value?.icon) ? value.icon : null;
+  const requestedIcon = value?.icon === 'bootstrap:bluetooth' ? 'blu:b' : value?.icon;
+  const icon = BLU_BUTTON_ICONS.some(entry => entry.id === requestedIcon) ? requestedIcon : null;
   let color = BLU_OTHER_GRADIENTS.find(entry => entry.color === value?.color)?.color
     || BLU_OTHER_COLORS.find(entry => entry.color.toLowerCase() === String(value?.color || '').toLowerCase())?.color || null;
   // Earlier icon-only records carried purple even when no color was chosen.
@@ -44,7 +47,11 @@ function customVisFromElement(element) {
 
 function customButtonIconMarkup(id, className = '') {
   const entry = BLU_BUTTON_ICONS.find(item => item.id === id);
-  return entry ? `<svg class="${className}" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">${entry.paths}</svg>` : '';
+  if (!entry) return '';
+  const content = entry.src
+    ? `<image href="${new URL(entry.src, document.baseURI).href}" width="16" height="16"/>`
+    : entry.paths;
+  return `<svg class="${className}" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">${content}</svg>`;
 }
 
 function toggleButtonIconPicker() {
@@ -55,10 +62,21 @@ function toggleButtonIconPicker() {
 }
 
 function filterButtonIconPicker() {
-  const query = document.getElementById('buttonIconSearch').value.trim().toLocaleLowerCase('pt-BR');
-  document.querySelectorAll('#buttonIconPicker .button-icon-choice').forEach(choice => {
-    choice.hidden = !choice.title.toLocaleLowerCase('pt-BR').includes(query);
+  const query = normalizeSearchText(document.getElementById('buttonIconSearch').value.trim());
+  const picker = document.getElementById('buttonIconPicker');
+  const visibleGroups = new Set();
+  let visibleCount = 0;
+  picker.querySelectorAll('.button-icon-choice').forEach(choice => {
+    choice.hidden = !choice.dataset.search.includes(query);
+    if (!choice.hidden) {
+      visibleGroups.add(choice.dataset.group);
+      visibleCount++;
+    }
   });
+  picker.querySelectorAll('.button-icon-group-title').forEach(heading => {
+    heading.hidden = !visibleGroups.has(heading.dataset.group);
+  });
+  picker.querySelector('.button-icon-empty').hidden = visibleCount > 0;
 }
 
 function openButtonColorPicker() {
@@ -90,11 +108,23 @@ function initButtonIconPicker(value) {
   updateButtonIconTrigger(custom.icon);
   updateButtonColorTrigger(custom.color);
   picker.replaceChildren();
+  let previousGroup = '';
   [{ id: null, label: 'Sem ícone' }, ...BLU_BUTTON_ICONS].forEach(entry => {
+    const group = entry.group || '';
+    if (group && group !== previousGroup) {
+      const heading = document.createElement('h3');
+      heading.className = 'button-icon-group-title';
+      heading.dataset.group = group;
+      heading.textContent = group;
+      picker.appendChild(heading);
+    }
+    previousGroup = group;
     const choice = document.createElement('button');
     choice.type = 'button';
     choice.className = 'button-icon-choice';
     choice.dataset.icon = entry.id || '';
+    choice.dataset.group = group;
+    choice.dataset.search = normalizeSearchText(`${entry.label} ${group} ${entry.id || ''}`);
     choice.title = entry.label;
     choice.setAttribute('aria-pressed', String(entry.id === custom.icon));
     choice.innerHTML = customButtonIconMarkup(entry.id);
@@ -112,6 +142,13 @@ function initButtonIconPicker(value) {
     });
     picker.appendChild(choice);
   });
+  const empty = document.createElement('p');
+  empty.className = 'button-icon-empty';
+  empty.setAttribute('role', 'status');
+  empty.textContent = 'Nenhum ícone encontrado.';
+  empty.hidden = true;
+  picker.appendChild(empty);
+  filterButtonIconPicker();
   updateButtonIconPickerVisibility();
   updateButtonColorPicker();
 }
