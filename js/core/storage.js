@@ -7,7 +7,7 @@ const SETTINGS_STORAGE_KEY = 'blu:settings';
 const META_STORAGE_KEY = 'blu:meta';
 const CLIENT_ID_STORAGE_KEY = 'blu:clientId';
 const PENDING_IMPORT_UNDO_KEY = 'blu:pendingImportUndo';
-const VERSION = '1.8';
+const VERSION = '1.9';
 const BASE_TITLE = 'Blû';
 
 let editMode = false;
@@ -227,6 +227,26 @@ function collectState() {
     sections,
     archived: JSON.parse(JSON.stringify(archivedItems))
   };
+}
+
+function resetCustomButtonStyles() {
+  const state = collectState();
+  const buttons = [
+    ...state.sections.flatMap(section => section.buttons),
+    ...state.archived.buttons.map(record => record.item),
+    ...state.archived.sections.flatMap(record => record.item.buttons)
+  ];
+  const customized = buttons.filter(button => {
+    if (button.vis !== 'other') return false;
+    const style = normalizeCustomVis(button.customVis);
+    return !!(style.color || style.icon);
+  });
+  if (!customized.length) return false;
+
+  pushHistory();
+  customized.forEach(button => { button.customVis = normalizeCustomVis(null); });
+  restoreState(state);
+  return true;
 }
 
 function createStateSnapshot(state = collectState()) {

@@ -3,9 +3,6 @@
 // ==========================================================
 
 const WHATS_NEW_VERSION = '1.9';
-// Ativar somente no fechamento da versão 1.9, junto ao último incremento
-// planejado do cache do service worker (v19 ou, no máximo, v20).
-const WHATS_NEW_PUBLIC = false;
 
 const WHATS_NEW_ITEMS = [
   {
@@ -75,21 +72,15 @@ function markWhatsNewAsSeen(version = WHATS_NEW_VERSION) {
   updateWhatsNewButtonUI();
 }
 
-function isWhatsNewPreviewEnvironment() {
-  const localHosts = new Set(['localhost', '127.0.0.1', '[::1]']);
-  return location.protocol === 'file:' || localHosts.has(location.hostname);
-}
-
 function updateWhatsNewButtonUI() {
   const button = document.getElementById('whatsNewBtn');
   const aboutButton = document.getElementById('aboutWhatsNewBtn');
-  const available = WHATS_NEW_PUBLIC || isWhatsNewPreviewEnvironment();
   const unseen = !hasSeenWhatsNew();
   if (button) {
-    button.hidden = !available || !unseen;
+    button.hidden = !unseen;
     button.setAttribute('aria-label', unseen ? 'Novidades não lidas' : 'Ver novidades desta versão');
   }
-  if (aboutButton) aboutButton.hidden = !available;
+  if (aboutButton) aboutButton.hidden = false;
 }
 
 function updateWhatsNewVisualToggle() {
@@ -125,7 +116,7 @@ function ensureWhatsNewModal() {
         <div class="whats-new-visual-setting">
           <div>
             <strong>Visual novo dos botões</strong>
-            <p>Ativado por padrão nesta versão. Você pode desativá-lo aqui ou em Menu &gt; Conteúdo.</p>
+            <p>Ativado ao abrir as novidades pela primeira vez. Você pode desativá-lo aqui ou em Menu &gt; Conteúdo.</p>
           </div>
           <label class="whats-new-visual-switch">
             <input id="whatsNewButtonVisualSwitch" type="checkbox" role="switch" aria-label="Ativar visual novo dos botões" onchange="setWhatsNewButtonVisual(this.checked)">
@@ -146,14 +137,14 @@ function ensureWhatsNewModal() {
 
 function openWhatsNew({ markSeen = true } = {}) {
   ensureWhatsNewModal();
+  if (markSeen && getSetting('buttonVisual') === null) {
+    setSetting('buttonVisual', 'new');
+    applyButtonVisualPreference();
+  }
   updateWhatsNewVisualToggle();
   document.getElementById('menuOverlay')?.classList.remove('open');
   openModal('whatsNewModal');
   if (markSeen) markWhatsNewAsSeen();
-}
-
-function shouldShowWhatsNew() {
-  return !hasSeenWhatsNew();
 }
 
 function initWhatsNew() {

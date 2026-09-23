@@ -397,11 +397,11 @@ Botões com o mesmo nome:
 - [x] Fazer `Limpar Tudo` apagar preferências, itens fixados e a evidência de compartilhamento.
 
 - [ ] Revisar quais outras opções avançadas também devem permanecer acessíveis pela pesquisa ou por atalhos.
-- [ ] Apresentar as novidades da reorganização aos usuários.
+- [x] Apresentar as novidades da reorganização aos usuários.
   - [x] Preparar silenciosamente a tela e o controle de versão vista.
   - [x] Adicionar um acesso manual à tela.
-  - [x] Manter sino e acesso manual restritos ao ambiente de testes até o lançamento.
-  - [ ] Atualizar `VERSION`, Marca e Versão visível para `1.9` no fechamento do lançamento.
+  - [x] Liberar sino e acesso manual na versão 1.9.
+  - [x] Atualizar `VERSION`, Marca e Versão visível para `1.9` no fechamento do lançamento.
   - [x] Não abrir automaticamente; sinalizar novidades não lidas com uma animação breve no sino.
 
 ### Mobile

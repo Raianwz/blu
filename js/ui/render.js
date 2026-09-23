@@ -3,8 +3,7 @@
 // ==========================================================
 
 function isNewButtonVisualEnabled() {
-  const defaultVisual = WHATS_NEW_PUBLIC || isWhatsNewPreviewEnvironment() ? 'new' : 'classic';
-  return getSetting('buttonVisual', defaultVisual) === 'new';
+  return getSetting('buttonVisual', 'classic') === 'new';
 }
 
 function applyButtonVisualPreference() {

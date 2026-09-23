@@ -167,7 +167,7 @@ function initEditAnimationPreference() {
 
 async function resetPreferences() {
   const ok = await confirmDialog(
-    'As configurações de aparência e comportamento voltarão ao padrão. Seus botões, seções, favoritos e estatísticas não serão alterados.',
+    'As configurações de aparência e comportamento, incluindo cores e ícones personalizados dos botões, voltarão ao padrão. Textos, seções, favoritos e estatísticas serão preservados.',
     { title: '↺ Redefinir Preferências', confirmText: 'Redefinir' }
   );
   if (!ok) return;
@@ -177,6 +177,7 @@ async function resetPreferences() {
     return;
   }
 
+  resetCustomButtonStyles();
   clearSearchHistory({ silent: true });
   resetQuickAccessPreferences({ notifyUser: false });
 

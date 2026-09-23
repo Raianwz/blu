@@ -8,10 +8,18 @@ const BLU_OTHER_COLORS = Object.freeze([
   { color: '#4338CA', label: 'Índigo' }
 ]);
 
+const BLU_OTHER_GRADIENTS = Object.freeze([
+  { color: 'legacy-gradient', label: 'Gradiente padrão', background: 'linear-gradient(135deg, #667eea, #764ba2)' },
+  { color: 'gradient-aurora', label: 'Gradiente aurora', background: 'linear-gradient(135deg, #5B21B6, #9D174D)' },
+  { color: 'gradient-forest', label: 'Gradiente floresta', background: 'linear-gradient(135deg, #166534, #0F766E)' },
+  { color: 'gradient-ember', label: 'Gradiente brasa', background: 'linear-gradient(135deg, #9A3412, #9D174D)' },
+  { color: 'gradient-night', label: 'Gradiente noite', background: 'linear-gradient(135deg, #312E81, #164E63)' }
+]);
+
 function normalizeCustomVis(value) {
   const icon = BLU_BUTTON_ICONS.some(entry => entry.id === value?.icon) ? value.icon : null;
-  let color = value?.color === 'legacy-gradient' ? 'legacy-gradient'
-    : BLU_OTHER_COLORS.find(entry => entry.color.toLowerCase() === String(value?.color || '').toLowerCase())?.color || null;
+  let color = BLU_OTHER_GRADIENTS.find(entry => entry.color === value?.color)?.color
+    || BLU_OTHER_COLORS.find(entry => entry.color.toLowerCase() === String(value?.color || '').toLowerCase())?.color || null;
   // Earlier icon-only records carried purple even when no color was chosen.
   const colorSelected = Boolean(color && (value?.colorSelected === true || color !== '#7C3AED'));
   if (!colorSelected) color = null;
@@ -20,8 +28,7 @@ function normalizeCustomVis(value) {
 
 function otherButtonBackground(value) {
   const color = normalizeCustomVis(value).color;
-  if (color === 'legacy-gradient') return 'linear-gradient(135deg, #667eea, #764ba2)';
-  return color;
+  return BLU_OTHER_GRADIENTS.find(entry => entry.color === color)?.background || color;
 }
 
 function applyOtherButtonColor(element, visibility, value) {
@@ -67,12 +74,10 @@ function updateButtonIconTrigger(icon) {
 }
 
 function updateButtonColorTrigger(color) {
-  const entry = BLU_OTHER_COLORS.find(item => item.color === color);
-  const label = color === 'legacy-gradient' ? 'Gradiente antigo' : entry?.label || 'Cor padrão';
-  document.getElementById('buttonColorTriggerText').textContent = label;
-  document.getElementById('buttonColorTriggerPreview').style.background = color === 'legacy-gradient'
-    ? 'linear-gradient(135deg, #667eea, #764ba2)' : entry?.color
-      || (document.body.classList.contains('button-visual-new') ? '#7C3AED' : 'linear-gradient(135deg, #667eea, #764ba2)');
+  const entry = [...BLU_OTHER_COLORS, ...BLU_OTHER_GRADIENTS].find(item => item.color === color);
+  document.getElementById('buttonColorTriggerText').textContent = entry?.label || 'Cor padrão';
+  document.getElementById('buttonColorTriggerPreview').style.background = entry?.background || entry?.color
+    || (document.body.classList.contains('button-visual-new') ? '#7C3AED' : BLU_OTHER_GRADIENTS[0].background);
 }
 
 function initButtonIconPicker(value) {
@@ -115,7 +120,7 @@ function updateButtonColorPicker() {
   const picker = document.getElementById('buttonColorPicker');
   const selected = document.getElementById('buttonIconPicker').dataset.color;
   picker.replaceChildren();
-  [{ color: '', label: 'Padrão' }, ...BLU_OTHER_COLORS, { color: 'legacy-gradient', label: 'Gradiente antigo' }].forEach(entry => {
+  [{ color: '', label: 'Padrão' }, ...BLU_OTHER_COLORS, ...BLU_OTHER_GRADIENTS].forEach(entry => {
     const choice = document.createElement('button');
     choice.type = 'button';
     choice.className = 'button-color-choice';
@@ -124,8 +129,7 @@ function updateButtonColorPicker() {
     choice.setAttribute('aria-pressed', String(entry.color === selected));
     const swatch = document.createElement('span');
     swatch.className = 'button-color-swatch';
-    swatch.style.background = entry.color === 'legacy-gradient'
-      ? 'linear-gradient(135deg, #667eea, #764ba2)' : entry.color || 'var(--surface)';
+    swatch.style.background = entry.background || entry.color || 'var(--surface)';
     const label = document.createElement('span');
     label.textContent = entry.label;
     choice.append(swatch, label);
