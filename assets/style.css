@@ -1751,7 +1751,44 @@ body.edit-mode.drag-organizing .section-wrap:not(.section-drag-placeholder) {
   max-width: 340px;
 }
 
+#buttonIconPicker {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: 6px;
+}
+
+.button-icon-hint {
+  color: var(--text2);
+  font-size: 12px;
+  margin: 4px 0 8px;
+}
+
+.button-icon-choice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 62px;
+  padding: 8px 4px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface2);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.button-icon-choice svg { width: 18px; height: 18px; }
+.button-icon-choice:hover { border-color: var(--accent1); }
+.button-icon-choice[aria-pressed="true"] { border-color: var(--accent1); background: var(--accent1); color: #fff; }
+.button-icon-choice:focus-visible { outline: 2px solid var(--accent1); outline-offset: 2px; }
+.button-icon-choice:active { filter: brightness(.85); }
+
+#btnModal .modal { max-height: calc(100dvh - 32px); overflow-y: auto; }
+
 .button-visibility-svg {
+  flex-shrink: 0;
   display: none;
   width: 18px;
   height: 18px;

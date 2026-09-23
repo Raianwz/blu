@@ -209,7 +209,8 @@ function collectState() {
         name: label ? label.textContent : '',
         text: button.dataset.text || '',
         tag: button.dataset.tag || '',
-        vis: button.dataset.vis || 'other'
+        vis: button.dataset.vis || 'other',
+        ...(button.dataset.vis === 'other' ? { customVis: customVisFromElement(button) } : {})
       });
     });
 
@@ -240,7 +241,8 @@ function createStateSnapshot(state = collectState()) {
         name: button.name,
         text: button.text,
         tag: button.tag,
-        vis: button.vis
+        vis: button.vis,
+        ...(button.vis === 'other' ? { customVis: normalizeCustomVis(button.customVis) } : {})
       }))
     })),
     archived: state.archived

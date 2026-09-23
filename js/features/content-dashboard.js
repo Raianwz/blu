@@ -209,7 +209,7 @@ function createFavoriteCard(info, removable = false) {
   const copy = document.createElement('button');
   copy.type = 'button';
   copy.className = 'favorite-card-copy';
-  copy.innerHTML = `<strong>${buttonVisibilityMarkup(info.vis)} ${escapeHtml(info.name)}</strong><small>${escapeHtml(info.section)}</small>`;
+  copy.innerHTML = `<strong>${buttonVisibilityMarkup(info.vis, info.customVis)} ${escapeHtml(info.name)}</strong><small>${escapeHtml(info.section)}</small>`;
   copy.onclick = () => copyUserDataButton(info.id);
   bindButtonTextPreview(copy, info.text, info.vis);
   card.appendChild(copy);

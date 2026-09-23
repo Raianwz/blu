@@ -169,6 +169,7 @@ function openAddBtn(sectionId) {
   document.getElementById('bText').value = '';
   document.getElementById('bTag').value = '';
   document.getElementById('bVis').value = 'other';
+  initButtonIconPicker(null);
   openModal('btnModal');
 }
 
@@ -188,6 +189,7 @@ function openEditBtn(sectionId, btnId) {
   document.getElementById('bText').value = wrap.dataset.text || '';
   document.getElementById('bTag').value = wrap.dataset.tag || '';
   document.getElementById('bVis').value = wrap.dataset.vis || 'other';
+  initButtonIconPicker(customVisFromElement(wrap));
   openModal('btnModal');
 }
 
@@ -225,7 +227,8 @@ function saveBtn() {
     name,
     text,
     tag,
-    vis
+    vis,
+    ...(vis === 'other' ? { customVis: selectedButtonCustomVis() } : {})
   };
 
   if (currentBtnId) {

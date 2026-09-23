@@ -183,7 +183,8 @@ function normalizeImportedData(parsed) {
                 name: button.name ?? button.btnName ?? '',
                 text: button.text ?? '',
                 tag: button.tag ?? '',
-                vis: button.vis ?? 'other'
+                vis: button.vis ?? 'other',
+                customVis: button.customVis
               }))
             : []
         }))
@@ -199,7 +200,8 @@ function normalizeImportedData(parsed) {
           name: sanitizeText(button.name ?? button.btnName ?? ''),
           text: sanitizeText(button.text),
           tag: addNormalizedTag(button.tag || ''),
-          vis: ['public', 'private', 'other'].includes(button.vis) ? button.vis : 'other'
+          vis: ['public', 'private', 'other'].includes(button.vis) ? button.vis : 'other',
+          ...(!['public', 'private'].includes(button.vis) ? { customVis: normalizeCustomVis(button.customVis) } : {})
         }))
       : []
   }));
@@ -211,7 +213,8 @@ function normalizeImportedData(parsed) {
       name: sanitizeText(record?.item?.name ?? record?.item?.btnName ?? ''),
       text: sanitizeText(record?.item?.text),
       tag: addNormalizedTag(record?.item?.tag || ''),
-      vis: ['public', 'private', 'other'].includes(record?.item?.vis) ? record.item.vis : 'other'
+      vis: ['public', 'private', 'other'].includes(record?.item?.vis) ? record.item.vis : 'other',
+      ...(!['public', 'private'].includes(record?.item?.vis) ? { customVis: normalizeCustomVis(record?.item?.customVis) } : {})
     },
     sectionId: String(record?.sectionId || ''),
     sectionName: sanitizeText(record?.sectionName || ''),
@@ -229,7 +232,8 @@ function normalizeImportedData(parsed) {
         name: sanitizeText(button?.name ?? button?.btnName ?? ''),
         text: sanitizeText(button?.text),
         tag: addNormalizedTag(button?.tag || ''),
-        vis: ['public', 'private', 'other'].includes(button?.vis) ? button.vis : 'other'
+        vis: ['public', 'private', 'other'].includes(button?.vis) ? button.vis : 'other',
+        ...(!['public', 'private'].includes(button?.vis) ? { customVis: normalizeCustomVis(button?.customVis) } : {})
       }))
     },
     originalIndex: Math.max(0, Math.floor(Number(record?.originalIndex) || 0)),

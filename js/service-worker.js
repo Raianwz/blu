@@ -28,6 +28,8 @@ const APP_SHELL = [
   '/assets/icons/icon-maskable-512.png',
   '/js/core/debug.js',
   '/js/core/utils.js',
+  '/libs/bootstrap-icons/button-icons.js',
+  '/js/ui/button-icon-picker.js',
   '/js/ui/dialogs.js',
   '/js/core/storage.js',
   '/js/data/user-data.js',

@@ -218,6 +218,7 @@ function customExportButtonObject(button, section, config, favoriteIds) {
   if (f.has('buttonText')) assignCustomExportField(out, 'text', button.text, config);
   if (f.has('buttonTag')) assignCustomExportField(out, 'tag', button.tag, config);
   if (f.has('buttonVisibility')) assignCustomExportField(out, 'vis', button.vis, config);
+  if (f.has('buttonVisibility') && button.vis === 'other') out.customVis = normalizeCustomVis(button.customVis);
   if (f.has('buttonSection')) { assignCustomExportField(out, 'section', section.name, config); assignCustomExportField(out, 'sectionId', section.id, config); }
   if (f.has('buttonFavorite')) out.favorite = favoriteIds.has(button.id);
   if (f.has('buttonStats')) out.stats = { copies: 0, views: 0, edits: 0, lastUsed: null, createdAt: null, ...(userData?.stats?.[button.id] || {}) };

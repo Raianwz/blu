@@ -278,7 +278,8 @@ function getButtonInfo(buttonId) {
     name: button.querySelector('.btn-label')?.textContent || 'Botão sem nome',
     section: button.closest('.section-wrap')?.querySelector('.section-title')?.textContent || '',
     text: button.dataset.text || '',
-    vis: ['public', 'private', 'other'].includes(button.dataset.vis) ? button.dataset.vis : 'other'
+    vis: ['public', 'private', 'other'].includes(button.dataset.vis) ? button.dataset.vis : 'other',
+    customVis: customVisFromElement(button)
   };
 }
 
