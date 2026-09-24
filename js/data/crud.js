@@ -7,6 +7,7 @@ let currentBtnId = null;
 const protectedEditModals = new Set(['btnModal', 'sectionModal']);
 const modalInitialValues = new Map();
 let modalDismissPending = false;
+let shareRequestPending = false;
 
 // Criptografia do backup: controlada via atalho Alt+C (não há mais
 // checkbox no menu — o estado liga/desliga e reflete como um pequeno
@@ -75,6 +76,7 @@ function modalHasUnsavedFormChanges(id) {
 async function requestModalDismiss(id) {
   const modal = document.getElementById(id);
   if (!modal?.classList.contains('open') || modalDismissPending) return;
+  if (id === 'shareOptionsModal') return dismissShareOptions();
 
   if (!protectedEditModals.has(id) || !modalHasUnsavedFormChanges(id)) {
     closeModal(id);
@@ -620,21 +622,20 @@ function getShareSizeInfo(state) {
 }
 
 function buildShareCountsHtml(state) {
-  const sectionCount = state.sections.length;
-  const buttonCount = state.sections.reduce((sum, s) => sum + s.buttons.length, 0);
+  const counts = shareStateCounts(state);
+  const sectionCount = counts.sections;
+  const buttonCount = counts.buttons;
   const tagCount = state.tags.length;
   const sizeInfo = getShareSizeInfo(state);
-  const privateCount = state.sections.reduce(
-    (sum, s) => sum + s.buttons.filter(b => b.vis === 'private').length,
-    0
-  );
+  const privateCount = counts.private;
 
   let html = `
     <div class="share-counts">
       <span>${iconSvg('folder_plus')} ${sectionCount} seç${sectionCount === 1 ? 'ão' : 'ões'}</span>
       <span>${iconSvg('tag')} ${tagCount} tag${tagCount === 1 ? '' : 's'}</span>
-      <span>${iconSvg('share')} ${buttonCount} botã${buttonCount === 1 ? 'o' : 'o'}${buttonCount === 1 ? '' : 's'}</span>
+      <span>${iconSvg('share')} ${buttonCount} ${buttonCount === 1 ? 'botão' : 'botões'}</span>
       <span title="Tamanho do JSON antes da criptografia">JSON: ${formatFileSize(sizeInfo.jsonBytes)}</span>
+      ${counts.archived ? `<span>${counts.archived} item(ns) arquivado(s)</span>` : ''}
     </div>
     <div class="share-size-check ${sizeInfo.exceedsLimit ? 'limit-exceeded' : sizeInfo.usagePercent >= 85 ? 'near-limit' : ''}">
       <div class="share-size-label">
@@ -656,13 +657,13 @@ function buildShareCountsHtml(state) {
 }
 
 function getShareStateSnapshot(includeArchived = false) {
-  const state = JSON.parse(JSON.stringify(getCurrentStateSnapshot().state));
-  if (!includeArchived) state.archived = { buttons: [], sections: [] };
+  const state = buildSelectedShareState(getCurrentStateSnapshot().state, {...shareSelection, includeArchived});
   return createStateSnapshot(state);
 }
 
 function updateShareArchiveChoice() {
   const includeArchived = document.getElementById('shareIncludeArchived')?.checked === true;
+  shareSelection.includeArchived = includeArchived;
   const snapshot = getShareStateSnapshot(includeArchived);
   const counts = document.getElementById('shareCountsPreview');
   if (counts) counts.innerHTML = buildShareCountsHtml(snapshot.state);
@@ -670,7 +671,8 @@ function updateShareArchiveChoice() {
   const confirmBtn = document.getElementById('confirmShareBtn');
   if (confirmBtn) {
     confirmBtn.dataset.payloadBlocked = String(sizeInfo.exceedsLimit);
-    confirmBtn.disabled = sizeInfo.exceedsLimit || !navigator.onLine;
+    confirmBtn.dataset.emptySelection = String(!shareStateHasItems(snapshot.state));
+    confirmBtn.disabled = sizeInfo.exceedsLimit || !navigator.onLine || !shareStateHasItems(snapshot.state);
     confirmBtn.title = sizeInfo.exceedsLimit ? 'O payload ultrapassa o limite de 600 KB' : '';
   }
 }
@@ -681,24 +683,26 @@ function updateShareArchiveChoice() {
 function openShareModal(includeArchived = (() => {
   const record = getLastShareRecord();
   return record ? record.includeArchived !== false : false;
-})()) {
-  if (!navigator.onLine) {
+})(), {preserveSelection = false, forcePreview = false} = {}) {
+  if (!navigator.onLine && !preserveSelection) {
     notify('Sem conexão: o compartilhamento está indisponível.', 'err');
     return;
   }
 
+  if (!preserveSelection) shareSelection = readShareSelection(getLastShareRecord()?.selection, includeArchived);
+  shareSelection.includeArchived = includeArchived;
   const snapshot = getShareStateSnapshot(includeArchived);
   const state = snapshot.state;
   const sizeInfo = getShareSizeInfo(state);
   const currentComparable = snapshot.comparableStateString;
   const lastShare = getLastShareRecord();
-  const stillValid = !!(lastShare && lastShare.comparableState === currentComparable && lastShare.expiresAt > Date.now());
-  if (!stillValid && includeArchived) return openShareModal(false);
+  const stillValid = !forcePreview && !!(lastShare && lastShare.comparableState === currentComparable && lastShare.expiresAt > Date.now());
 
   const titleEl = document.getElementById('shareModalTitle');
   const bodyEl = document.getElementById('shareModalBody');
   const footerEl = document.getElementById('shareModalFooter');
   const countsHtml = buildShareCountsHtml(state);
+  document.getElementById('shareSelectionBadge').textContent = shareSelection.mode === 'custom' ? 'Personalizado' : '';
 
   if (stillValid) {
     titleEl.textContent = '🔗 Link Ativo';
@@ -732,7 +736,7 @@ function openShareModal(includeArchived = (() => {
     titleEl.textContent = '🔗 Compartilhar Dados';
     bodyEl.innerHTML = `
       <p class="share-modal-desc">Isso vai gerar um link público (válido por 3 dias) com os dados abaixo:</p>
-      ${getArchiveCount() ? `<label class="share-archive-choice"><input id="shareIncludeArchived" type="checkbox"> <span>Incluir itens arquivados?</span><small>${getArchiveCount()} item(ns) arquivado(s)</small></label>` : ''}
+      ${getArchiveCount() ? `<label class="share-archive-choice"><input id="shareIncludeArchived" type="checkbox" ${includeArchived ? 'checked' : ''}> <span>Incluir itens arquivados?</span><small>${getArchiveCount()} item(ns) arquivado(s)</small></label>` : ''}
       <div id="shareCountsPreview">${countsHtml}</div>
     `;
 
@@ -748,6 +752,7 @@ function openShareModal(includeArchived = (() => {
     confirmBtn.textContent = 'Compartilhar';
     confirmBtn.onclick = () => shareData();
     confirmBtn.dataset.payloadBlocked = String(sizeInfo.exceedsLimit);
+    confirmBtn.dataset.emptySelection = String(!shareStateHasItems(state));
     if (sizeInfo.exceedsLimit) {
       confirmBtn.disabled = true;
       confirmBtn.title = 'O payload ultrapassa o limite de 600 KB';
@@ -759,12 +764,14 @@ function openShareModal(includeArchived = (() => {
   }
 
   openModal('shareModal');
+  updateShareConnectivityUI();
 }
 
 // Cria de fato um novo link (chamada pelos botões "Compartilhar" e "Gerar
 // novo link mesmo assim" dentro do modal — a decisão de reaproveitar ou
 // não já foi tomada em openShareModal() antes de chegar aqui).
 async function shareData(includeArchivedOverride) {
+  if (shareRequestPending) return;
   if (!navigator.onLine) {
     notify('Sem conexão: conecte-se à internet para compartilhar.', 'err');
     return;
@@ -775,6 +782,11 @@ async function shareData(includeArchivedOverride) {
     : document.getElementById('shareIncludeArchived')?.checked === true;
   const snapshot = getShareStateSnapshot(includeArchived);
   const state = snapshot.state;
+  if (!shareStateHasItems(state)) {
+    notify('Selecione pelo menos uma seção ou um botão para compartilhar.', 'err');
+    return;
+  }
+  const selection = {...shareSelection, includeArchived, items: [...shareSelection.items]};
   const jsonString = snapshot.stateString;
   const jsonBytes = getUtf8ByteLength(jsonString);
   const estimatedPayloadBytes = estimateEncryptedPayloadBytes(jsonString);
@@ -798,6 +810,8 @@ async function shareData(includeArchivedOverride) {
 
   let encryptedPayload;
   let payloadBytes = 0;
+  shareRequestPending = true;
+  updateShareConnectivityUI();
   try {
     encryptedPayload = await encryptJsonString(jsonString);
     payloadBytes = getUtf8ByteLength(encryptedPayload);
@@ -808,12 +822,16 @@ async function shareData(includeArchivedOverride) {
       apiLimitSize: formatFileSize(SHARE_MAX_PAYLOAD_BYTES)
     });
   } catch (error) {
+    shareRequestPending = false;
+    updateShareConnectivityUI();
     console.error('Erro ao criptografar para compartilhamento:', error);
     notify('Não foi possível preparar o compartilhamento (criptografia indisponível neste navegador).', 'err');
     return;
   }
 
   if (payloadBytes > SHARE_MAX_PAYLOAD_BYTES) {
+    shareRequestPending = false;
+    updateShareConnectivityUI();
     notify(`O compartilhamento tem ${formatFileSize(payloadBytes)} e excede o limite de ${formatFileSize(SHARE_MAX_PAYLOAD_BYTES)}.`, 'err');
     console.warn('[Compartilhamento] Payload criptografado acima do limite.', {
       payloadBytes,
@@ -858,17 +876,19 @@ async function shareData(includeArchivedOverride) {
       originalUrl: url,
       alias: null,
       includeArchived,
+      selection,
       expiresAt: Date.now() + expiresInSeconds * 1000
     });
     markShareLinkCreated();
 
     console.info('[Compartilhamento] Link criado com sucesso.', { expiresInSeconds });
 
-    openShareModal(includeArchived); // reabre já mostrando o link recém-criado (Estado 2)
+    openShareModal(includeArchived); // Reabre a seleção registrada no link recém-criado.
   } catch (error) {
     console.error('Erro ao compartilhar:', error);
     notify(error.userMessage || 'Não foi possível criar o link de compartilhamento.', 'err');
   } finally {
+    shareRequestPending = false;
     updateShareConnectivityUI();
   }
 }
@@ -877,7 +897,7 @@ function updateShareConnectivityUI(announce = false) {
   const online = navigator.onLine;
   const menuButton = document.getElementById('shareBtn');
   if (menuButton) {
-    menuButton.disabled = !online;
+    menuButton.disabled = !online || shareRequestPending;
     menuButton.classList.toggle('offline', !online);
     menuButton.title = online
       ? 'Compartilhar dados via link (expira em 3 dias)'
@@ -887,7 +907,7 @@ function updateShareConnectivityUI(announce = false) {
 
   const confirmButton = document.getElementById('confirmShareBtn');
   if (confirmButton) {
-    confirmButton.disabled = !online || confirmButton.dataset.payloadBlocked === 'true';
+    confirmButton.disabled = !online || shareRequestPending || confirmButton.dataset.payloadBlocked === 'true' || confirmButton.dataset.emptySelection === 'true';
     confirmButton.title = !online
       ? 'Compartilhamento indisponível: sem conexão'
       : confirmButton.dataset.payloadBlocked === 'true' ? 'O payload ultrapassa o limite de 600 KB' : '';
@@ -895,13 +915,17 @@ function updateShareConnectivityUI(announce = false) {
 
   const regenerateButton = document.getElementById('regenerateShareBtn');
   if (regenerateButton) {
-    regenerateButton.disabled = !online;
+    regenerateButton.disabled = !online || shareRequestPending || regenerateButton.dataset.payloadBlocked === 'true';
     regenerateButton.title = !online
       ? 'Compartilhamento indisponível: sem conexão'
       : regenerateButton.dataset.payloadBlocked === 'true' ? 'O payload ultrapassa o limite de 600 KB' : '';
   }
 
   const customizeButton = document.getElementById('customizeShareBtn');
+  const optionsGear = document.getElementById('shareOptionsGear');
+  if (optionsGear) optionsGear.disabled = shareRequestPending;
+  const archiveChoice = document.getElementById('shareIncludeArchived');
+  if (archiveChoice) archiveChoice.disabled = shareRequestPending;
   if (customizeButton) {
     customizeButton.disabled = !online;
     customizeButton.title = online ? 'Criar ou alterar o apelido deste link' : 'Personalização indisponível: sem conexão';

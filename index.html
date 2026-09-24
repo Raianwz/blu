@@ -273,9 +273,43 @@
 
   <div class="modal-bg" id="shareModal">
     <div class="modal">
-      <h2 id="shareModalTitle">🔗 Compartilhar Dados</h2>
+      <div class="share-modal-heading">
+        <h2 id="shareModalTitle">🔗 Compartilhar Dados</h2>
+        <span id="shareSelectionBadge"></span>
+      </div>
       <div id="shareModalBody"></div>
-      <div class="modal-footer" id="shareModalFooter"></div>
+      <div class="share-modal-actions">
+        <div class="modal-footer" id="shareModalFooter"></div>
+        <button id="shareOptionsGear" class="share-options-gear" type="button" onclick="openShareOptions()" title="Opções de compartilhamento" aria-label="Opções de compartilhamento" aria-haspopup="dialog" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.13 5.07 L10.19 4.72 L10.26 2.15 L13.74 2.15 L13.81 4.72 L14.87 5.07 L14.87 5.07 L15.86 5.57 L17.74 3.81 L20.19 6.26 L18.43 8.14 L18.93 9.13 L18.93 9.13 L19.28 10.19 L21.85 10.26 L21.85 13.74 L19.28 13.81 L18.93 14.87 L18.93 14.87 L18.43 15.86 L20.19 17.74 L17.74 20.19 L15.86 18.43 L14.87 18.93 L14.87 18.93 L13.81 19.28 L13.74 21.85 L10.26 21.85 L10.19 19.28 L9.13 18.93 L9.13 18.93 L8.14 18.43 L6.26 20.19 L3.81 17.74 L5.57 15.86 L5.07 14.87 L5.07 14.87 L4.72 13.81 L2.15 13.74 L2.15 10.26 L4.72 10.19 L5.07 9.13 L5.07 9.13 L5.57 8.14 L3.81 6.26 L6.26 3.81 L8.14 5.57 L9.13 5.07Z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-bg" id="shareOptionsModal">
+    <div class="modal share-options-modal" role="dialog" aria-modal="true" aria-labelledby="shareOptionsTitle">
+      <h2 id="shareOptionsTitle">Opções de compartilhamento</h2>
+      <div class="share-options-modes" role="group" aria-label="Conteúdo a compartilhar">
+        <label><input type="radio" name="shareOptionsMode" value="all" onchange="setShareOptionsMode(this.value)"> Tudo</label>
+        <label><input type="radio" name="shareOptionsMode" value="custom" onchange="setShareOptionsMode(this.value)"> Personalizado</label>
+      </div>
+      <label id="shareOptionsArchiveLabel" class="share-options-archive"><input id="shareOptionsArchived" type="checkbox" onchange="setShareOptionsArchived(this.checked)"> Incluir itens arquivados?</label>
+      <div id="shareOptionsCustom">
+        <input id="shareOptionsSearch" type="search" placeholder="Pesquisar nome, tag ou @seção" aria-label="Pesquisar nome, tag ou seção" oninput="filterShareOptions()">
+        <div class="share-options-actions">
+          <button id="shareSelectAll" type="button" class="mbtn secondary" onclick="selectShareResults(true)">Selecionar tudo</button>
+          <button id="shareSelectNone" type="button" class="mbtn secondary" onclick="selectShareResults(false)">Desmarcar tudo</button>
+        </div>
+        <div id="shareOptionsTree" aria-label="Itens disponíveis para compartilhar"></div>
+        <p id="shareOptionsEmpty" hidden>Nenhum item encontrado.</p>
+      </div>
+      <p id="shareOptionsSummary" role="status" aria-live="polite"></p>
+      <p id="shareOptionsError" role="alert"></p>
+      <div class="modal-footer">
+        <button class="mbtn secondary" type="button" onclick="requestModalDismiss('shareOptionsModal')">Cancelar</button>
+        <button class="mbtn primary" type="button" onclick="confirmShareOptions()">Confirmar</button>
+      </div>
     </div>
   </div>
 
@@ -555,6 +589,7 @@
   <script src="js/features/search.js"></script>
   <script src="js/core/crypto.js"></script>
   <script src="js/data/crud.js"></script>
+  <script src="js/data/share-options.js"></script>
   <script src="js/experiments/runtime.js"></script>
   <script src="js/features/dnd.js"></script>
   <script src="js/data/json-tools.js"></script>

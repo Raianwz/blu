@@ -51,6 +51,8 @@ Fundação do recurso:
 - [x] Permitir ativar ou desativar as ações de arquivar no menu de contexto.
 - [x] Incluir arquivados por padrão no backup completo.
 - [x] Adicionar “Incluir itens arquivados?” aos compartilhamentos e às exportações personalizadas.
+- [x] Compartilhamento personalizado por seção e botão, com busca por nome/tag ou @seção, arquivados opcionais e confirmação ao descartar alterações.
+- [x] Preservar rolagem e expansão ao marcar itens no compartilhamento personalizado.
 - [x] Manter arquivados fora da pesquisa e da tela inicial comuns.
 
 ### Descontinuação dos Favoritos — antecipada
