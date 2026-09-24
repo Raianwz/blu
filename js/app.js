@@ -222,6 +222,7 @@ function updateThemePreferenceUI() {
 }
 
 function applyTheme(dark) {
+  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
   document.body.classList.toggle('dark', dark);
   updateThemePreferenceUI();
 }
@@ -656,6 +657,10 @@ migrateLegacySettings();
 migrateLegacyMeta();
 initAdvancedMenuPreference();
 initTheme();
+// Libera transições somente depois da pintura inicial com o tema correto.
+requestAnimationFrame(() => requestAnimationFrame(() => {
+  document.documentElement.classList.remove('theme-booting');
+}));
 initEditAnimationPreference();
 initDragPreviewPreference();
 window.initBluExperiments?.();

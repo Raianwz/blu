@@ -3,6 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>
+    // Resolve o tema antes do CSS e da primeira pintura, sem alterar preferências.
+    (() => {
+      let theme;
+      try {
+        let settings;
+        try { settings = JSON.parse(localStorage.getItem('blu:settings') || '{}'); } catch (_) {}
+        theme = settings && typeof settings === 'object' && !Array.isArray(settings) && Object.prototype.hasOwnProperty.call(settings, 'theme')
+          ? settings.theme : localStorage.getItem('blu:theme');
+      } catch (_) {}
+      const dark = theme === 'dark' || (theme !== 'light' && !!window.matchMedia?.('(prefers-color-scheme: dark)').matches);
+      document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+      document.documentElement.classList.add('theme-booting');
+    })();
+  </script>
+  <style>
+    html[data-theme="light"] { background: #f0f2f8; color-scheme: light; }
+    html[data-theme="dark"] { background: #0f1117; color-scheme: dark; }
+    html.theme-booting body { transition: none; }
+  </style>
   <link rel="shortcut icon" href="assets/blu.svg" type="image/svg+xml">
   <title>Blû</title>
   <link rel="stylesheet" href="assets/style.css">
@@ -15,6 +35,7 @@
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
 </head>
 <body>
+  <script>document.body.classList.toggle('dark', document.documentElement.dataset.theme === 'dark');</script>
   <div id="topbar">
     <button id="hamburger" title="Menu" onclick="toggleMenu()"><svg class="menu-icon hamburger-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16" /> <path d="M4 12h16" /> <path d="M4 19h16" /></svg></button>
     <button id="whatsNewBtn" type="button" onclick="openWhatsNew()" title="Ver novidades desta versão" aria-label="Novidades não lidas" hidden><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.27 21a2 2 0 0 0 3.46 0"/><path d="M3.26 15.33A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.67C19.41 13.86 18 12.38 18 8A6 6 0 0 0 6 8c0 4.38-1.41 5.86-2.74 7.33"/></svg></button>
