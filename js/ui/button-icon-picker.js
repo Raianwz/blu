@@ -36,7 +36,11 @@ const BLU_OTHER_COLORS = Object.freeze([
   { color: '#856B00', label: 'Amarelo' },
   { color: '#BE185D', label: 'Rosa' },
   { color: '#4338CA', label: 'Índigo' },
-  { color: '#3B3330', label: 'Carvão' }
+  { color: '#3B3330', label: 'Carvão' },
+  { color: '#881337', label: 'Vinho' },
+  { color: '#596515', label: 'Oliva' },
+  { color: '#70452E', label: 'Café' },
+  { color: '#A21CAF', label: 'Magenta' }
 ]);
 
 const BLU_OTHER_GRADIENTS = Object.freeze([
@@ -46,7 +50,11 @@ const BLU_OTHER_GRADIENTS = Object.freeze([
   { color: 'gradient-ember', label: 'Gradiente brasa', background: 'linear-gradient(135deg, #9A3412, #9D174D)' },
   { color: 'gradient-gold', label: 'Gradiente dourado', background: 'linear-gradient(135deg, #996100, #AD5300)' },
   { color: 'gradient-ocean', label: 'Gradiente oceano', background: 'linear-gradient(135deg, #0F766E, #4338CA)' },
-  { color: 'gradient-night', label: 'Gradiente noite', background: 'linear-gradient(135deg, #312E81, #164E63)' }
+  { color: 'gradient-night', label: 'Gradiente noite', background: 'linear-gradient(135deg, #312E81, #164E63)' },
+  { color: 'gradient-vineyard', label: 'Gradiente vinhedo', background: 'linear-gradient(135deg, #86198F, #881337)' },
+  { color: 'gradient-autumn', label: 'Gradiente outono', background: 'linear-gradient(135deg, #966400, #A13621)' },
+  { color: 'gradient-moss', label: 'Gradiente musgo', background: 'linear-gradient(135deg, #657018, #285438)' },
+  { color: 'gradient-cocoa', label: 'Gradiente cacau', background: 'linear-gradient(135deg, #825438, #45271D)' }
 ]);
 
 function normalizeCustomVis(value) {
