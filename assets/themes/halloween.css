@@ -1,0 +1,85 @@
+/* Seasonal chrome only: visibility colors and custom button palettes stay intact. */
+body.halloween-theme {
+  --bg: #f7f0e8;
+  --surface: #fffaf5;
+  --surface2: #f4e9df;
+  --border: #dbc5b5;
+  --accent1: #a44716;
+  --topbar-bg: #fff7ee;
+  --shadow: rgba(65, 30, 12, .12);
+  background-image: radial-gradient(ellipse at top right, rgba(184, 81, 25, .10), transparent 55%);
+}
+body.dark.halloween-theme {
+  --bg: #151019;
+  --surface: #211a27;
+  --surface2: #2b2133;
+  --border: #4a344c;
+  --accent1: #b8501b;
+  --topbar-bg: #1b1421;
+  --shadow: rgba(0, 0, 0, .4);
+}
+body.halloween-theme .section-head {
+  box-shadow: inset 3px 0 0 #b8501b;
+  background-image: linear-gradient(100deg, rgba(184, 80, 27, .08), transparent 65%);
+}
+body.halloween-theme #topbar { border-bottom-color: #a44716; }
+
+/* Menu accents need their own text colors: the pumpkin fill is too dark
+   for small text on purple. Keep these tokens scoped to navigation. */
+body.halloween-theme {
+  --halloween-menu-text: #30241d;
+  --halloween-menu-active-text: #84320e;
+  --halloween-menu-active-bg: #f5dfca;
+  --halloween-menu-hover-bg: #efdbc9;
+  --halloween-menu-active-hover-bg: #efd1b5;
+  --halloween-menu-focus: #943c13;
+}
+body.dark.halloween-theme {
+  --halloween-menu-text: #f4edf7;
+  --halloween-menu-active-text: #ffc48c;
+  --halloween-menu-active-bg: #3a2932;
+  --halloween-menu-hover-bg: #382c42;
+  --halloween-menu-active-hover-bg: #49303a;
+  --halloween-menu-focus: #ffb875;
+}
+body.halloween-theme #menuOverlay :is(.menu-btn:not(.menu-btn-danger), .menu-submenu-toggle, .menu-setting-row) {
+  color: var(--halloween-menu-text);
+}
+body.halloween-theme #menuOverlay :is(.menu-btn:not(.menu-btn-danger), .menu-submenu-toggle):not(:disabled):hover {
+  background: var(--halloween-menu-hover-bg);
+  border-color: var(--halloween-menu-focus);
+}
+body.halloween-theme #menuOverlay :is(.menu-btn.active, .menu-submenu-toggle.open) {
+  color: var(--halloween-menu-active-text);
+  background: var(--halloween-menu-active-bg);
+  border-color: var(--halloween-menu-focus);
+}
+body.halloween-theme #menuOverlay :is(.menu-btn.active, .menu-submenu-toggle.open):not(:disabled):hover {
+  background: var(--halloween-menu-active-hover-bg);
+}
+body.halloween-theme #menuOverlay :is(button, select):focus-visible {
+  outline: 2px solid var(--halloween-menu-focus);
+  outline-offset: 2px;
+}
+body.halloween-theme #menuOverlay .menu-setting-row select {
+  color: var(--halloween-menu-text);
+}
+body.halloween-theme #menuOverlay .menu-setting-row select:focus {
+  border-color: var(--halloween-menu-focus);
+}
+#halloweenVisualBtn[hidden], #halloweenDecoration[hidden] { display: none; }
+#halloweenDecoration {
+  position: fixed;
+  right: 20px;
+  bottom: 18px;
+  width: 48px;
+  height: 48px;
+  color: #b8501b;
+  opacity: .65;
+  pointer-events: none;
+  user-select: none;
+  z-index: 1;
+}
+#halloweenDecoration svg { width: 100%; height: 100%; }
+@media (max-width: 600px) { #halloweenDecoration { width: 32px; height: 32px; right: 12px; bottom: 12px; } }
+@media (forced-colors: active) { #halloweenDecoration { display: none; } }

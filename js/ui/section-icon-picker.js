@@ -1,11 +1,8 @@
 let editingSectionId = null;
 let sectionPickerDismissPending = false;
 
-// Enable manually in the release commit. No date-based activation.
-const SECTION_ICONS_ENABLED = false;
-
 function sectionIconsReleased() {
-  return SECTION_ICONS_ENABLED;
+  return isBluFeatureAvailable('sectionIcons');
 }
 
 function refreshSectionIconRelease() {

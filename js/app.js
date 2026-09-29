@@ -187,6 +187,7 @@ async function resetPreferences() {
   applyTheme(!!systemThemeQuery?.matches);
   applyTextPreviewState(true);
   applyButtonVisualPreference();
+  applyHalloweenPreference();
   dragPreviewEnabled = false;
   applyDragPreviewState();
   window.resetBluExperiments?.();

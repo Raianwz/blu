@@ -1231,6 +1231,7 @@ async function clearAll(event = null) {
   applyTheme(!!systemThemeQuery?.matches);
   applyTextPreviewState(true);
   applyButtonVisualPreference();
+  applyHalloweenPreference();
   dragPreviewEnabled = false;
   applyDragPreviewState();
 }
