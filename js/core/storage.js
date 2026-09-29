@@ -217,6 +217,7 @@ function collectState() {
     sections.push({
       id: section.dataset.id,
       name: section.querySelector('.section-title').textContent,
+      ...(section.dataset.icon ? { icon: section.dataset.icon } : {}),
       collapsed: section.classList.contains('collapsed'),
       buttons
     });
@@ -256,6 +257,7 @@ function createStateSnapshot(state = collectState()) {
     sections: state.sections.map(section => ({
       id: section.id,
       name: section.name,
+      ...(section.icon ? { icon: section.icon } : {}),
       buttons: section.buttons.map(button => ({
         id: button.id,
         name: button.name,

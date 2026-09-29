@@ -238,6 +238,7 @@ function renderSection(section, container) {
   const wrap = document.createElement('div');
   wrap.className = 'section-wrap' + (section.collapsed ? ' collapsed' : '');
   wrap.dataset.id = String(section.id);
+  wrap.dataset.icon = typeof section.icon === 'string' ? section.icon : '';
 
   const count = Array.isArray(section.buttons) ? section.buttons.length : 0;
   const safeSectionId = String(section.id).replace(/'/g, "\\'");
@@ -246,6 +247,7 @@ function renderSection(section, container) {
     <div class="section-head">
       <button class="section-collapse-btn" onclick="toggleCollapse(this)" title="${section.collapsed ? 'Expandir' : 'Recolher'}">▾</button>
       <button class="section-add-btn" onclick="openAddBtn('${safeSectionId}')" title="Adicionar botão em ${escapeHtmlAttr(section.name)}">＋</button>
+      <span class="section-custom-icon" aria-hidden="true">${customButtonIconMarkup(section.icon)}</span>
       <span class="section-title">${escapeHtml(section.name)}</span>
       <span class="section-count" title="${count} botão(ões)">${count}</span>
       <button class="section-rename-btn" onclick="renameSection('${safeSectionId}')" title="Renomear seção">✏️</button>

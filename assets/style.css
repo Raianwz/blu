@@ -1817,7 +1817,7 @@ body:not(.button-visual-new) #buttonIconTrigger { display: none; }
   pointer-events: none;
 }
 
-#buttonIconSearch {
+.button-icon-search-wrap > input {
   display: block;
   width: 100%;
   min-height: 38px;
@@ -1832,9 +1832,9 @@ body:not(.button-visual-new) #buttonIconTrigger { display: none; }
   transition: border-color .15s ease, box-shadow .15s ease;
 }
 
-#buttonIconSearch::placeholder { color: var(--text2); opacity: 1; }
-#buttonIconSearch:hover { border-color: var(--accent1); }
-#buttonIconSearch:focus-visible {
+.button-icon-search-wrap > input::placeholder { color: var(--text2); opacity: 1; }
+.button-icon-search-wrap > input:hover { border-color: var(--accent1); }
+.button-icon-search-wrap > input:focus-visible {
   border-color: var(--accent1);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent1) 18%, transparent);
 }
@@ -1857,7 +1857,21 @@ body:not(.button-visual-new) #buttonIconTrigger { display: none; }
   box-shadow: 0 8px 24px var(--shadow);
 }
 
-#buttonIconPicker { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+#buttonIconPicker, #sectionIconPicker { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+#sectionIconPicker [hidden], #sectionIconEmpty[hidden] { display: none; }
+#sectionIconModal { z-index: 810; }
+body:has(#renameSectionModal.open) #dialogModal { z-index: 820; }
+.section-name-editor { display: flex; align-items: center; gap: 8px; }
+.section-name-editor input { flex: 1; min-width: 0; }
+#renameSectionModal .modal { width: 400px; max-width: calc(100vw - 32px); }
+#renameSectionModal .form-group { margin-bottom: 0; }
+#renameSectionName { height: 42px; }
+#renameSectionName:focus-visible { outline: 2px solid var(--accent1); outline-offset: 2px; }
+#sectionIconTrigger { display: none; width: 42px; min-height: 42px; flex: 0 0 42px; justify-content: center; }
+body.button-visual-new.section-icons-released #sectionIconTrigger { display: flex; }
+.section-custom-icon { display: none; }
+body.button-visual-new.section-icons-released .section-custom-icon:not(:empty) { display: inline-flex; align-items: center; flex-shrink: 0; }
+.section-custom-icon svg { width: 18px; height: 18px; }
 
 .button-icon-hint {
   color: var(--text2);
@@ -1884,7 +1898,7 @@ body:not(.button-visual-new) #buttonIconTrigger { display: none; }
 .button-icon-choice svg { width: 18px; height: 18px; }
 #buttonIconPicker [hidden] { display: none; }
 
-#buttonIconPicker .button-icon-group-title {
+.button-picker-scroll .button-icon-group-title {
   grid-column: 1 / -1;
   margin: 8px 0 2px;
   color: var(--text2);
@@ -1934,7 +1948,7 @@ body:not(.button-visual-new) #buttonIconTrigger { display: none; }
 .button-color-choice:active { filter: brightness(.9); }
 
 @media (max-width: 430px) {
-  #buttonIconPicker { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  #buttonIconPicker, #sectionIconPicker { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 #btnModal .modal { max-height: calc(100dvh - 32px); overflow-y: auto; }

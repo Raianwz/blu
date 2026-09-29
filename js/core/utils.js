@@ -194,6 +194,7 @@ function normalizeImportedData(parsed) {
     id: String(section.id || ('s' + Date.now() + sectionIndex)),
     name: sanitizeText(section.name || `Seção ${sectionIndex + 1}`),
     collapsed: !!section.collapsed,
+    ...(typeof section.icon === 'string' && section.icon ? { icon: section.icon } : {}),
     buttons: Array.isArray(section.buttons)
       ? section.buttons.map((button, buttonIndex) => ({
           id: String(button.id || ('b' + Date.now() + buttonIndex)),
@@ -227,6 +228,7 @@ function normalizeImportedData(parsed) {
       id: String(record?.item?.id || ('as' + Date.now() + index)),
       name: sanitizeText(record?.item?.name || `Seção arquivada ${index + 1}`),
       collapsed: !!record?.item?.collapsed,
+      ...(typeof record?.item?.icon === 'string' && record.item.icon ? { icon: record.item.icon } : {}),
       buttons: (Array.isArray(record?.item?.buttons) ? record.item.buttons : []).map((button, buttonIndex) => ({
         id: String(button?.id || ('ab' + Date.now() + buttonIndex)),
         name: sanitizeText(button?.name ?? button?.btnName ?? ''),

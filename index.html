@@ -521,6 +521,32 @@
     </div>
   </div>
 
+  <div class="modal-bg" id="renameSectionModal">
+    <form class="modal" role="dialog" aria-modal="true" aria-labelledby="renameSectionLabel" onsubmit="event.preventDefault(); saveRenamedSection()">
+      <h2 id="renameSectionLabel">Renomear seção</h2>
+      <div class="form-group">
+      <label for="renameSectionName">Novo nome da seção:</label>
+      <div class="section-name-editor">
+        <input id="renameSectionName" type="text" required autocomplete="off">
+        <button id="sectionIconTrigger" class="button-appearance-trigger" type="button" aria-label="Escolher ícone da seção" aria-haspopup="dialog" aria-expanded="false" aria-controls="sectionIconModal" onclick="openSectionIconPicker()"></button>
+      </div>
+      </div>
+      <input id="renameSectionIcon" type="hidden">
+      <div class="modal-footer"><button type="button" class="mbtn secondary" onclick="requestModalDismiss('renameSectionModal')">Cancelar</button><button type="submit" class="mbtn primary">Salvar</button></div>
+    </form>
+  </div>
+  <div class="modal-bg" id="sectionIconModal">
+    <div class="modal button-appearance-modal" role="dialog" aria-modal="true" aria-labelledby="sectionIconLabel">
+      <h2 id="sectionIconLabel">Ícone da seção</h2>
+      <div class="button-icon-search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.34-4.34"/></svg>
+        <input id="sectionIconSearch" type="search" placeholder="Buscar ícone" aria-label="Buscar ícone da seção" oninput="filterSectionIcons()">
+      </div>
+      <div id="sectionIconPicker" class="button-picker-scroll"></div>
+      <p id="sectionIconEmpty" class="button-icon-hint" hidden>Nenhum ícone encontrado.</p>
+      <div class="modal-footer"><button type="button" class="mbtn secondary" onclick="closeModal('sectionIconModal')">Voltar à edição</button></div>
+    </div>
+  </div>
   <div class="modal-bg" id="buttonIconModal">
     <div class="modal button-appearance-modal" role="dialog" aria-modal="true" aria-labelledby="buttonIconLabel">
       <h2 id="buttonIconLabel">Escolher ícone</h2>
@@ -619,6 +645,7 @@
   <script src="js/ui/context-menu.js"></script>
   <script src="js/ui/quick-actions.js"></script>
   <script src="js/features/whats-new.js"></script>
+  <script src="js/ui/section-icon-picker.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

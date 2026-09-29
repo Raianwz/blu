@@ -636,6 +636,8 @@ document.addEventListener('keydown', event => {
   }
 
   if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+    if (document.getElementById('sectionIconModal').classList.contains('open')) return;
+    if (document.getElementById('renameSectionModal').classList.contains('open')) { event.preventDefault(); saveRenamedSection(); return; }
     if (document.getElementById('buttonIconModal').classList.contains('open') || document.getElementById('buttonColorModal').classList.contains('open')) return;
     if (document.getElementById('btnModal').classList.contains('open')) saveBtn();
     if (document.getElementById('sectionModal').classList.contains('open')) saveSection();

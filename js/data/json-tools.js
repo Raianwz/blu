@@ -135,7 +135,7 @@ function getUnknownJsonFields(state = collectState()) {
 
   inspect(state, ['tags', 'sections', 'archived'], 'raiz');
   (state.sections || []).forEach((section, sectionIndex) => {
-    inspect(section, ['id', 'name', 'collapsed', 'buttons'], `sections[${sectionIndex}]`);
+    inspect(section, ['id', 'name', 'icon', 'collapsed', 'buttons'], `sections[${sectionIndex}]`);
     (section.buttons || []).forEach((button, buttonIndex) => {
       inspect(button, ['id', 'name', 'text', 'tag', 'vis'], `sections[${sectionIndex}].buttons[${buttonIndex}]`);
     });
@@ -147,7 +147,7 @@ function getUnknownJsonFields(state = collectState()) {
   });
   (state.archived?.sections || []).forEach((record, index) => {
     inspect(record, ['item', 'originalIndex', 'archivedAt'], `archived.sections[${index}]`);
-    inspect(record.item, ['id', 'name', 'collapsed', 'buttons'], `archived.sections[${index}].item`);
+    inspect(record.item, ['id', 'name', 'icon', 'collapsed', 'buttons'], `archived.sections[${index}].item`);
     (record.item?.buttons || []).forEach((button, buttonIndex) => {
       inspect(button, ['id', 'name', 'text', 'tag', 'vis'], `archived.sections[${index}].item.buttons[${buttonIndex}]`);
     });

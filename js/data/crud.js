@@ -4,7 +4,7 @@
 
 let currentSectionId = null;
 let currentBtnId = null;
-const protectedEditModals = new Set(['btnModal', 'sectionModal']);
+const protectedEditModals = new Set(['btnModal', 'sectionModal', 'renameSectionModal']);
 const modalInitialValues = new Map();
 let modalDismissPending = false;
 let shareRequestPending = false;
@@ -48,6 +48,12 @@ function openModal(id) {
 }
 
 function closeModal(id) {
+  if (id === 'sectionIconModal') {
+    document.getElementById('renameSectionModal').inert = false;
+    document.getElementById('sectionIconTrigger').setAttribute('aria-expanded', 'false');
+    document.getElementById('sectionIconTrigger').focus();
+  }
+  if (id === 'renameSectionModal') closeModal('sectionIconModal');
   const modal = document.getElementById(id);
   const wasOpen = modal.classList.contains('open');
   modal.classList.remove('open');
@@ -77,6 +83,7 @@ async function requestModalDismiss(id) {
   const modal = document.getElementById(id);
   if (!modal?.classList.contains('open') || modalDismissPending) return;
   if (id === 'shareOptionsModal') return dismissShareOptions();
+  if (id === 'sectionIconModal') return dismissSectionIconPicker();
 
   if (!protectedEditModals.has(id) || !modalHasUnsavedFormChanges(id)) {
     closeModal(id);
@@ -120,22 +127,9 @@ function saveSection() {
 }
 
 async function renameSection(sectionId) {
-  const wrap = document.querySelector(`.section-wrap[data-id="${cssEscape(sectionId)}"]`);
-  if (!wrap) return;
-
-  const titleEl = wrap.querySelector('.section-title');
-  const current = titleEl.textContent;
-  const newName = await promptDialog('Novo nome da seção:', current, { title: '✏️ Renomear Seção' });
-  if (newName === null || !newName.trim() || newName.trim() === current) return;
-
-  pushHistory();
-  titleEl.textContent = newName.trim();
-  wrap.querySelector('.section-add-btn').title = `Adicionar botão em ${newName.trim()}`;
-  recordActivityEvent('updated', { target: 'section', targetId: sectionId, name: newName.trim(), details: { previousName: current } });
-  notify('Seção renomeada!');
-  doSearch();
-  updateUnsavedChangesUI();
+  openRenameSection(sectionId);
 }
+
 
 async function deleteSection(sectionId) {
   const wrap = document.querySelector(`.section-wrap[data-id="${cssEscape(sectionId)}"]`);

@@ -68,7 +68,7 @@ function buildCustomImportComparison(localData, incomingData) {
   const sections = incomingData.sections.map(incomingSection => {
     const localSection = localSections.get(incomingSection.id);
     const sectionChanges = localSection
-      ? ['name', 'collapsed'].filter(field => localSection[field] !== incomingSection[field])
+      ? ['name', 'collapsed', 'icon'].filter(field => (localSection[field] ?? null) !== (incomingSection[field] ?? null))
       : [];
     const sectionStatus = !localSection ? 'new' : sectionChanges.length ? 'altered' : 'same';
 
@@ -443,7 +443,7 @@ function buildCustomImportResult() {
     const incoming = comparisonSection.incoming;
     let target = sectionMap.get(incoming.id);
     if (!target) {
-      target = { id: incoming.id, name: incoming.name, collapsed: incoming.collapsed, buttons: [] };
+      target = { id: incoming.id, name: incoming.name, ...(incoming.icon ? { icon: incoming.icon } : {}), collapsed: incoming.collapsed, buttons: [] };
       if (usedSectionIds.has(target.id)) target.id = customImportUniqueId('s', usedSectionIds);
       else usedSectionIds.add(target.id);
       result.sections.push(target);
@@ -460,6 +460,8 @@ function buildCustomImportResult() {
       if (target) {
         target.name = section.incoming.name;
         target.collapsed = section.incoming.collapsed;
+        if (section.incoming.icon) target.icon = section.incoming.icon;
+        else delete target.icon;
       }
     }
 

@@ -239,6 +239,7 @@ function customExportArchivedObject(data, config) {
       const item = {};
       if (f.has('sectionId')) assignCustomExportField(item, 'id', record.item.id, config);
       if (f.has('sectionName')) assignCustomExportField(item, 'name', record.item.name, config);
+      if (f.has('sectionName') && record.item.icon) item.icon = record.item.icon;
       if (f.has('sectionCollapsed') && config.state !== 'omit') item.collapsed = record.item.collapsed;
       if (f.has('buttons')) item.buttons = record.item.buttons.map(button => customExportButtonObject(button, record.item, config, data.favoriteIds));
       return { item, originalIndex: record.originalIndex, archivedAt: record.archivedAt };
@@ -268,6 +269,7 @@ function buildCustomExportObject(data, config) {
     const out = {};
     if (f.has('sectionId')) assignCustomExportField(out, 'id', section.id, config);
     if (f.has('sectionName')) assignCustomExportField(out, 'name', section.name, config);
+    if (f.has('sectionName') && section.icon) out.icon = section.icon;
     if (f.has('sectionCollapsed') && config.state !== 'omit') out.collapsed = section.collapsed;
     if (f.has('sectionCount')) out.buttonCount = section.buttons.length;
     if (f.has('buttons')) out.buttons = section.buttons.map(button => customExportButtonObject(button, section, config, data.favoriteIds));
