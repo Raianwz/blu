@@ -1,5 +1,31 @@
 // Appearance is optional and never changes visibility permissions.
-const BLU_BUTTON_ICONS = Object.freeze([...BLU_BRAND_ICONS, ...BLU_BOOTSTRAP_ICONS]);
+const BLU_BUTTON_ICONS = Object.freeze((() => {
+  const groups = new Map();
+  const groupOrder = ['', 'Mensagens e textos', 'Livros e conhecimento', 'Organização',
+    'Estrelas e marcadores', 'Avisos e ferramentas', 'Sinais', 'Reações',
+    'Ideias e energia', 'Dispositivos', 'Dados', 'Redes e serviços'];
+  const familyOrder = {
+    'Estrelas e marcadores': ['bootstrap:star', 'bootstrap:star-fill', 'bootstrap:star-half',
+      'material:kid_star_out', 'material:kid_star_fill', 'bootstrap:bookmark-star', 'bootstrap:bookmark-star-fill'],
+    'Sinais': ['bootstrap:ban', 'material:block', 'material:do_not_disturb_off',
+      'bootstrap:dash-lg', 'bootstrap:dash-circle', 'bootstrap:dash-circle-fill', 'bootstrap:dash-circle-dotted',
+      'bootstrap:x', 'bootstrap:x-lg', 'bootstrap:x-circle', 'bootstrap:x-circle-fill', 'material:cancel']
+  };
+  [...BLU_BRAND_ICONS, ...BLU_BOOTSTRAP_ICONS, ...BLU_MATERIAL_ICONS].forEach(entry => {
+    const group = entry.group || '';
+    if (!groups.has(group)) groups.set(group, []);
+    groups.get(group).push(entry);
+  });
+  // New groups and icons remain visible even when not explicitly ordered here.
+  const orderedGroups = [...new Set([...groupOrder, ...groups.keys()])];
+  return orderedGroups.flatMap(group => {
+    const entries = groups.get(group) || [];
+    const order = familyOrder[group];
+    if (!order) return entries;
+    const rank = entry => order.includes(entry.id) ? order.indexOf(entry.id) : order.length;
+    return entries.sort((a, b) => rank(a) - rank(b));
+  });
+})());
 
 const BLU_OTHER_COLORS = Object.freeze([
   { color: '#7C3AED', label: 'Roxo' },
@@ -59,7 +85,7 @@ function customButtonIconMarkup(id, className = '') {
   const content = entry.src
     ? `<image href="${new URL(entry.src, document.baseURI).href}" width="16" height="16"/>`
     : entry.paths;
-  return `<svg class="${className}" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">${content}</svg>`;
+  return `<svg class="${className}" viewBox="${entry.viewBox || '0 0 16 16'}" fill="currentColor" aria-hidden="true">${content}</svg>`;
 }
 
 function toggleButtonIconPicker() {
