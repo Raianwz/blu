@@ -4,6 +4,36 @@ Este documento reúne recursos planejados, polimentos e decisões de produto ain
 
 ## Em desenvolvimento
 
+### Dia das Bruxas / Halloween (Temporário - Sazonal)
+
+Preparar a atualização sazonal junto das novas cores e dos ícones de seção. O tema é temporário; as cores personalizadas e os ícones de seção são recursos permanentes.
+
+Base preparada, disponível somente no ambiente local:
+
+- [x] Separar o tema em arquivos próprios de CSS e JavaScript.
+- [x] Manter Halloween e ícones de seção bloqueados em produção por flags de liberação manual.
+- [x] Permitir prévia no localhost fora do período sazonal.
+- [x] Adicionar “Visual de Halloween: ON/OFF” em Conteúdo, independente do visual Clássico/Novo.
+- [x] Preparar aparência clara e escura com detalhes de abóbora e roxo.
+- [x] Melhorar leitura dos menus, estados ativos, hover e foco de teclado nos dois temas.
+- [x] Manter a preferência local e reaplicá-la ao redefinir preferências ou limpar os dados.
+
+Pendências para o lançamento:
+
+- [ ] Trabalhar os botões públicos em laranja-abóbora e os privados em um tom mais escuro, mantendo os indicadores distinguíveis.
+- [ ] Aplicar as cores sazonais somente na apresentação: não modificar `vis`, cores personalizadas ou conteúdo do JSON.
+- [ ] Preservar as escolhas de cor dos botões “Outro”.
+- [ ] Polir os cabeçalhos e ícones das seções, com leitura consistente nos temas claro e escuro.
+- [ ] Explorar detalhes discretos inspirados em Halloween, Dia das Bruxas e lendas do folclore brasileiro, sem prejudicar leitura ou interação.
+- [ ] Atualizar o What's New com novas cores/gradientes, ícones nas seções e “Tema de Dia das Bruxas”; deixar detalhes internos de desenvolvimento de fora.
+- [ ] Sinalizar novidades pelo sininho, sem abrir o What's New automaticamente.
+- [ ] Ativar o visual sazonal na primeira abertura voluntária das novidades, seguindo o comportamento do visual Novo e respeitando escolhas posteriores de ON/OFF.
+- [ ] Validar a regra de primeira ativação após “Redefinir Preferências” e “Limpar Tudo”.
+- [ ] Confirmar a data final de início: a janela original era 14–31/10, mas houve proposta posterior de antecipação com data ainda a esclarecer.
+- [ ] Garantir retorno ao visual normal e ocultação do controle após o período, sem perder dados ou personalizações.
+- [ ] Validar contraste, navegação por teclado, telas estreitas e combinações Claro/Escuro × Clássico/Novo × Halloween ON/OFF.
+- [ ] Liberar manualmente as flags quando autorizado; manter o service worker segurado até a decisão de publicação.
+
 ### Histórico de atividade
 
 Registrar em `blu:userdata` as alterações estruturais feitas no Blû, sem misturá-las aos dados compartilháveis de `blu:data`.
