@@ -70,12 +70,26 @@ function mobileHaptic(type = 'tap') {
   }
 }
 
+const HALLOWEEN_TOAST_CREATURES = ['bat', 'ghost', 'owl', 'cat', 'hat', 'broom'];
+let lastHalloweenToastCreature = -1;
+
 function notify(msg, type = 'ok', options = {}) {
   const area = document.getElementById('notifArea');
   const element = document.createElement('div');
   element.className = 'notif' + (type === 'err' ? ' err' : '') + (options.action ? ' has-action' : '');
   const message = document.createElement('span');
+  message.className = 'notif-message';
   message.textContent = msg;
+  if (document.body.classList.contains('halloween-theme')) {
+    const count = HALLOWEEN_TOAST_CREATURES.length;
+    const next = (lastHalloweenToastCreature + 1 + Math.floor(Math.random() * (count - 1))) % count;
+    lastHalloweenToastCreature = next;
+    const creature = document.createElement('span');
+    creature.className = 'halloween-toast-creature';
+    creature.setAttribute('aria-hidden', 'true');
+    creature.style.setProperty('--halloween-toast-icon', `url("/libs/events/halloween/toast_${HALLOWEEN_TOAST_CREATURES[next]}.svg")`);
+    message.prepend(creature);
+  }
   element.appendChild(message);
 
   let timer;

@@ -82,7 +82,7 @@ body.halloween-theme #menuOverlay .menu-setting-row select {
 body.halloween-theme #menuOverlay .menu-setting-row select:focus {
   border-color: var(--halloween-menu-focus);
 }
-#halloweenVisualBtn[hidden], #halloweenDecoration[hidden] { display: none; }
+#halloweenVisualBtn[hidden] { display: none; }
 .halloween-menu-icon {
   display: inline-block;
   background: currentColor;
@@ -93,18 +93,41 @@ body.halloween-theme #halloweenVisualBtn .halloween-menu-icon {
   background: #ffb25f;
   filter: drop-shadow(0 0 3px rgba(255, 156, 52, .75));
 }
-#halloweenDecoration {
-  position: fixed;
-  right: 20px;
-  bottom: 18px;
-  width: 48px;
-  height: 48px;
-  color: #b8501b;
-  opacity: .65;
+body.halloween-theme #searchWrap::after {
+  content: '';
+  position: absolute;
+  right: 11px;
+  width: 17px;
+  height: 17px;
+  background: var(--halloween-menu-active-text);
+  -webkit-mask: url("../../libs/events/halloween/halloween_ghost.svg") center / contain no-repeat;
+  mask: url("../../libs/events/halloween/halloween_ghost.svg") center / contain no-repeat;
   pointer-events: none;
-  user-select: none;
-  z-index: 1;
+  opacity: .8;
 }
-#halloweenDecoration svg { width: 100%; height: 100%; }
-@media (max-width: 600px) { #halloweenDecoration { width: 32px; height: 32px; right: 12px; bottom: 12px; } }
-@media (forced-colors: active) { #halloweenDecoration { display: none; } }
+body.halloween-theme #searchWrap:has(#searchInput:not(:placeholder-shown))::after,
+body.halloween-theme #searchWrap:has(#clearSearchBtn:not([hidden]))::after {
+  content: none;
+}
+@media (forced-colors: active) {
+  body.halloween-theme #searchWrap::after { display: none; }
+}
+
+body.halloween-theme .notif-message {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+body.halloween-theme .halloween-toast-creature {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  background: currentColor;
+  -webkit-mask: var(--halloween-toast-icon) center / contain no-repeat;
+  mask: var(--halloween-toast-icon) center / contain no-repeat;
+}
+@media (forced-colors: active) {
+  body.halloween-theme .halloween-toast-creature { display: none; }
+}

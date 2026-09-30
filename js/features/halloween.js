@@ -10,7 +10,6 @@ function applyHalloweenPreference() {
     button.setAttribute('aria-pressed', String(enabled));
     button.querySelector('.menu-btn-label').textContent = `Visual de Halloween: ${enabled ? 'ON' : 'OFF'}`;
   }
-  document.getElementById('halloweenDecoration').hidden = !enabled;
 }
 
 function toggleHalloweenPreference() {
