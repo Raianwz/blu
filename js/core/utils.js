@@ -70,7 +70,7 @@ function mobileHaptic(type = 'tap') {
   }
 }
 
-const HALLOWEEN_TOAST_CREATURES = ['bat', 'ghost', 'owl', 'cat', 'hat', 'broom'];
+const HALLOWEEN_TOAST_CREATURES = ['bat', 'ghost', 'owl', 'cat', 'hat', 'broom', 'saci_cap'];
 let lastHalloweenToastCreature = -1;
 
 function notify(msg, type = 'ok', options = {}) {

@@ -34,8 +34,35 @@ body.halloween-theme.button-visual-new {
   --btn-private-2: #55285b;
 }
 body.halloween-theme .section-head {
-  box-shadow: inset 3px 0 0 #b8501b;
-  background-image: linear-gradient(100deg, rgba(184, 80, 27, .08), transparent 65%);
+  --halloween-section-ink: #342722;
+  --halloween-section-muted: #624b43;
+  --halloween-section-badge: #ebd6c6;
+  box-shadow: inset 3px 0 0 #a44716;
+  background-image: linear-gradient(100deg, rgba(184, 80, 27, .09), transparent 65%);
+}
+body.dark.halloween-theme .section-head {
+  --halloween-section-ink: #f7edf5;
+  --halloween-section-muted: #dbbdcd;
+  --halloween-section-badge: #46324a;
+  box-shadow: inset 3px 0 0 #e67a35;
+  background-image: linear-gradient(100deg, rgba(230, 122, 53, .10), transparent 65%);
+}
+body.halloween-theme .section-head .section-title {
+  color: var(--halloween-section-ink);
+}
+body.halloween-theme .section-head .section-custom-icon:not(:empty) {
+  color: var(--halloween-section-ink);
+}
+body.halloween-theme .section-head .section-count {
+  color: var(--halloween-section-ink);
+  background: var(--halloween-section-badge);
+}
+body.halloween-theme .section-head .section-collapse-btn {
+  color: var(--halloween-section-muted);
+}
+body.halloween-theme .section-head :is(.section-collapse-btn, .section-add-btn, .section-rename-btn, .section-del-btn, .section-move-controls button):focus-visible {
+  outline: 2px solid var(--halloween-menu-focus);
+  outline-offset: 2px;
 }
 body.halloween-theme #topbar { border-bottom-color: #a44716; }
 
