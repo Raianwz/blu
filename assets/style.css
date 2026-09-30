@@ -2182,6 +2182,8 @@ body.dark .whats-new-modal {
 
 .whats-new-visual-setting strong { color: var(--text); font-size: 13px; }
 .whats-new-visual-setting p { margin-top: 4px; color: var(--text2); font-size: 12px; line-height: 1.4; }
+.whats-new-seasonal-setting { margin-top: 8px; }
+.whats-new-seasonal-setting[hidden] { display: none; }
 .whats-new-visual-switch { position: relative; display: inline-flex; flex-shrink: 0; cursor: pointer; }
 .whats-new-visual-switch input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 .whats-new-visual-switch span {

@@ -2,9 +2,35 @@
 // Novidades da versão — conteúdo dinâmico e controle de leitura
 // ==========================================================
 
-const WHATS_NEW_VERSION = '1.9';
+// A prévia local da 1.9.5 não antecipa o anúncio na versão em produção.
+const WHATS_NEW_195_AVAILABLE = isBluFeatureAvailable('sectionIcons');
+const WHATS_NEW_VERSION = WHATS_NEW_195_AVAILABLE ? '1.9.5' : '1.9';
 
-const WHATS_NEW_ITEMS = [
+const WHATS_NEW_ITEMS_195 = [
+  {
+    icon: '🎨',
+    type: 'Novo',
+    status: 'new',
+    title: 'Mais cores para os botões',
+    description: 'Escolha entre novas cores sólidas e gradientes para personalizar os botões Outro.'
+  },
+  {
+    icon: '📚',
+    type: 'Novo',
+    status: 'new',
+    title: 'Ícones nas seções',
+    description: 'No visual Novo, escolha um ícone ao renomear a seção. Seu nome e conteúdo continuam como você deixou.'
+  },
+  {
+    icon: '🎃',
+    type: 'Novo',
+    status: 'new',
+    title: 'Tema de Dia das Bruxas',
+    description: 'Uma aparência sazonal opcional para os temas claro e escuro, com cores temáticas e pequenos detalhes festivos. Desative quando quiser em Menu &gt; Conteúdo.'
+  }
+];
+
+const WHATS_NEW_ITEMS_19 = [
   {
     icon: '🗃️',
     type: 'Novo',
@@ -63,6 +89,8 @@ const WHATS_NEW_ITEMS = [
   }
 ];
 
+const WHATS_NEW_ITEMS = WHATS_NEW_195_AVAILABLE ? WHATS_NEW_ITEMS_195 : WHATS_NEW_ITEMS_19;
+
 function hasSeenWhatsNew(version = WHATS_NEW_VERSION) {
   return getMetaValue('updates', 'seenVersion') === version;
 }
@@ -86,11 +114,23 @@ function updateWhatsNewButtonUI() {
 function updateWhatsNewVisualToggle() {
   const toggle = document.getElementById('whatsNewButtonVisualSwitch');
   if (toggle) toggle.checked = isNewButtonVisualEnabled();
+  const halloweenToggle = document.getElementById('whatsNewHalloweenVisualSwitch');
+  if (halloweenToggle) {
+    halloweenToggle.closest('.whats-new-seasonal-setting').hidden = !isBluFeatureAvailable('halloween');
+    halloweenToggle.checked = document.body.classList.contains('halloween-theme');
+  }
 }
 
 function setWhatsNewButtonVisual(enabled) {
   setSetting('buttonVisual', enabled ? 'new' : 'classic');
   applyButtonVisualPreference();
+}
+
+function setWhatsNewHalloweenVisual(enabled) {
+  if (!isBluFeatureAvailable('halloween')) return;
+  setSetting('halloweenVisual', enabled ? 'on' : 'off');
+  applyHalloweenPreference();
+  updateWhatsNewVisualToggle();
 }
 
 function ensureWhatsNewModal() {
@@ -109,20 +149,31 @@ function ensureWhatsNewModal() {
       <div class="modal whats-new-modal">
         <header class="whats-new-header">
           <span class="whats-new-kicker">Novidades · Blû ${WHATS_NEW_VERSION}</span>
-          <h2 id="whatsNewTitle">🐘 O que mudou no Blû</h2>
+          <h2 id="whatsNewTitle">🦉 O que mudou no Blû</h2>
           <p>Confira os principais recursos, ajustes e melhorias desta atualização.</p>
         </header>
         <div class="whats-new-list">${items}</div>
         <div class="whats-new-visual-setting">
           <div>
             <strong>Visual novo dos botões</strong>
-            <p>Ativado ao abrir as novidades pela primeira vez. Você pode desativá-lo aqui ou em Menu &gt; Conteúdo.</p>
+            <p>Se você ainda não escolheu um visual, ele é ativado ao abrir as novidades. Altere aqui ou em Menu &gt; Conteúdo.</p>
           </div>
           <label class="whats-new-visual-switch">
             <input id="whatsNewButtonVisualSwitch" type="checkbox" role="switch" aria-label="Ativar visual novo dos botões" onchange="setWhatsNewButtonVisual(this.checked)">
             <span aria-hidden="true"></span>
           </label>
         </div>
+        ${WHATS_NEW_195_AVAILABLE ? `
+        <div class="whats-new-visual-setting whats-new-seasonal-setting">
+          <div>
+            <strong>Visual de Dia das Bruxas</strong>
+            <p>Ativado na primeira vez que você abrir estas novidades, se ainda não fez uma escolha. Você pode desativá-lo aqui ou em Menu &gt; Conteúdo.</p>
+          </div>
+          <label class="whats-new-visual-switch">
+            <input id="whatsNewHalloweenVisualSwitch" type="checkbox" role="switch" aria-label="Ativar visual de Dia das Bruxas" onchange="setWhatsNewHalloweenVisual(this.checked)">
+            <span aria-hidden="true"></span>
+          </label>
+        </div>` : ''}
         <div class="modal-footer"><button class="mbtn primary" type="button" onclick="closeModal('whatsNewModal')">Entendi</button></div>
       </div>
     </div>
@@ -140,6 +191,10 @@ function openWhatsNew({ markSeen = true } = {}) {
   if (markSeen && getSetting('buttonVisual') === null) {
     setSetting('buttonVisual', 'new');
     applyButtonVisualPreference();
+  }
+  if (markSeen && WHATS_NEW_195_AVAILABLE && isBluFeatureAvailable('halloween') && getSetting('halloweenVisual') === null) {
+    setSetting('halloweenVisual', 'on');
+    applyHalloweenPreference();
   }
   updateWhatsNewVisualToggle();
   document.getElementById('menuOverlay')?.classList.remove('open');

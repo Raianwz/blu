@@ -25,9 +25,9 @@ Pendências para o lançamento:
 - [x] Preservar as escolhas de cor dos botões “Outro”.
 - [x] Polir os cabeçalhos e ícones das seções, com leitura consistente nos temas claro e escuro.
 - [x] Explorar detalhes discretos inspirados em Halloween, Dia das Bruxas e lendas do folclore brasileiro, sem prejudicar leitura ou interação.
-- [ ] Atualizar o What's New com novas cores/gradientes, ícones nas seções e “Tema de Dia das Bruxas”; deixar detalhes internos de desenvolvimento de fora.
-- [ ] Sinalizar novidades pelo sininho, sem abrir o What's New automaticamente.
-- [ ] Ativar o visual sazonal na primeira abertura voluntária das novidades, seguindo o comportamento do visual Novo e respeitando escolhas posteriores de ON/OFF.
+- [x] Atualizar o What's New com novas cores/gradientes, ícones nas seções e “Tema de Dia das Bruxas”; deixar detalhes internos de desenvolvimento de fora.
+- [x] Sinalizar novidades pelo sininho, sem abrir o What's New automaticamente.
+- [x] Ativar o visual sazonal na primeira abertura voluntária das novidades, seguindo o comportamento do visual Novo e respeitando escolhas posteriores de ON/OFF.
 - [ ] Validar a regra de primeira ativação após “Redefinir Preferências” e “Limpar Tudo”.
 - [ ] Confirmar a data final de início: a janela original era 14–31/10, mas houve proposta posterior de antecipação com data ainda a esclarecer.
 - [ ] Garantir retorno ao visual normal e ocultação do controle após o período, sem perder dados ou personalizações.
