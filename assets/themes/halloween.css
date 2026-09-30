@@ -18,6 +18,21 @@ body.dark.halloween-theme {
   --topbar-bg: #1b1421;
   --shadow: rgba(0, 0, 0, .4);
 }
+
+/* Seasonal visibility colors are presentation only. The shared variables also
+   cover archived buttons and legacy favorite cards without changing JSON. */
+body.halloween-theme {
+  --btn-public-1: #b6470e;
+  --btn-public-2: #8c310b;
+  --btn-private-1: #663768;
+  --btn-private-2: #45214e;
+}
+body.halloween-theme.button-visual-new {
+  --btn-public-1: #a23d0b;
+  --btn-public-2: #a23d0b;
+  --btn-private-1: #55285b;
+  --btn-private-2: #55285b;
+}
 body.halloween-theme .section-head {
   box-shadow: inset 3px 0 0 #b8501b;
   background-image: linear-gradient(100deg, rgba(184, 80, 27, .08), transparent 65%);
@@ -68,6 +83,16 @@ body.halloween-theme #menuOverlay .menu-setting-row select:focus {
   border-color: var(--halloween-menu-focus);
 }
 #halloweenVisualBtn[hidden], #halloweenDecoration[hidden] { display: none; }
+.halloween-menu-icon {
+  display: inline-block;
+  background: currentColor;
+  -webkit-mask: url("../../libs/events/halloween/halloween_pumpkin_out.svg") center / contain no-repeat;
+  mask: url("../../libs/events/halloween/halloween_pumpkin_out.svg") center / contain no-repeat;
+}
+body.halloween-theme #halloweenVisualBtn .halloween-menu-icon {
+  background: #ffb25f;
+  filter: drop-shadow(0 0 3px rgba(255, 156, 52, .75));
+}
 #halloweenDecoration {
   position: fixed;
   right: 20px;
