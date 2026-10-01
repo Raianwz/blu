@@ -29,10 +29,10 @@ Pendências para o lançamento:
 - [x] Sinalizar novidades pelo sininho, sem abrir o What's New automaticamente.
 - [x] Ativar o visual sazonal na primeira abertura voluntária das novidades, seguindo o comportamento do visual Novo e respeitando escolhas posteriores de ON/OFF.
 - [x] Validar a regra de primeira ativação após “Redefinir Preferências” e “Limpar Tudo”.
-- [ ] Confirmar a data final de início: a janela original era 14–31/10, mas houve proposta posterior de antecipação com data ainda a esclarecer.
+- [x] Confirmar a janela sazonal: 01–31/10, com retorno ao visual normal em 01/11.
 - [x] Garantir retorno ao visual normal e ocultação do controle após o período, sem perder dados ou personalizações.
 - [x] Validar contraste, navegação por teclado, telas estreitas e combinações Claro/Escuro × Clássico/Novo × Halloween ON/OFF.
-- [ ] Liberar manualmente as flags quando autorizado; manter o service worker segurado até a decisão de publicação.
+- [x] Liberar manualmente as flags e atualizar o service worker na publicação da 1.9.5.
 
 ### Histórico de atividade
 

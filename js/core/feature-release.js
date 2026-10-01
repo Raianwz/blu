@@ -9,5 +9,6 @@ function isBluFeatureAvailable(feature, now = new Date()) {
   if (!Object.prototype.hasOwnProperty.call(BLU_FEATURE_RELEASE, feature)) return false;
   if (isBluLocalPreview()) return true;
   if (!BLU_FEATURE_RELEASE[feature]) return false;
-  return feature !== 'halloween' || (now.getMonth() === 9 && now.getDate() >= 14 && now.getDate() <= 31);
+  // October 1–31 (local time); the visual returns to normal on November 1.
+  return feature !== 'halloween' || now.getMonth() === 9;
 }
