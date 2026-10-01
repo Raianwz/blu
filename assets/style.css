@@ -1873,10 +1873,12 @@ body:has(#renameSectionModal.open) #dialogModal { z-index: 820; }
 #renameSectionName:focus-visible { outline: 2px solid var(--accent1); outline-offset: 2px; }
 #sectionIconTrigger { display: none; width: 42px; min-height: 42px; flex: 0 0 42px; justify-content: center; }
 body.button-visual-new.section-icons-released #sectionIconTrigger { display: flex; }
+#sectionIconsVisualBtn[hidden] { display: none; }
 .section-custom-icon { display: none; }
-body.button-visual-new.section-icons-released .section-custom-icon:not(:empty) { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 20px; color: var(--text); }
+body.button-visual-new.section-icons-enabled .section-custom-icon:not(:empty) { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 20px; color: var(--text); }
 .section-custom-icon svg { display: block; width: 18px; height: 18px; }
 body:not(.dark) .section-wrap[data-icon="blu:b"] .section-custom-icon image { filter: brightness(0) opacity(.85); }
+body.button-visual-new.section-icons-enabled .section-head:has(.section-custom-icon svg) .section-leading-emoji { display: none; }
 
 .button-icon-hint {
   color: var(--text2);

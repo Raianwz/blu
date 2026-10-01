@@ -19,7 +19,7 @@ const WHATS_NEW_ITEMS_195 = [
     type: 'Novo',
     status: 'new',
     title: 'Ícones nas seções',
-    description: 'No visual Novo, escolha um ícone ao renomear a seção. Seu nome e conteúdo continuam como você deixou.'
+    description: 'No visual Novo, os ícones podem aparecer automaticamente ou ser escolhidos ao renomear a seção. Mostre ou oculte todos em Menu &gt; Conteúdo.'
   },
   {
     icon: '🎃',

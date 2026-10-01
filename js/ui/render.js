@@ -9,6 +9,7 @@ function isNewButtonVisualEnabled() {
 function applyButtonVisualPreference() {
   const modern = isNewButtonVisualEnabled();
   document.body.classList.toggle('button-visual-new', modern);
+  if (typeof refreshSectionIconRelease === 'function') refreshSectionIconRelease();
   const iconPicker = document.getElementById('buttonIconPicker');
   if (iconPicker) {
     updateButtonColorPicker();
@@ -234,11 +235,62 @@ function renderAll(sectionsData) {
   applyButtonReorderControls();
 }
 
+// Legacy section names often begin with an emoji. Use a local icon as a visual
+// fallback without rewriting the name saved in JSON or shown in the editor.
+const LEGACY_SECTION_EMOJI_ICONS = Object.freeze({
+  '💼': 'material:work',
+  '💳': 'material:credit_card',
+  '🏦': 'material:account_balance',
+  '🤝': 'material:handshake',
+  '📈': 'material:trending_up',
+  '📚': 'material:book2',
+  '🧾': 'material:receipt_long',
+  '📊': 'material:table_chart',
+  '🏢': 'material:apartment',
+  '💵': 'material:account_balance_wallet',
+  '📞': 'material:headset_mic',
+  '⚠️': 'material:warning',
+  '👋': 'material:waving_hand',
+  '⭐': 'bootstrap:star-fill',
+  '📱': 'material:mobile',
+  '💜': 'bootstrap:heart-fill',
+  '🎫': 'material:local_activity'
+});
+
+function leadingSectionEmoji(name) {
+  const text = String(name || '');
+  const leadingSpace = /^\s*/u.exec(text)[0];
+  const rest = text.slice(leadingSpace.length);
+  const emoji = typeof Intl.Segmenter === 'function'
+    ? new Intl.Segmenter('pt-BR', { granularity: 'grapheme' }).segment(rest)[Symbol.iterator]().next().value?.segment
+    : Array.from(rest)[0];
+  if (!emoji || !/[\p{Extended_Pictographic}\p{Regional_Indicator}\u20E3]/u.test(emoji)) return null;
+  const end = leadingSpace.length + emoji.length + /^\s*/u.exec(rest.slice(emoji.length))[0].length;
+  return { emoji, end };
+}
+
+function resolvedSectionIcon(name, chosenIcon) {
+  if (chosenIcon === 'none') return '';
+  if (chosenIcon) return chosenIcon;
+  const emoji = leadingSectionEmoji(name)?.emoji;
+  if (emoji === '🔍') return /^🔍\s*Assessoria\b/iu.test(String(name).trim()) ? 'material:support_agent' : '';
+  return LEGACY_SECTION_EMOJI_ICONS[emoji] || '';
+}
+
+function sectionTitleMarkup(name) {
+  const text = String(name || '');
+  const leading = leadingSectionEmoji(text);
+  if (!leading) return escapeHtml(text);
+  return `<span class="section-leading-emoji">${escapeHtml(text.slice(0, leading.end))}</span>${escapeHtml(text.slice(leading.end))}`;
+}
+
 function renderSection(section, container) {
   const wrap = document.createElement('div');
   wrap.className = 'section-wrap' + (section.collapsed ? ' collapsed' : '');
   wrap.dataset.id = String(section.id);
   wrap.dataset.icon = typeof section.icon === 'string' ? section.icon : '';
+  const icon = resolvedSectionIcon(section.name, wrap.dataset.icon);
+  wrap.dataset.resolvedIcon = icon;
 
   const count = Array.isArray(section.buttons) ? section.buttons.length : 0;
   const safeSectionId = String(section.id).replace(/'/g, "\\'");
@@ -247,8 +299,8 @@ function renderSection(section, container) {
     <div class="section-head">
       <button class="section-collapse-btn" onclick="toggleCollapse(this)" title="${section.collapsed ? 'Expandir' : 'Recolher'}">▾</button>
       <button class="section-add-btn" onclick="openAddBtn('${safeSectionId}')" title="Adicionar botão em ${escapeHtmlAttr(section.name)}">＋</button>
-      <span class="section-custom-icon" aria-hidden="true">${customButtonIconMarkup(section.icon)}</span>
-      <span class="section-title">${escapeHtml(section.name)}</span>
+      <span class="section-custom-icon" aria-hidden="true">${customButtonIconMarkup(icon)}</span>
+      <span class="section-title">${sectionTitleMarkup(section.name)}</span>
       <span class="section-count" title="${count} botão(ões)">${count}</span>
       <button class="section-rename-btn" onclick="renameSection('${safeSectionId}')" title="Renomear seção">✏️</button>
       <button class="section-del-btn" onclick="deleteSection('${safeSectionId}')" title="Excluir seção">🗑️</button>

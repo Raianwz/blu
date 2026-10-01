@@ -1,5 +1,6 @@
 let editingSectionId = null;
 let sectionPickerDismissPending = false;
+let sectionIconSelectionTouched = false;
 
 function sectionIconsReleased() {
   return isBluFeatureAvailable('sectionIcons');
@@ -7,8 +8,23 @@ function sectionIconsReleased() {
 
 function refreshSectionIconRelease() {
   const released = sectionIconsReleased();
-  document.body.classList[released ? 'add' : 'remove']('section-icons-released');
+  const enabled = getSetting('sectionIconsVisual', 'on') !== 'off';
+  document.body.classList.toggle('section-icons-released', released);
+  document.body.classList.toggle('section-icons-enabled', released && enabled);
+  const button = document.getElementById('sectionIconsVisualBtn');
+  if (button) {
+    button.hidden = !released || !document.body.classList.contains('button-visual-new');
+    button.classList.toggle('active', enabled);
+    button.setAttribute('aria-pressed', String(enabled));
+    button.querySelector('.menu-btn-label').textContent = `Ícones das Seções: ${enabled ? 'ON' : 'OFF'}`;
+  }
   return released;
+}
+
+function toggleSectionIconPreference() {
+  if (!sectionIconsReleased() || !document.body.classList.contains('button-visual-new')) return;
+  setSetting('sectionIconsVisual', getSetting('sectionIconsVisual', 'on') === 'off' ? 'on' : 'off');
+  refreshSectionIconRelease();
 }
 
 refreshSectionIconRelease();
@@ -18,8 +34,9 @@ function openRenameSection(id) {
   const section = document.querySelector(`.section-wrap[data-id="${cssEscape(id)}"]`);
   if (!section) return;
   editingSectionId = id;
+  sectionIconSelectionTouched = false;
   document.getElementById('renameSectionName').value = section.querySelector('.section-title').textContent;
-  document.getElementById('renameSectionIcon').value = section.dataset.icon || '';
+  document.getElementById('renameSectionIcon').value = section.dataset.icon || section.dataset.resolvedIcon || '';
   updateSectionIconTrigger();
   openModal('renameSectionModal');
 }
@@ -52,13 +69,14 @@ function openSectionIconPicker() {
     button.className = 'button-icon-choice';
     button.dataset.group = group;
     button.dataset.search = normalizeSearchText(`${entry.label} ${group} ${entry.id || ''}`);
-    button.setAttribute('aria-pressed', String((entry.id || '') === selected));
+    button.setAttribute('aria-pressed', String((entry.id || 'none') === (selected || 'none')));
     button.innerHTML = customButtonIconMarkup(entry.id);
     const label = document.createElement('span');
     label.textContent = entry.label;
     button.appendChild(label);
     button.addEventListener('click', () => {
-      document.getElementById('renameSectionIcon').value = entry.id || '';
+      sectionIconSelectionTouched = true;
+      document.getElementById('renameSectionIcon').value = entry.id || 'none';
       updateSectionIconTrigger();
       closeModal('sectionIconModal');
     });
@@ -107,14 +125,16 @@ function saveRenamedSection() {
   if (!section) { closeModal('renameSectionModal'); return; }
   const name = document.getElementById('renameSectionName').value.trim();
   if (!name) { notify('Informe o nome da seção', 'err'); return; }
-  const icon = document.getElementById('renameSectionIcon').value;
+  const icon = sectionIconSelectionTouched ? document.getElementById('renameSectionIcon').value : (section.dataset.icon || '');
+  const resolvedIcon = resolvedSectionIcon(name, icon);
   const title = section.querySelector('.section-title');
   const previousName = title.textContent;
   if (name !== previousName || icon !== (section.dataset.icon || '')) {
     pushHistory();
-    title.textContent = name;
+    title.innerHTML = sectionTitleMarkup(name);
     section.dataset.icon = icon;
-    section.querySelector('.section-custom-icon').innerHTML = customButtonIconMarkup(icon);
+    section.dataset.resolvedIcon = resolvedIcon;
+    section.querySelector('.section-custom-icon').innerHTML = customButtonIconMarkup(resolvedIcon);
     section.querySelector('.section-add-btn').title = `Adicionar botão em ${name}`;
     recordActivityEvent('updated', { target: 'section', targetId: editingSectionId, name, details: { previousName } });
     doSearch();
