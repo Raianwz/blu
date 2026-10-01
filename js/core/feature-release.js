@@ -1,5 +1,5 @@
 // Release flags are manual. Preview is restricted to loopback development hosts.
-const BLU_FEATURE_RELEASE = Object.freeze({ sectionIcons: false, halloween: false });
+const BLU_FEATURE_RELEASE = Object.freeze({ sectionIcons: true, halloween: true });
 
 function isBluLocalPreview(hostname = window.location.hostname) {
   return ['localhost', '127.0.0.1', '[::1]', '::1'].includes(hostname.toLowerCase());

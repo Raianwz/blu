@@ -13,7 +13,7 @@
 // subir a versão abaixo (CACHE_VERSION). Isso cria um cache
 // novo e descarta o antigo na ativação.
 
-const CACHE_VERSION = 'v29';
+const CACHE_VERSION = 'v30';
 const CACHE_NAME = `blu-cache-${CACHE_VERSION}`;
 
 const APP_SHELL = [
@@ -22,9 +22,19 @@ const APP_SHELL = [
   '/manifest.json',
   '/assets/style.css',
   '/assets/themes/halloween.css',
+  '/assets/themes/blu-halloween.svg',
   '/js/core/feature-release.js',
   '/js/features/halloween.js',
   '/assets/blu.svg',
+  '/libs/events/halloween/halloween_ghost.svg',
+  '/libs/events/halloween/halloween_pumpkin_out.svg',
+  '/libs/events/halloween/toast_bat.svg',
+  '/libs/events/halloween/toast_ghost.svg',
+  '/libs/events/halloween/toast_owl.svg',
+  '/libs/events/halloween/toast_cat.svg',
+  '/libs/events/halloween/toast_hat.svg',
+  '/libs/events/halloween/toast_broom.svg',
+  '/libs/events/halloween/toast_saci_cap.svg',
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',
   '/assets/icons/icon-maskable-192.png',

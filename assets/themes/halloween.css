@@ -53,6 +53,25 @@ body.halloween-theme .section-head .section-title {
 body.halloween-theme .section-head .section-custom-icon:not(:empty) {
   color: var(--halloween-section-ink);
 }
+/* A small seasonal ghost fills only truly iconless section headers. It never
+   replaces a chosen icon or an emoji that could not be mapped to an SVG. */
+body.halloween-theme.button-visual-new.section-icons-enabled
+  .section-wrap[data-icon=""]:not(:has(.section-leading-emoji)) .section-custom-icon:empty {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 20px;
+  color: var(--halloween-section-muted);
+}
+body.halloween-theme.button-visual-new.section-icons-enabled
+  .section-wrap[data-icon=""]:not(:has(.section-leading-emoji)) .section-custom-icon:empty::before {
+  content: '';
+  width: 17px;
+  height: 17px;
+  background: currentColor;
+  -webkit-mask: url("../../libs/events/halloween/halloween_ghost.svg") center / contain no-repeat;
+  mask: url("../../libs/events/halloween/halloween_ghost.svg") center / contain no-repeat;
+}
 body.halloween-theme .section-head .section-count {
   color: var(--halloween-section-ink);
   background: var(--halloween-section-badge);
@@ -119,6 +138,23 @@ body.halloween-theme #menuOverlay .menu-setting-row select:focus {
 body.halloween-theme #halloweenVisualBtn .halloween-menu-icon {
   background: #ffb25f;
   filter: drop-shadow(0 0 3px rgba(255, 156, 52, .75));
+}
+body.halloween-theme #sectionIconsVisualBtn > .menu-icon { display: none; }
+body.halloween-theme #sectionIconsVisualBtn::before {
+  content: '';
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  background: currentColor;
+  -webkit-mask: url("../../libs/events/halloween/halloween_ghost.svg") center / contain no-repeat;
+  mask: url("../../libs/events/halloween/halloween_ghost.svg") center / contain no-repeat;
+}
+body.halloween-theme .about-brand img { box-shadow: 0 8px 22px rgba(226, 101, 33, .28); }
+@media (forced-colors: active) {
+  body.halloween-theme #sectionIconsVisualBtn > .menu-icon { display: block; }
+  body.halloween-theme #sectionIconsVisualBtn::before,
+  body.halloween-theme.button-visual-new.section-icons-enabled
+    .section-wrap[data-icon=""]:not(:has(.section-leading-emoji)) .section-custom-icon:empty { display: none; }
 }
 body.halloween-theme #searchWrap::after {
   content: '';

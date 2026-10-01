@@ -2,7 +2,7 @@
 // Novidades da versão — conteúdo dinâmico e controle de leitura
 // ==========================================================
 
-// A prévia local da 1.9.5 não antecipa o anúncio na versão em produção.
+// O anúncio da 1.9.5 segue a liberação manual dos ícones de seção.
 const WHATS_NEW_195_AVAILABLE = isBluFeatureAvailable('sectionIcons');
 const WHATS_NEW_VERSION = WHATS_NEW_195_AVAILABLE ? '1.9.5' : '1.9';
 

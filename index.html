@@ -23,7 +23,7 @@
     html[data-theme="dark"] { background: #0f1117; color-scheme: dark; }
     html.theme-booting body { transition: none; }
   </style>
-  <link rel="shortcut icon" href="assets/blu.svg" type="image/svg+xml">
+  <link id="bluFavicon" rel="shortcut icon" href="assets/blu.svg" type="image/svg+xml">
   <title>Blû</title>
   <link rel="stylesheet" href="assets/style.css">
   <link rel="stylesheet" href="assets/themes/halloween.css">
@@ -509,7 +509,7 @@
   <div class="modal-bg" id="aboutModal">
     <div class="modal about-modal">
       <div class="about-brand">
-        <img src="assets/icons/icon-192.png" alt="" width="64" height="64">
+        <img id="aboutBluLogo" src="assets/icons/icon-192.png" alt="" width="64" height="64">
         <div><h2>Blû</h2><span id="aboutVersion">Versão</span><a class="about-source-link" href="https://github.com/Raianwz/blu" target="_blank" rel="noopener noreferrer">Ver código-fonte</a></div>
         <button class="about-whats-new" id="aboutWhatsNewBtn" type="button" onclick="openWhatsNew()" hidden><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.27 21a2 2 0 0 0 3.46 0"/><path d="M3.26 15.33A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.67C19.41 13.86 18 12.38 18 8A6 6 0 0 0 6 8c0 4.38-1.41 5.86-2.74 7.33"/></svg>Ver novidades</button>
       </div>

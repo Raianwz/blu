@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Blû de Halloween">
+  <defs>
+    <linearGradient id="night" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#261533"/>
+      <stop offset=".58" stop-color="#51213f"/>
+      <stop offset="1" stop-color="#a9451b"/>
+    </linearGradient>
+    <linearGradient id="hat" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#ffb35e"/>
+      <stop offset="1" stop-color="#e26521"/>
+    </linearGradient>
+    <clipPath id="letter">
+      <path d="M159 106h230v322H159zm154.1 62.1c0-19.08-16.45-34.5-36.8-34.5s-36.8 15.42-36.8 34.5 16.45 34.5 36.8 34.5 36.8-15.42 36.8-34.5zm20.7 156.4c0-26.71-21.59-48.3-48.3-48.3s-48.3 21.59-48.3 48.3 21.59 48.3 48.3 48.3 48.3-21.59 48.3-48.3z"/>
+    </clipPath>
+  </defs>
+  <rect width="512" height="512" rx="120" fill="url(#night)"/>
+  <path d="M0 120C0 53.7 53.7 0 120 0h272c66.3 0 120 53.7 120 120v45C372 88 190 93 0 170z" fill="#fff" opacity=".06"/>
+  <g clip-path="url(#letter)" fill="#fff">
+    <rect x="159" y="106" width="50.6" height="299" rx="16.1"/>
+    <rect x="163.6" y="106" width="161" height="135.6" rx="39.1"/>
+    <rect x="163.6" y="239.4" width="188.6" height="165.6" rx="41.4"/>
+  </g>
+  <path d="M239 27 296 111H171z" fill="url(#hat)"/>
+  <path d="m197 91 83 1 13 19H180z" fill="#432044"/>
+  <path d="M149 111c50 13 115 14 163-1-7 21-34 34-80 34-43 0-73-11-83-33z" fill="#f5822d"/>
+  <path d="M366 378c0-20 17-35 38-35s38 15 38 35c0 24-16 49-38 49s-38-25-38-49z" fill="#ffad4b"/>
+  <path d="m384 378 10-12 8 12zm22 0 9-12 10 12zM385 396c11 12 28 12 39 0l-8 18h-22z" fill="#41203b"/>
+  <path d="M401 348c0-8 4-14 10-17" fill="none" stroke="#87ac60" stroke-width="7" stroke-linecap="round"/>
+</svg>

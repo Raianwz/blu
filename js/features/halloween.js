@@ -3,6 +3,12 @@ function applyHalloweenPreference() {
   const available = isBluFeatureAvailable('halloween');
   const enabled = available && getSetting('halloweenVisual', 'off') === 'on';
   document.body.classList.toggle('halloween-theme', enabled);
+  const favicon = document.getElementById('bluFavicon');
+  const faviconPath = enabled ? 'assets/themes/blu-halloween.svg' : 'assets/blu.svg';
+  if (favicon && favicon.getAttribute('href') !== faviconPath) favicon.setAttribute('href', faviconPath);
+  const aboutLogo = document.getElementById('aboutBluLogo');
+  const aboutLogoPath = enabled ? 'assets/themes/blu-halloween.svg' : 'assets/icons/icon-192.png';
+  if (aboutLogo && aboutLogo.getAttribute('src') !== aboutLogoPath) aboutLogo.setAttribute('src', aboutLogoPath);
   const button = document.getElementById('halloweenVisualBtn');
   if (button) {
     button.hidden = !available;

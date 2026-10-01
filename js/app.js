@@ -494,7 +494,8 @@ function openPopoutBlank() {
     const link = doc.createElement('link');
     link.rel = 'icon';
     link.type = 'image/svg+xml';
-    link.href = './assets/blu.svg';
+    link.href = doc.body.classList.contains('halloween-theme')
+      ? './assets/themes/blu-halloween.svg' : './assets/blu.svg';
     doc.head.appendChild(link);
   }, 50);
 }
