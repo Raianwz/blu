@@ -26,7 +26,7 @@ const WHATS_NEW_ITEMS_195 = [
     type: 'Novo',
     status: 'new',
     title: 'Tema de Dia das Bruxas',
-    description: 'Uma aparência sazonal opcional para os temas claro e escuro, com cores temáticas e pequenos detalhes festivos. Desative quando quiser em Menu &gt; Conteúdo.'
+    description: 'Uma aparência sazonal opcional para os temas claro e escuro, com cores temáticas e pequenos detalhes festivos. Durante a temporada, controle-a em Menu &gt; Conteúdo.'
   }
 ];
 
@@ -130,7 +130,6 @@ function setWhatsNewHalloweenVisual(enabled) {
   if (!isBluFeatureAvailable('halloween')) return;
   setSetting('halloweenVisual', enabled ? 'on' : 'off');
   applyHalloweenPreference();
-  updateWhatsNewVisualToggle();
 }
 
 function ensureWhatsNewModal() {
@@ -167,7 +166,7 @@ function ensureWhatsNewModal() {
         <div class="whats-new-visual-setting whats-new-seasonal-setting">
           <div>
             <strong>Visual de Dia das Bruxas</strong>
-            <p>Ativado na primeira vez que você abrir estas novidades, se ainda não fez uma escolha. Você pode desativá-lo aqui ou em Menu &gt; Conteúdo.</p>
+            <p>Ativado ao abrir estas novidades durante a temporada, se você ainda não fez uma escolha. Desative aqui ou em Menu &gt; Conteúdo.</p>
           </div>
           <label class="whats-new-visual-switch">
             <input id="whatsNewHalloweenVisualSwitch" type="checkbox" role="switch" aria-label="Ativar visual de Dia das Bruxas" onchange="setWhatsNewHalloweenVisual(this.checked)">

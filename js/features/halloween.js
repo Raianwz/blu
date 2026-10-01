@@ -10,6 +10,8 @@ function applyHalloweenPreference() {
     button.setAttribute('aria-pressed', String(enabled));
     button.querySelector('.menu-btn-label').textContent = `Visual de Halloween: ${enabled ? 'ON' : 'OFF'}`;
   }
+  // Keep an already-open What's New dialog in sync when the season ends at midnight.
+  if (typeof updateWhatsNewVisualToggle === 'function') updateWhatsNewVisualToggle();
 }
 
 function toggleHalloweenPreference() {

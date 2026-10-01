@@ -28,10 +28,10 @@ Pendências para o lançamento:
 - [x] Atualizar o What's New com novas cores/gradientes, ícones nas seções e “Tema de Dia das Bruxas”; deixar detalhes internos de desenvolvimento de fora.
 - [x] Sinalizar novidades pelo sininho, sem abrir o What's New automaticamente.
 - [x] Ativar o visual sazonal na primeira abertura voluntária das novidades, seguindo o comportamento do visual Novo e respeitando escolhas posteriores de ON/OFF.
-- [ ] Validar a regra de primeira ativação após “Redefinir Preferências” e “Limpar Tudo”.
+- [x] Validar a regra de primeira ativação após “Redefinir Preferências” e “Limpar Tudo”.
 - [ ] Confirmar a data final de início: a janela original era 14–31/10, mas houve proposta posterior de antecipação com data ainda a esclarecer.
-- [ ] Garantir retorno ao visual normal e ocultação do controle após o período, sem perder dados ou personalizações.
-- [ ] Validar contraste, navegação por teclado, telas estreitas e combinações Claro/Escuro × Clássico/Novo × Halloween ON/OFF.
+- [x] Garantir retorno ao visual normal e ocultação do controle após o período, sem perder dados ou personalizações.
+- [x] Validar contraste, navegação por teclado, telas estreitas e combinações Claro/Escuro × Clássico/Novo × Halloween ON/OFF.
 - [ ] Liberar manualmente as flags quando autorizado; manter o service worker segurado até a decisão de publicação.
 
 ### Histórico de atividade

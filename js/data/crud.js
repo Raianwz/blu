@@ -1222,6 +1222,7 @@ async function clearAll(event = null) {
   clearSearchHistory({ silent: true });
   resetQuickAccessPreferences({ persist: false, notifyUser: false });
   resetUserData();
+  updateWhatsNewButtonUI();
   updateContentPreferenceButtons();
   updateContentViewSwitcher();
   renderFavoritesShelf();
