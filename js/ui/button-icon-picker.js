@@ -3,7 +3,7 @@ const BLU_BUTTON_ICONS = Object.freeze((() => {
   const groups = new Map();
   const groupOrder = ['', 'Mensagens e textos', 'Livros e conhecimento', 'Organização',
     'Estrelas e marcadores', 'Avisos e ferramentas', 'Sinais', 'Reações',
-    'Ideias e energia', 'Dispositivos', 'Dados', 'Redes e serviços'];
+    'Ideias e energia', 'Dispositivos', 'Aplicativos', 'Dados', 'Redes e serviços'];
   const familyOrder = {
     'Estrelas e marcadores': ['bootstrap:star', 'bootstrap:star-fill', 'bootstrap:star-half',
       'material:kid_star_out', 'material:kid_star_fill', 'bootstrap:bookmark-star', 'bootstrap:bookmark-star-fill'],
@@ -11,7 +11,7 @@ const BLU_BUTTON_ICONS = Object.freeze((() => {
       'bootstrap:dash-lg', 'bootstrap:dash-circle', 'bootstrap:dash-circle-fill', 'bootstrap:dash-circle-dotted',
       'bootstrap:x', 'bootstrap:x-lg', 'bootstrap:x-circle', 'bootstrap:x-circle-fill', 'material:cancel']
   };
-  [...BLU_BRAND_ICONS, ...BLU_BOOTSTRAP_ICONS, ...BLU_MATERIAL_ICONS].forEach(entry => {
+  [...BLU_BRAND_ICONS, ...BLU_BOOTSTRAP_ICONS, ...BLU_MATERIAL_ICONS, ...BLU_APP_ICONS].forEach(entry => {
     const group = entry.group || '';
     if (!groups.has(group)) groups.set(group, []);
     groups.get(group).push(entry);
