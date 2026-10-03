@@ -47,6 +47,37 @@ body.dark.halloween-theme .section-head {
   box-shadow: inset 3px 0 0 #e67a35;
   background-image: linear-gradient(100deg, rgba(230, 122, 53, .10), transparent 65%);
 }
+/* A quiet amber glow follows pointer hover and visible keyboard focus. */
+body.halloween-theme {
+  --halloween-section-glow-border: #be875b;
+  --halloween-section-glow: rgba(174, 91, 30, .16);
+}
+body.dark.halloween-theme {
+  --halloween-section-glow-border: #a5683e;
+  --halloween-section-glow: rgba(239, 148, 64, .18);
+}
+body.halloween-theme:not(.shift-locked) .section-wrap {
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+body.halloween-theme:not(.shift-locked) .section-wrap:has(:focus-visible) {
+  border-color: var(--halloween-section-glow-border);
+  box-shadow: 0 2px 8px var(--shadow), 0 0 12px var(--halloween-section-glow);
+}
+@media (hover: hover) and (pointer: fine) {
+  body.halloween-theme:not(.shift-locked) .section-wrap:hover {
+    border-color: var(--halloween-section-glow-border);
+    box-shadow: 0 2px 8px var(--shadow), 0 0 12px var(--halloween-section-glow);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.halloween-theme:not(.shift-locked) .section-wrap { transition: none; }
+}
+@media (forced-colors: active) {
+  body.halloween-theme:not(.shift-locked) .section-wrap:is(:hover, :has(:focus-visible)) {
+    border-color: var(--border);
+    box-shadow: none;
+  }
+}
 body.halloween-theme .section-head .section-title {
   color: var(--halloween-section-ink);
 }
