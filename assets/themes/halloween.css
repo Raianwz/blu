@@ -116,6 +116,67 @@ body.halloween-theme .section-head :is(.section-collapse-btn, .section-add-btn, 
 }
 body.halloween-theme #topbar { border-bottom-color: #a44716; }
 
+/* Opaque action surfaces keep the icons readable beside every button color. */
+body.halloween-theme {
+  --halloween-edit-ink: #75380e;
+  --halloween-edit-bg: #f3debc;
+  --halloween-edit-hover: #edca98;
+  --halloween-delete-ink: #9f1239;
+  --halloween-delete-bg: #fce0e5;
+  --halloween-delete-hover: #f8c6d0;
+}
+body.dark.halloween-theme {
+  --halloween-edit-ink: #ffe1a3;
+  --halloween-edit-bg: #49331f;
+  --halloween-edit-hover: #634523;
+  --halloween-delete-ink: #ffc2cc;
+  --halloween-delete-bg: #482330;
+  --halloween-delete-hover: #60303f;
+}
+body.halloween-theme :is(.btn-edit, .section-rename-btn) {
+  color: var(--halloween-edit-ink);
+  background-color: var(--halloween-edit-bg);
+}
+body.halloween-theme :is(.btn-del, .section-del-btn) {
+  color: var(--halloween-delete-ink);
+  background-color: var(--halloween-delete-bg);
+}
+body.halloween-theme :is(.btn-edit, .btn-del, .section-rename-btn, .section-del-btn) {
+  transition: background-color 160ms ease;
+}
+@media (hover: hover) {
+  body.halloween-theme :is(.btn-edit, .section-rename-btn):not(:disabled):hover {
+    background-color: var(--halloween-edit-hover);
+  }
+  body.halloween-theme :is(.btn-del, .section-del-btn):not(:disabled):hover {
+    background-color: var(--halloween-delete-hover);
+  }
+  body.halloween-theme .section-move-controls button:not(:disabled):hover {
+    background-color: #9a3b0e;
+    border-color: #9a3b0e;
+    color: #fff;
+  }
+}
+body.halloween-theme :is(.btn-edit, .btn-del):focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: -3px;
+}
+body.halloween-theme .section-move-controls button:focus-visible {
+  background-color: #9a3b0e;
+  border-color: #9a3b0e;
+  color: #fff;
+}
+body.halloween-theme .section-move-controls button:not(:disabled):active {
+  background-color: #782b09;
+  border-color: #782b09;
+  color: #fff;
+}
+@media (prefers-reduced-motion: reduce) {
+  body.halloween-theme :is(.btn-edit, .btn-del, .section-rename-btn, .section-del-btn) {
+    transition: none;
+  }
+}
+
 /* Menu accents need their own text colors: the pumpkin fill is too dark
    for small text on purple. Keep these tokens scoped to navigation. */
 body.halloween-theme {

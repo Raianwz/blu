@@ -4043,11 +4043,55 @@ body.shift-mode .section-move-controls {
 }
 
 .section-move-controls button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
   border: 1px solid var(--border);
   background: var(--surface2);
   border-radius: 6px;
   padding: 4px 6px;
-  cursor: pointer
+  cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+@media (hover: hover) {
+  .section-move-controls button:not(:disabled):hover {
+    background-color: #2563eb;
+    border-color: #2563eb;
+    color: #fff;
+  }
+}
+
+.section-move-controls button:focus-visible {
+  background-color: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
+}
+
+.section-move-controls button:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+}
+
+.section-move-controls button:not(:disabled):active {
+  background-color: #1d4ed8;
+  border-color: #1d4ed8;
+  color: #fff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .section-move-controls button { transition: none; }
+}
+
+.edit-control-icon {
+  display: block;
+  width: 15px;
+  height: 15px;
+  flex: 0 0 15px;
+  pointer-events: none;
 }
 
 .section-wrap.dragging {

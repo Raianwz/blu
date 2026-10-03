@@ -259,32 +259,38 @@ function getSectionPlaceholder() {
 
 function moveSectionUp(btn) {
   const section = btn.closest('.section-wrap');
-  const prev = section.previousElementSibling;
+  const sections = getMovableSections();
+  const index = sections.indexOf(section);
+  const prev = sections[index - 1];
   if (!prev) return;
 
   pushHistory();
   section.parentNode.insertBefore(section, prev);
+  updateSectionMoveControls();
   recordActivityEvent('reordered', {
     target: 'section', targetId: section.dataset.id,
     name: section.querySelector('.section-title')?.textContent || 'Seção sem nome',
-    fromPosition: [...section.parentNode.children].indexOf(section) + 2,
-    toPosition: [...section.parentNode.children].indexOf(section) + 1
+    fromPosition: index + 1,
+    toPosition: index
   });
   updateUnsavedChangesUI();
 }
 
 function moveSectionDown(btn) {
   const section = btn.closest('.section-wrap');
-  const next = section.nextElementSibling;
+  const sections = getMovableSections();
+  const index = sections.indexOf(section);
+  const next = sections[index + 1];
   if (!next) return;
 
   pushHistory();
-  const fromPosition = [...section.parentNode.children].indexOf(section) + 1;
-  section.parentNode.insertBefore(next, section);
+  const fromPosition = index + 1;
+  section.parentNode.insertBefore(section, next.nextSibling);
+  updateSectionMoveControls();
   recordActivityEvent('reordered', {
     target: 'section', targetId: section.dataset.id,
     name: section.querySelector('.section-title')?.textContent || 'Seção sem nome',
-    fromPosition, toPosition: [...section.parentNode.children].indexOf(section) + 1
+    fromPosition, toPosition: index + 2
   });
   updateUnsavedChangesUI();
 }
@@ -383,6 +389,7 @@ window.addEventListener('mouseup', () => {
     });
   }
   draggedSectionOriginPosition = null;
+  updateSectionMoveControls();
   updateUnsavedChangesUI();
 });
 
@@ -500,6 +507,7 @@ function disableButtonReorder(buttonWrap) {
 }
 
 function applyButtonReorderControls() {
+  updateSectionMoveControls();
   const shouldShow = isButtonShiftLockActive();
   document.querySelectorAll('.btn-wrap').forEach(buttonWrap => {
     if (shouldShow) enableButtonReorder(buttonWrap);

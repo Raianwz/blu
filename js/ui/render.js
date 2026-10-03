@@ -302,11 +302,11 @@ function renderSection(section, container) {
       <span class="section-custom-icon" aria-hidden="true">${customButtonIconMarkup(icon)}</span>
       <span class="section-title">${sectionTitleMarkup(section.name)}</span>
       <span class="section-count" title="${count} botão(ões)">${count}</span>
-      <button class="section-rename-btn" onclick="renameSection('${safeSectionId}')" title="Renomear seção">✏️</button>
-      <button class="section-del-btn" onclick="deleteSection('${safeSectionId}')" title="Excluir seção">🗑️</button>
+      <button class="section-rename-btn" onclick="renameSection('${safeSectionId}')" title="Renomear seção" aria-label="Renomear seção">${iconSvg('pencil', 'edit-control-icon')}</button>
+      <button class="section-del-btn" onclick="deleteSection('${safeSectionId}')" title="Excluir seção" aria-label="Excluir seção">${iconSvg('trash_2', 'edit-control-icon')}</button>
       <div class="section-move-controls">
-        <button onclick="moveSectionUp(this)" title="Mover seção para cima">⬆️</button>
-        <button onclick="moveSectionDown(this)" title="Mover seção para baixo">⬇️</button>
+        <button onclick="moveSectionUp(this)" title="Mover seção para cima" aria-label="Mover seção para cima">${iconSvg('arrow_up', 'edit-control-icon')}</button>
+        <button onclick="moveSectionDown(this)" title="Mover seção para baixo" aria-label="Mover seção para baixo">${iconSvg('arrow_down', 'edit-control-icon')}</button>
       </div>
     </div>
     <div class="section-body" data-section="${escapeHtmlAttr(String(section.id))}"></div>
@@ -343,7 +343,8 @@ function createBtnEl(button, sectionId) {
   const editBtn = document.createElement('button');
   editBtn.className = 'btn-edit';
   editBtn.title = 'Editar botão';
-  editBtn.innerHTML = '✏️';
+  editBtn.setAttribute('aria-label', editBtn.title);
+  editBtn.innerHTML = iconSvg('pencil', 'edit-control-icon');
   editBtn.onclick = event => {
     event.stopPropagation();
     openEditBtn(sectionId, wrap.dataset.id);
@@ -352,7 +353,8 @@ function createBtnEl(button, sectionId) {
   const delBtn = document.createElement('button');
   delBtn.className = 'btn-del';
   delBtn.title = 'Remover botão';
-  delBtn.textContent = '✕';
+  delBtn.setAttribute('aria-label', delBtn.title);
+  delBtn.innerHTML = iconSvg('x', 'edit-control-icon');
   delBtn.onclick = event => {
     event.stopPropagation();
     deleteBtn(sectionId, wrap.dataset.id);
@@ -485,7 +487,21 @@ function toggleCollapse(btn) {
   persistState();
 }
 
+function getMovableSections() {
+  return [...document.querySelectorAll('#sections > .section-wrap:not(.section-drag-placeholder)')];
+}
+
+function updateSectionMoveControls() {
+  const sections = getMovableSections();
+  sections.forEach((section, index) => {
+    const controls = section.querySelectorAll('.section-move-controls button');
+    if (controls[0]) controls[0].disabled = index === 0;
+    if (controls[1]) controls[1].disabled = index === sections.length - 1;
+  });
+}
+
 function updateToggleSectionsBtnLabel() {
+  updateSectionMoveControls();
   const button = document.getElementById('toggleSectionsBtn');
   if (!button) return;
 
