@@ -4197,7 +4197,7 @@ body.shift-locked .btn-wrap.blu-button-shift-row .copy-btn {
 #backupBanner {
   position: fixed;
   left: 50%;
-  bottom: 14px;
+  bottom: max(20px, env(safe-area-inset-bottom));
   transform: translateX(-50%) translateY(150%);
   opacity: 0;
   pointer-events: none;
@@ -4212,6 +4212,7 @@ body.shift-locked .btn-wrap.blu-button-shift-row .copy-btn {
   padding: 12px 16px;
   border-radius: 12px;
   width: min(420px, calc(100% - 24px));
+  overflow: hidden;
   box-sizing: border-box;
   transition: transform 0.3s ease, opacity 0.3s ease;
 }

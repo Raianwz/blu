@@ -274,6 +274,95 @@ body.halloween-theme .notif-message {
   align-items: center;
   gap: 8px;
 }
+/* Keep the backup reminder above the seasonal page, with readable actions. */
+body.halloween-theme #backupBanner {
+  isolation: isolate;
+  border-color: #a44716;
+  background: linear-gradient(120deg, #fff8ef, #f7e7d9);
+  box-shadow: 0 12px 30px rgba(76, 35, 21, .22), 0 0 0 1px rgba(164, 71, 22, .12);
+}
+body.halloween-theme #backupBanner > * {
+  position: relative;
+  z-index: 1;
+}
+body.halloween-theme #backupBanner::before {
+  content: '';
+  position: absolute;
+  right: 14px;
+  bottom: -8px;
+  width: 80px;
+  height: 80px;
+  background: #a44716;
+  -webkit-mask: url("../../libs/events/halloween/halloween_ghost.svg") center / contain no-repeat;
+  mask: url("../../libs/events/halloween/halloween_ghost.svg") center / contain no-repeat;
+  opacity: .24;
+  pointer-events: none;
+  z-index: 0;
+}
+body.dark.halloween-theme #backupBanner {
+  border-color: #e7813e;
+  background: linear-gradient(120deg, #2d202d, #251b2b);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .45), 0 0 18px rgba(231, 129, 62, .12);
+}
+body.dark.halloween-theme #backupBanner::before {
+  background: #ffc48c;
+  opacity: .23;
+}
+body.halloween-theme #backupBanner .backup-banner-text { color: #30241d; }
+body.dark.halloween-theme #backupBanner .backup-banner-text { color: #f7edf5; }
+body.halloween-theme #backupBanner .bb-export {
+  background: #a44716;
+  color: #fff;
+}
+body.dark.halloween-theme #backupBanner .bb-export { background: #b8501b; }
+body.halloween-theme #backupBanner .bb-dismiss {
+  background: #ead8c9;
+  color: #49332a;
+}
+body.dark.halloween-theme #backupBanner .bb-dismiss {
+  background: #47354b;
+  color: #f7edf5;
+}
+body.halloween-theme #backupBanner .backup-banner-actions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background-color 160ms ease;
+}
+body.halloween-theme #backupBanner .backup-banner-actions button::before {
+  content: '';
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  flex: 0 0 15px;
+  background: currentColor;
+}
+body.halloween-theme #backupBanner .bb-export::before {
+  -webkit-mask: url("../../libs/events/halloween/halloween_pumpkin_out.svg") center / contain no-repeat;
+  mask: url("../../libs/events/halloween/halloween_pumpkin_out.svg") center / contain no-repeat;
+}
+body.halloween-theme #backupBanner .bb-dismiss::before {
+  -webkit-mask: url("../../libs/events/halloween/halloween_ghost.svg") center / contain no-repeat;
+  mask: url("../../libs/events/halloween/halloween_ghost.svg") center / contain no-repeat;
+}
+@media (hover: hover) {
+  body.halloween-theme #backupBanner .bb-export:hover { background: #81340f; }
+  body.dark.halloween-theme #backupBanner .bb-export:hover { background: #d16b2c; }
+  body.halloween-theme #backupBanner .bb-dismiss:hover { background: #ddc2ad; }
+  body.dark.halloween-theme #backupBanner .bb-dismiss:hover { background: #5c4561; }
+}
+body.halloween-theme #backupBanner .backup-banner-actions button:focus-visible {
+  outline: 2px solid var(--halloween-menu-focus);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  body.halloween-theme #backupBanner .backup-banner-actions button { transition: none; }
+}
+@media (forced-colors: active) {
+  body.halloween-theme #backupBanner::before,
+  body.halloween-theme #backupBanner .backup-banner-actions button::before { display: none; }
+}
 body.halloween-theme .halloween-toast-creature {
   display: inline-block;
   width: 16px;
