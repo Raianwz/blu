@@ -479,6 +479,7 @@ function openPopoutBlank() {
   // ele visível, independente do timing de reexecução dos scripts.
   const clone = document.documentElement.cloneNode(true);
   clone.querySelector('#backupBanner')?.classList.remove('show');
+  clone.querySelector('#updateBanner')?.setAttribute('hidden', '');
   clone.querySelector('#menuOverlay')?.classList.remove('open');
 
   win.document.write(clone.outerHTML);
@@ -507,7 +508,30 @@ function registerServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
 
   window.addEventListener('load', () => {
+    const updateBanner = document.getElementById('updateBanner');
+    const hadController = !!navigator.serviceWorker.controller;
+    let lastUpdateCheck = 0;
+
+    document.getElementById('updateNowBtn')?.addEventListener('click', () => {
+      window.location.reload();
+    });
+    document.getElementById('updateLaterBtn')?.addEventListener('click', () => {
+      updateBanner.hidden = true;
+    });
+
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (hadController && updateBanner) updateBanner.hidden = false;
+    });
+
     navigator.serviceWorker.register('/js/service-worker.js', { scope: '/' })
+      .then(registration => {
+        // Visitar uma aba já aberta também deve procurar uma versão publicada.
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState !== 'visible' || Date.now() - lastUpdateCheck < 5 * 60 * 1000) return;
+          lastUpdateCheck = Date.now();
+          registration.update().catch(error => console.warn('Não foi possível verificar atualizações:', error));
+        });
+      })
       .catch(error => console.warn('Não foi possível registrar o service worker:', error));
   });
 }

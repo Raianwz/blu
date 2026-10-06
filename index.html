@@ -621,6 +621,15 @@
     </div>
   </div>
 
+  <div id="updateBanner" role="status" aria-live="polite" hidden>
+    <span class="update-banner-icon" aria-hidden="true">↻</span>
+    <span class="update-banner-text">Atualização disponível</span>
+    <div class="update-banner-actions">
+      <button type="button" id="updateNowBtn">Atualizar</button>
+      <button type="button" id="updateLaterBtn">Depois</button>
+    </div>
+  </div>
+
   <div id="notifArea"></div>
   <button id="appVersion" type="button" onclick="openAboutModal()">Blû</button>
   <!-- A ordem é intencional: os scripts ainda compartilham o escopo global. -->

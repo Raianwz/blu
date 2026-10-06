@@ -4188,6 +4188,69 @@ body.shift-locked .btn-wrap.blu-button-shift-row .copy-btn {
   transition: outline 0.18s ease;
 }
 
+/* Nova versão pronta: discreta, sem recarregar durante uma edição. */
+#updateBanner[hidden] { display: none; }
+#updateBanner {
+  position: fixed;
+  top: 60px;
+  right: 16px;
+  z-index: 1800;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  width: min(360px, calc(100% - 32px));
+  padding: 10px 12px;
+  border: 1px solid var(--accent1);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 10px 30px var(--shadow);
+}
+.update-banner-icon { color: var(--accent1); font-size: 20px; line-height: 1; }
+.update-banner-text { flex: 1 1 145px; font-size: 13px; font-weight: 600; }
+.update-banner-actions { display: flex; gap: 6px; margin-left: auto; }
+.update-banner-actions button {
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--surface2);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+#updateNowBtn { background: var(--accent1); border-color: var(--accent1); color: #fff; }
+.update-banner-actions button:hover { filter: brightness(1.1); }
+.update-banner-actions button:focus-visible { outline: 2px solid var(--accent1); outline-offset: 2px; }
+@media (max-width: 600px) {
+  #updateBanner {
+    flex-wrap: nowrap;
+    gap: 8px;
+    padding: 10px;
+  }
+  .update-banner-icon { font-size: 18px; }
+  .update-banner-text {
+    min-width: 0;
+    flex-basis: auto;
+    white-space: nowrap;
+    font-size: 12px;
+  }
+  .update-banner-actions {
+    flex: 0 0 auto;
+    gap: 4px;
+  }
+  .update-banner-actions button { padding: 7px 8px; }
+}
+@media (max-width: 380px) {
+  #updateBanner { flex-wrap: wrap; }
+  .update-banner-text { white-space: normal; }
+  .update-banner-actions {
+    margin-left: auto;
+  }
+}
+
 /* Lembrete de backup (export pendente)
    Escondido via translateY(150%) em vez de um "bottom" fixo em px:
    a altura do banner varia (quebra de texto, empilhamento em telas

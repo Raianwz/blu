@@ -274,6 +274,63 @@ body.halloween-theme .notif-message {
   align-items: center;
   gap: 8px;
 }
+/* A seasonal update notice shares the pumpkin palette without obscuring actions. */
+body.halloween-theme #updateBanner {
+  border-color: #a44716;
+  background: #fff8ef;
+  color: #30241d;
+}
+body.dark.halloween-theme #updateBanner {
+  border-color: #e7813e;
+  background: #2d202d;
+  color: #f7edf5;
+}
+body.halloween-theme #updateBanner .update-banner-icon { color: #a44716; }
+body.dark.halloween-theme #updateBanner .update-banner-icon { color: #ffc48c; }
+body.halloween-theme #updateBanner #updateNowBtn {
+  background: #a44716;
+  border-color: #a44716;
+  color: #fff;
+}
+body.dark.halloween-theme #updateBanner #updateNowBtn {
+  background: #b8501b;
+  border-color: #b8501b;
+}
+body.halloween-theme #updateBanner #updateNowBtn::before {
+  content: '';
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-right: 6px;
+  vertical-align: -2px;
+  background: currentColor;
+  -webkit-mask: url("../../libs/events/halloween/halloween_pumpkin_out.svg") center / contain no-repeat;
+  mask: url("../../libs/events/halloween/halloween_pumpkin_out.svg") center / contain no-repeat;
+}
+@media (max-width: 600px) {
+  body.halloween-theme #updateBanner #updateNowBtn::before {
+    width: 12px;
+    height: 12px;
+    margin-right: 4px;
+  }
+}
+body.halloween-theme #updateBanner #updateLaterBtn {
+  background: #ead8c9;
+  border-color: #ead8c9;
+  color: #49332a;
+}
+body.dark.halloween-theme #updateBanner #updateLaterBtn {
+  background: #47354b;
+  border-color: #47354b;
+  color: #f7edf5;
+}
+body.halloween-theme #updateBanner .update-banner-actions button:focus-visible {
+  outline-color: var(--halloween-menu-focus);
+}
+@media (forced-colors: active) {
+  body.halloween-theme #updateBanner #updateNowBtn::before { display: none; }
+}
+
 /* Keep the backup reminder above the seasonal page, with readable actions. */
 body.halloween-theme #backupBanner {
   isolation: isolate;
