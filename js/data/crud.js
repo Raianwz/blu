@@ -63,6 +63,7 @@ function closeModal(id) {
     trigger.setAttribute('aria-expanded', 'false');
     if (wasOpen && document.getElementById('btnModal').classList.contains('open') && !document.getElementById('buttonIconOptions').hidden) trigger.focus();
   }
+  if (wasOpen) document.dispatchEvent(new CustomEvent('blu:modal-closed'));
 }
 
 function getModalFormValues(modal) {

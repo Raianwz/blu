@@ -505,8 +505,25 @@ function openPopoutBlank() {
 // O worker fica em /js para manter a raiz organizada, mas precisa controlar
 // todo o app. O cabeçalho Service-Worker-Allowed configurado na Vercel autoriza
 // explicitamente esse escopo mais amplo.
+async function waitForServiceWorkerInstall(registration) {
+  const worker = registration.installing;
+  if (!worker || worker.state === 'activated' || worker.state === 'redundant') return;
+  await new Promise(resolve => {
+    const onStateChange = () => {
+      if (worker.state !== 'activated' && worker.state !== 'redundant') return;
+      worker.removeEventListener('statechange', onStateChange);
+      resolve();
+    };
+    worker.addEventListener('statechange', onStateChange);
+    onStateChange();
+  });
+}
+
 function registerServiceWorker() {
-  if (!('serviceWorker' in navigator)) return;
+  if (!('serviceWorker' in navigator)) {
+    document.dispatchEvent(new Event('blu:update-check-complete'));
+    return;
+  }
 
   window.addEventListener('load', () => {
     const updateBanner = document.getElementById('updateBanner');
@@ -518,6 +535,7 @@ function registerServiceWorker() {
     });
     document.getElementById('updateLaterBtn')?.addEventListener('click', () => {
       updateBanner.hidden = true;
+      document.dispatchEvent(new Event('blu:update-banner-closed'));
     });
 
     navigator.serviceWorker.addEventListener('controllerchange', () => {
@@ -525,15 +543,22 @@ function registerServiceWorker() {
     });
 
     navigator.serviceWorker.register('/js/service-worker.js', { scope: '/' })
-      .then(registration => {
+      .then(async registration => {
         // Visitar uma aba já aberta também deve procurar uma versão publicada.
         document.addEventListener('visibilitychange', () => {
           if (document.visibilityState !== 'visible' || Date.now() - lastUpdateCheck < 5 * 60 * 1000) return;
           lastUpdateCheck = Date.now();
           registration.update().catch(error => console.warn('Não foi possível verificar atualizações:', error));
         });
+        try {
+          await registration.update();
+          await waitForServiceWorkerInstall(registration);
+        } catch (error) {
+          console.warn('Não foi possível verificar atualizações:', error);
+        }
       })
-      .catch(error => console.warn('Não foi possível registrar o service worker:', error));
+      .catch(error => console.warn('Não foi possível registrar o service worker:', error))
+      .finally(() => document.dispatchEvent(new Event('blu:update-check-complete')));
   });
 }
 

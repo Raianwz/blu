@@ -1,10 +1,29 @@
 // Optional seasonal presentation; never rewrites content or button colors.
 let halloweenVisualWasEnabled = null;
-const HALLOWEEN_PALETTE_NOTICE_REVISION = 'ghost';
+let halloweenPaletteNoticePending = false;
+let halloweenUpdateCheckComplete = false;
+const HALLOWEEN_PALETTE_NOTICE_REVISION = 'palettes-v33';
 
-function dismissHalloweenPaletteBanner() {
+function dismissHalloweenPaletteBanner(acknowledged = true) {
   const banner = document.getElementById('halloweenPaletteBanner');
   if (banner) banner.hidden = true;
+  if (acknowledged) {
+    halloweenPaletteNoticePending = false;
+    setSetting('halloweenPaletteNoticeRevision', HALLOWEEN_PALETTE_NOTICE_REVISION);
+  }
+}
+
+function showHalloweenPaletteBannerWhenReady() {
+  if (!halloweenPaletteNoticePending || !halloweenUpdateCheckComplete) return;
+  if (!document.body.classList.contains('halloween-theme')) {
+    halloweenPaletteNoticePending = false;
+    return;
+  }
+  if (document.querySelector('.modal-bg.open') || document.getElementById('updateBanner')?.hidden === false) return;
+  const banner = document.getElementById('halloweenPaletteBanner');
+  if (!banner) return;
+  banner.hidden = false;
+  halloweenPaletteNoticePending = false;
 }
 
 function openHalloweenPaletteFromBanner(event) {
@@ -22,6 +41,7 @@ function openHalloweenPaletteFromBanner(event) {
 function applyHalloweenPreference() {
   const available = isBluFeatureAvailable('halloween');
   const enabled = available && getSetting('halloweenVisual', 'off') === 'on';
+  const firstApply = halloweenVisualWasEnabled === null;
   const justEnabled = halloweenVisualWasEnabled === false && enabled;
   halloweenVisualWasEnabled = enabled;
   document.body.classList.toggle('halloween-theme', enabled);
@@ -46,13 +66,13 @@ function applyHalloweenPreference() {
     button.setAttribute('aria-pressed', String(enabled));
     button.querySelector('.menu-btn-label').textContent = `Visual de Halloween: ${enabled ? 'ON' : 'OFF'}`;
   }
-  if (!enabled) dismissHalloweenPaletteBanner();
-  if (justEnabled && getSetting('halloweenPaletteNoticeRevision', '') !== HALLOWEEN_PALETTE_NOTICE_REVISION) {
-    const banner = document.getElementById('halloweenPaletteBanner');
-    if (banner && document.getElementById('updateBanner')?.hidden !== false) {
-      banner.hidden = false;
-      setSetting('halloweenPaletteNoticeRevision', HALLOWEEN_PALETTE_NOTICE_REVISION);
-    }
+  if (!enabled) {
+    halloweenPaletteNoticePending = false;
+    dismissHalloweenPaletteBanner(false);
+  }
+  if ((justEnabled || (firstApply && enabled)) && getSetting('halloweenPaletteNoticeRevision', '') !== HALLOWEEN_PALETTE_NOTICE_REVISION) {
+    halloweenPaletteNoticePending = true;
+    queueMicrotask(showHalloweenPaletteBannerWhenReady);
   }
   // Keep an already-open What's New dialog in sync when the season ends at midnight.
   if (typeof updateWhatsNewVisualToggle === 'function') updateWhatsNewVisualToggle();
@@ -74,6 +94,12 @@ function setHalloweenPalette(value) {
 
 applyHalloweenPreference();
 document.addEventListener('visibilitychange', applyHalloweenPreference);
+document.addEventListener('blu:update-check-complete', () => {
+  halloweenUpdateCheckComplete = true;
+  showHalloweenPaletteBannerWhenReady();
+});
+document.addEventListener('blu:modal-closed', showHalloweenPaletteBannerWhenReady);
+document.addEventListener('blu:update-banner-closed', showHalloweenPaletteBannerWhenReady);
 window.addEventListener('focus', applyHalloweenPreference);
 window.addEventListener('storage', event => {
   if (event.key === 'blu:settings' || event.key === null) applyHalloweenPreference();

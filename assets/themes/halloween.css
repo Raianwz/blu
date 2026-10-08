@@ -285,6 +285,8 @@ body.halloween-theme #menuOverlay .menu-setting-row select:focus {
 }
 .halloween-palette-row .menu-btn-label { min-width: 0; }
 #halloweenPaletteBanner[hidden] { display: none; }
+body:has(.modal-bg.open) #halloweenPaletteBanner { visibility: hidden; pointer-events: none; }
+body:has(#updateBanner:not([hidden])) #halloweenPaletteBanner { visibility: hidden; pointer-events: none; }
 #halloweenPaletteBanner {
   position: fixed;
   top: 60px;
@@ -378,11 +380,18 @@ body.dark.halloween-theme .halloween-palette-banner-actions button:last-child {
   .halloween-palette-banner-icon,
   .halloween-palette-banner-swatches { display: none; }
 }
-.halloween-menu-icon {
+.halloween-menu-icon,
+.halloween-cauldron-icon {
   display: inline-block;
   background: currentColor;
+}
+.halloween-menu-icon {
   -webkit-mask: url("../../libs/events/halloween/halloween_pumpkin_out.svg") center / contain no-repeat;
   mask: url("../../libs/events/halloween/halloween_pumpkin_out.svg") center / contain no-repeat;
+}
+.halloween-cauldron-icon {
+  -webkit-mask: url("../../libs/events/halloween/halloween_cauldron.svg") center / contain no-repeat;
+  mask: url("../../libs/events/halloween/halloween_cauldron.svg") center / contain no-repeat;
 }
 body.halloween-theme #halloweenVisualBtn .halloween-menu-icon {
   background: #ffb25f;
