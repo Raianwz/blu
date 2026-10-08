@@ -58,6 +58,37 @@ body.halloween-theme.button-visual-new[data-halloween-palette="vampire"] {
   --btn-private-1: #3c333f;
   --btn-private-2: #3c333f;
 }
+body.halloween-theme[data-halloween-palette="witch"] {
+  --btn-public-1: #743479;
+  --btn-public-2: #522458;
+  --btn-private-1: #52652c;
+  --btn-private-2: #35441e;
+}
+body.halloween-theme.button-visual-new[data-halloween-palette="witch"] {
+  --btn-public-1: #6f2e74;
+  --btn-public-2: #6f2e74;
+  --btn-private-1: #50632b;
+  --btn-private-2: #50632b;
+}
+body.halloween-theme[data-halloween-palette="ghost"] {
+  --btn-public-1: #e1dce6;
+  --btn-public-2: #c8c3d0;
+  --btn-private-1: #58605b;
+  --btn-private-2: #3d4742;
+}
+body.halloween-theme.button-visual-new[data-halloween-palette="ghost"] {
+  --btn-public-1: #d7d2df;
+  --btn-public-2: #d7d2df;
+  --btn-private-1: #505a53;
+  --btn-private-2: #505a53;
+}
+/* The fog-colored public button needs dark ink; private stays white. */
+body.halloween-theme[data-halloween-palette="ghost"] :is(.copy-btn, .favorite-card, .archive-section-button).vis-public,
+body.halloween-theme[data-halloween-palette="ghost"] .favorite-card.vis-public .favorite-card-copy,
+body.halloween-theme[data-halloween-palette="ghost"] .favorite-card.vis-public .favorite-card-copy small,
+body.halloween-theme.button-visual-new[data-halloween-palette="ghost"] .copy-btn.vis-public .button-visibility-svg {
+  color: #242331;
+}
 body.halloween-theme .section-head {
   --halloween-section-ink: #342722;
   --halloween-section-muted: #624b43;
@@ -305,6 +336,8 @@ body.dark.halloween-theme .halloween-palette-banner-icon { background: #ffc48c; 
 .halloween-palette-banner-swatches .pumpkin { background: linear-gradient(90deg, #a23d0b 50%, #55285b 50%); }
 .halloween-palette-banner-swatches .zombie { background: linear-gradient(90deg, #286339 50%, #594334 50%); }
 .halloween-palette-banner-swatches .vampire { background: linear-gradient(90deg, #821c36 50%, #3c333f 50%); }
+.halloween-palette-banner-swatches .witch { background: linear-gradient(90deg, #6f2e74 50%, #50632b 50%); }
+.halloween-palette-banner-swatches .ghost { background: linear-gradient(90deg, #d7d2df 50%, #505a53 50%); }
 .halloween-palette-banner-actions {
   grid-column: 1 / -1;
   display: flex;

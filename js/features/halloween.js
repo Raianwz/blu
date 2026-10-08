@@ -1,6 +1,6 @@
 // Optional seasonal presentation; never rewrites content or button colors.
 let halloweenVisualWasEnabled = null;
-const HALLOWEEN_PALETTE_NOTICE_REVISION = 'vampire';
+const HALLOWEEN_PALETTE_NOTICE_REVISION = 'ghost';
 
 function dismissHalloweenPaletteBanner() {
   const banner = document.getElementById('halloweenPaletteBanner');
@@ -26,7 +26,7 @@ function applyHalloweenPreference() {
   halloweenVisualWasEnabled = enabled;
   document.body.classList.toggle('halloween-theme', enabled);
   const savedPalette = getSetting('halloweenPalette', 'pumpkin');
-  const palette = ['pumpkin', 'zombie', 'vampire'].includes(savedPalette) ? savedPalette : 'pumpkin';
+  const palette = ['pumpkin', 'zombie', 'vampire', 'witch', 'ghost'].includes(savedPalette) ? savedPalette : 'pumpkin';
   if (enabled) document.body.dataset.halloweenPalette = palette;
   else delete document.body.dataset.halloweenPalette;
   const paletteRow = document.getElementById('halloweenPaletteRow');
@@ -66,7 +66,7 @@ function toggleHalloweenPreference() {
 
 function setHalloweenPalette(value) {
   if (!isBluFeatureAvailable('halloween') || getSetting('halloweenVisual', 'off') !== 'on') return;
-  if (!['pumpkin', 'zombie', 'vampire'].includes(value)) return;
+  if (!['pumpkin', 'zombie', 'vampire', 'witch', 'ghost'].includes(value)) return;
   dismissHalloweenPaletteBanner();
   setSetting('halloweenPalette', value);
   applyHalloweenPreference();

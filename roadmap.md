@@ -38,7 +38,9 @@ Ideias para uma próxima expansão sazonal (não incluídas na 1.9.5):
 
 - [x] Primeira etapa: adicionar a paleta Zumbi e mostrar Vampiro, Bruxa e Fantasma indisponíveis no seletor até serem implementadas.
 - [x] Segunda etapa: liberar Vampiro; manter Bruxa e Fantasma indisponíveis por enquanto.
-- [ ] Oferecer cinco paletas para botões Público/Privado: Abóbora (laranja queimado e roxo sombrio, atual), Zumbi (verde musgo e terra escura), Vampiro (vinho-sangue e carvão), Bruxa (roxo de poção e verde de ervas/vassoura) e Fantasma (névoa/lavanda apagada e osso ou cinza de cemitério). Definir os pares finais após testes visuais.
+- [x] Terceira etapa: liberar Bruxa; manter Fantasma indisponível até a definição do contraste da paleta clara.
+- [x] Quarta etapa: liberar Fantasma com letras/ícones escuros no Público claro e brancos no Privado escuro.
+- [x] Oferecer cinco paletas para botões Público/Privado: Abóbora (laranja queimado e roxo sombrio, atual), Zumbi (verde musgo e terra escura), Vampiro (vinho-sangue e carvão), Bruxa (roxo de poção e verde de ervas/vassoura) e Fantasma (névoa/lavanda apagada e osso ou cinza de cemitério).
 - [ ] Trocar somente as cores visuais dos botões Público/Privado nos visuais Clássico e Novo. Manter o tema base de Halloween, inclusive o menu hambúrguer com abóbora, igual em todas as paletas.
 - [ ] Não recolorir por padrão ações como Salvar, Cancelar, Sim e Não. Considerar apenas um ajuste pontual de destaque ou hover das seções se os testes de contraste realmente exigirem; preservar cores semânticas de confirmação, cancelamento e perigo.
 - [x] Adicionar em Conteúdo um seletor discreto “Estilo:”, visível apenas com o tema sazonal ativo.
