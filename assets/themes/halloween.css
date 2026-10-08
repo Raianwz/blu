@@ -596,6 +596,29 @@ body.halloween-theme .halloween-toast-creature {
   mask: var(--halloween-toast-icon) center / contain no-repeat;
 }
 
+/* A subtle web marks little-used buttons without covering the label or intercepting clicks. */
+body.halloween-theme .btn-wrap.halloween-webbed .copy-btn {
+  padding-right: 27px;
+}
+body.halloween-theme .btn-wrap.halloween-webbed .copy-btn::after {
+  content: '';
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  width: 23px;
+  height: 23px;
+  background: currentColor;
+  opacity: .58;
+  pointer-events: none;
+  -webkit-mask: url("../../libs/events/halloween/halloween_web.svg") center / contain no-repeat;
+  mask: url("../../libs/events/halloween/halloween_web.svg") center / contain no-repeat;
+}
+body.halloween-theme .btn-wrap.halloween-webbed .copy-btn.copied::after {
+  display: none;
+}
+@media (forced-colors: active) {
+  body.halloween-theme .btn-wrap.halloween-webbed .copy-btn::after { display: none; }
+}
 /* Decorative copy feedback: fixed to the clicked button, never intercepts input. */
 body.halloween-theme .halloween-copy-effect {
   position: fixed;
