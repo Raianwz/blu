@@ -480,6 +480,7 @@ function openPopoutBlank() {
   const clone = document.documentElement.cloneNode(true);
   clone.querySelector('#backupBanner')?.classList.remove('show');
   clone.querySelector('#updateBanner')?.setAttribute('hidden', '');
+  clone.querySelector('#halloweenPaletteBanner')?.setAttribute('hidden', '');
   clone.querySelector('#menuOverlay')?.classList.remove('open');
 
   win.document.write(clone.outerHTML);

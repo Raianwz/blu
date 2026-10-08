@@ -1,8 +1,38 @@
 // Optional seasonal presentation; never rewrites content or button colors.
+let halloweenVisualWasEnabled = null;
+const HALLOWEEN_PALETTE_NOTICE_REVISION = 'vampire';
+
+function dismissHalloweenPaletteBanner() {
+  const banner = document.getElementById('halloweenPaletteBanner');
+  if (banner) banner.hidden = true;
+}
+
+function openHalloweenPaletteFromBanner(event) {
+  event?.stopPropagation();
+  dismissHalloweenPaletteBanner();
+  const menu = document.getElementById('menuOverlay');
+  const content = document.getElementById('submenu-conteudo');
+  if (menu) menu.classList.add('open');
+  if (content && !content.classList.contains('open')) toggleSubmenu('conteudo');
+  const select = document.getElementById('halloweenPaletteSelect');
+  select?.scrollIntoView({ block: 'nearest' });
+  select?.focus();
+}
+
 function applyHalloweenPreference() {
   const available = isBluFeatureAvailable('halloween');
   const enabled = available && getSetting('halloweenVisual', 'off') === 'on';
+  const justEnabled = halloweenVisualWasEnabled === false && enabled;
+  halloweenVisualWasEnabled = enabled;
   document.body.classList.toggle('halloween-theme', enabled);
+  const savedPalette = getSetting('halloweenPalette', 'pumpkin');
+  const palette = ['pumpkin', 'zombie', 'vampire'].includes(savedPalette) ? savedPalette : 'pumpkin';
+  if (enabled) document.body.dataset.halloweenPalette = palette;
+  else delete document.body.dataset.halloweenPalette;
+  const paletteRow = document.getElementById('halloweenPaletteRow');
+  const paletteSelect = document.getElementById('halloweenPaletteSelect');
+  if (paletteRow) paletteRow.hidden = !enabled;
+  if (paletteSelect) paletteSelect.value = palette;
   const favicon = document.getElementById('bluFavicon');
   const faviconPath = enabled ? 'assets/themes/blu-halloween.svg' : 'assets/blu.svg';
   if (favicon && favicon.getAttribute('href') !== faviconPath) favicon.setAttribute('href', faviconPath);
@@ -16,6 +46,14 @@ function applyHalloweenPreference() {
     button.setAttribute('aria-pressed', String(enabled));
     button.querySelector('.menu-btn-label').textContent = `Visual de Halloween: ${enabled ? 'ON' : 'OFF'}`;
   }
+  if (!enabled) dismissHalloweenPaletteBanner();
+  if (justEnabled && getSetting('halloweenPaletteNoticeRevision', '') !== HALLOWEEN_PALETTE_NOTICE_REVISION) {
+    const banner = document.getElementById('halloweenPaletteBanner');
+    if (banner && document.getElementById('updateBanner')?.hidden !== false) {
+      banner.hidden = false;
+      setSetting('halloweenPaletteNoticeRevision', HALLOWEEN_PALETTE_NOTICE_REVISION);
+    }
+  }
   // Keep an already-open What's New dialog in sync when the season ends at midnight.
   if (typeof updateWhatsNewVisualToggle === 'function') updateWhatsNewVisualToggle();
 }
@@ -23,6 +61,14 @@ function applyHalloweenPreference() {
 function toggleHalloweenPreference() {
   if (!isBluFeatureAvailable('halloween')) return;
   setSetting('halloweenVisual', getSetting('halloweenVisual', 'off') === 'on' ? 'off' : 'on');
+  applyHalloweenPreference();
+}
+
+function setHalloweenPalette(value) {
+  if (!isBluFeatureAvailable('halloween') || getSetting('halloweenVisual', 'off') !== 'on') return;
+  if (!['pumpkin', 'zombie', 'vampire'].includes(value)) return;
+  dismissHalloweenPaletteBanner();
+  setSetting('halloweenPalette', value);
   applyHalloweenPreference();
 }
 

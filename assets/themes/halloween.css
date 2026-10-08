@@ -33,6 +33,31 @@ body.halloween-theme.button-visual-new {
   --btn-private-1: #55285b;
   --btn-private-2: #55285b;
 }
+/* Seasonal palettes change visibility colors only; custom "Outro" stays intact. */
+body.halloween-theme[data-halloween-palette="zombie"] {
+  --btn-public-1: #286339;
+  --btn-public-2: #1d4a2b;
+  --btn-private-1: #594334;
+  --btn-private-2: #3a2c27;
+}
+body.halloween-theme.button-visual-new[data-halloween-palette="zombie"] {
+  --btn-public-1: #286339;
+  --btn-public-2: #286339;
+  --btn-private-1: #594334;
+  --btn-private-2: #594334;
+}
+body.halloween-theme[data-halloween-palette="vampire"] {
+  --btn-public-1: #8e1d38;
+  --btn-public-2: #6b102d;
+  --btn-private-1: #3c333f;
+  --btn-private-2: #28252e;
+}
+body.halloween-theme.button-visual-new[data-halloween-palette="vampire"] {
+  --btn-public-1: #821c36;
+  --btn-public-2: #821c36;
+  --btn-private-1: #3c333f;
+  --btn-private-2: #3c333f;
+}
 body.halloween-theme .section-head {
   --halloween-section-ink: #342722;
   --halloween-section-muted: #624b43;
@@ -221,6 +246,105 @@ body.halloween-theme #menuOverlay .menu-setting-row select:focus {
   border-color: var(--halloween-menu-focus);
 }
 #halloweenVisualBtn[hidden] { display: none; }
+#halloweenPaletteRow[hidden] { display: none; }
+.halloween-palette-row select {
+  width: 112px;
+  min-width: 0;
+  flex: 0 0 112px;
+}
+.halloween-palette-row .menu-btn-label { min-width: 0; }
+#halloweenPaletteBanner[hidden] { display: none; }
+#halloweenPaletteBanner {
+  position: fixed;
+  top: 60px;
+  left: 50%;
+  z-index: 1800;
+  transform: translateX(-50%);
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 8px 10px;
+  width: min(380px, calc(100% - 24px));
+  padding: 12px 14px;
+  border: 1px solid #a44716;
+  border-radius: 12px;
+  background: #fff8ef;
+  color: #30241d;
+  box-shadow: 0 12px 30px rgba(76, 35, 21, .22);
+}
+body.dark.halloween-theme #halloweenPaletteBanner {
+  border-color: #e7813e;
+  background: #2d202d;
+  color: #f7edf5;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, .45);
+}
+.halloween-palette-banner-icon {
+  width: 20px;
+  height: 20px;
+  background: #a44716;
+  -webkit-mask: url("../../libs/events/halloween/halloween_pumpkin_out.svg") center / contain no-repeat;
+  mask: url("../../libs/events/halloween/halloween_pumpkin_out.svg") center / contain no-repeat;
+}
+body.dark.halloween-theme .halloween-palette-banner-icon { background: #ffc48c; }
+.halloween-palette-banner-copy {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 7px;
+  font-size: 12px;
+  line-height: 1.35;
+}
+.halloween-palette-banner-copy strong { font-size: 13px; }
+.halloween-palette-banner-swatches { display: inline-flex; gap: 4px; }
+.halloween-palette-banner-swatches i {
+  display: inline-block;
+  width: 20px;
+  height: 12px;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+}
+.halloween-palette-banner-swatches .pumpkin { background: linear-gradient(90deg, #a23d0b 50%, #55285b 50%); }
+.halloween-palette-banner-swatches .zombie { background: linear-gradient(90deg, #286339 50%, #594334 50%); }
+.halloween-palette-banner-swatches .vampire { background: linear-gradient(90deg, #821c36 50%, #3c333f 50%); }
+.halloween-palette-banner-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 7px;
+}
+.halloween-palette-banner-actions button {
+  padding: 7px 10px;
+  border: 1px solid #a44716;
+  border-radius: 7px;
+  background: #a44716;
+  color: #fff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.halloween-palette-banner-actions button:last-child {
+  border-color: #dbc5b5;
+  background: #ead8c9;
+  color: #49332a;
+}
+body.dark.halloween-theme .halloween-palette-banner-actions button:first-child {
+  border-color: #b8501b;
+  background: #b8501b;
+}
+body.dark.halloween-theme .halloween-palette-banner-actions button:last-child {
+  border-color: #4a344c;
+  background: #47354b;
+  color: #f7edf5;
+}
+.halloween-palette-banner-actions button:hover { filter: brightness(1.1); }
+.halloween-palette-banner-actions button:focus-visible {
+  outline: 2px solid var(--halloween-menu-focus);
+  outline-offset: 2px;
+}
+@media (forced-colors: active) {
+  .halloween-palette-banner-icon,
+  .halloween-palette-banner-swatches { display: none; }
+}
 .halloween-menu-icon {
   display: inline-block;
   background: currentColor;

@@ -34,6 +34,17 @@ Pendências para o lançamento:
 - [x] Validar contraste, navegação por teclado, telas estreitas e combinações Claro/Escuro × Clássico/Novo × Halloween ON/OFF.
 - [x] Liberar manualmente as flags e atualizar o service worker na publicação da 1.9.5.
 
+Ideias para uma próxima expansão sazonal (não incluídas na 1.9.5):
+
+- [x] Primeira etapa: adicionar a paleta Zumbi e mostrar Vampiro, Bruxa e Fantasma indisponíveis no seletor até serem implementadas.
+- [x] Segunda etapa: liberar Vampiro; manter Bruxa e Fantasma indisponíveis por enquanto.
+- [ ] Oferecer cinco paletas para botões Público/Privado: Abóbora (laranja queimado e roxo sombrio, atual), Zumbi (verde musgo e terra escura), Vampiro (vinho-sangue e carvão), Bruxa (roxo de poção e verde de ervas/vassoura) e Fantasma (névoa/lavanda apagada e osso ou cinza de cemitério). Definir os pares finais após testes visuais.
+- [ ] Trocar somente as cores visuais dos botões Público/Privado nos visuais Clássico e Novo. Manter o tema base de Halloween, inclusive o menu hambúrguer com abóbora, igual em todas as paletas.
+- [ ] Não recolorir por padrão ações como Salvar, Cancelar, Sim e Não. Considerar apenas um ajuste pontual de destaque ou hover das seções se os testes de contraste realmente exigirem; preservar cores semânticas de confirmação, cancelamento e perigo.
+- [x] Adicionar em Conteúdo um seletor discreto “Estilo:”, visível apenas com o tema sazonal ativo.
+- [x] Mostrar um banner curto na primeira ativação após a novidade, com amostras das paletas disponíveis e atalho para o seletor; não repetir após escolha ou fechamento.
+- [ ] Validar contraste e distinção entre Público/Privado nos temas Claro/Escuro e visuais Clássico/Novo; a paleta Fantasma pode exigir texto/ícones escuros sobre o tom claro. Aplicar as paletas só na apresentação, sem alterar JSON ou cores dos botões “Outro”.
+
 ### Histórico de atividade
 
 Registrar em `blu:userdata` as alterações estruturais feitas no Blû, sem misturá-las aos dados compartilháveis de `blu:data`.
@@ -67,6 +78,24 @@ Polimentos pendentes:
 - Revisar como eventos de refazer devem aparecer.
 
 ## Próximos recursos
+
+### Espaços de trabalho temporários (Compartilhar 2 / Sincronizar)
+
+Proposta para discutir e implementar depois: publicar uma cópia dos dados compartilháveis em um espaço identificado por nome, sem gerar link. Trata-se de versões enviadas manualmente, não de sincronização em tempo real. Cada publicação dura quatro dias sem novos envios; cada alteração publicada reinicia esse prazo.
+
+- [ ] Criador: Menu > Compartilhar > Avançado > Enviar para Sincronização; informar nome do espaço e senha de atualização, revisar os dados e publicar.
+- [ ] Participante: Menu > Compartilhar > Sincronizar; informar apenas o nome do espaço para receber os dados em `blu:data-sync`, separados de `blu:data`. A primeira implementação guarda um espaço; estruturar para permitir até três futuramente.
+- [ ] Oferecer, em etapa posterior, importação completa ou personalizada dos dados sincronizados pelo fluxo `/share/sync-data` via POST e confirmação explícita; não substituir `blu:data` ao receber ou atualizar o espaço.
+- [ ] Criador: enviar uma nova versão ao mesmo espaço mediante nome e senha, substituindo a versão publicada; não gerar link.
+- [ ] Ao detectar nova versão de um espaço já recebido, perguntar se o participante deseja atualizar `blu:data-sync`, sem alterar `blu:data` automaticamente.
+- [ ] Permitir alternar entre a visualização dos dados locais normais e a dos dados sincronizados, com identificação clara da origem exibida (posição do indicador ainda a decidir).
+- [ ] Verificar novas versões sob demanda quando o usuário buscar; com a sincronização ativada, fazer também até duas tentativas automáticas dentro de uma hora. Guardar temporariamente o controle dessas tentativas no navegador e zerá-lo em “Limpar Tudo”.
+- [ ] Reaproveitar validação, limites e proteção criptográfica do compartilhamento, com expiração no servidor; nunca armazenar a senha em texto puro.
+- [ ] Reservar o nome enquanto o espaço existir; ao expirar, apagar conteúdo e metadados do servidor e liberar o nome.
+- [ ] Manter a cópia já recebida em `blu:data-sync` mesmo após a expiração do espaço no servidor, até ação explícita do usuário; informar a expiração quando ele tentar sincronizar novamente.
+- [ ] Mostrar claramente versão/data da publicação e prazo de expiração; tratar espaço inexistente, expirado e senha incorreta sem expor dados.
+
+Decisões: o nome sozinho autoriza a leitura; a senha autoriza apenas criação/alterações pelo criador. Portanto o nome deve ser tratado como identificador público, não como segredo; avisar para não publicar conteúdo sensível. As verificações automáticas só ficam ativas quando o recurso de sincronização estiver ativado. Ainda definir regras para nomes equivalentes/colisões e o comportamento de edição na visualização sincronizada.
 
 ### Arquivar botões e seções
 
