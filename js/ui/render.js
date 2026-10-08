@@ -397,6 +397,9 @@ async function doCopy(text, btn) {
     btn.innerHTML = '✓ Copiado!';
     btn.classList.add('copied');
     notify('Copiado!');
+    if (typeof showHalloweenCopyEffect === 'function') {
+      requestAnimationFrame(() => showHalloweenCopyEffect(btn));
+    }
 
     setTimeout(() => {
       btn.innerHTML = originalHTML;

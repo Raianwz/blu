@@ -4,6 +4,35 @@ let halloweenPaletteNoticePending = false;
 let halloweenUpdateCheckComplete = false;
 const HALLOWEEN_PALETTE_NOTICE_REVISION = 'palettes-v33';
 
+function showHalloweenCopyEffect(button) {
+  if (!document.body.classList.contains('halloween-theme') ||
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches || !button?.isConnected) return;
+
+  const bounds = button.getBoundingClientRect();
+  if (!bounds.width || !bounds.height) return;
+  const effects = ['bubbles', 'ghosts', 'bats', 'hats', 'brooms'];
+  const effect = effects[Math.floor(Math.random() * effects.length)];
+  const burst = document.createElement('div');
+  burst.className = `halloween-copy-effect halloween-copy-effect--${effect}`;
+  burst.setAttribute('aria-hidden', 'true');
+  burst.style.left = `${bounds.left + bounds.width / 2}px`;
+  burst.style.top = `${bounds.top + bounds.height / 2}px`;
+
+  const count = effect === 'brooms' ? 3 : 5;
+  for (let index = 0; index < count; index++) {
+    const particle = document.createElement('span');
+    particle.className = 'halloween-copy-particle';
+    const spread = (index - (count - 1) / 2) * (effect === 'bats' ? 19 : 15);
+    particle.style.setProperty('--copy-x', `${effect === 'brooms' ? 42 + Math.random() * 20 : spread + (Math.random() - .5) * 12}px`);
+    particle.style.setProperty('--copy-y', `${effect === 'brooms' ? spread - 12 : -30 - Math.random() * 25}px`);
+    particle.style.setProperty('--copy-delay', `${index * (effect === 'brooms' ? 65 : 35)}ms`);
+    burst.appendChild(particle);
+  }
+
+  document.body.appendChild(burst);
+  setTimeout(() => burst.remove(), 950);
+}
+
 function dismissHalloweenPaletteBanner(acknowledged = true) {
   const banner = document.getElementById('halloweenPaletteBanner');
   if (banner) banner.hidden = true;
