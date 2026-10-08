@@ -336,7 +336,7 @@ function createBtnEl(button, sectionId) {
   const copyBtn = document.createElement('button');
   copyBtn.className = `copy-btn ${visClass}`;
   applyOtherButtonColor(copyBtn, vis, button.customVis);
-  copyBtn.innerHTML = `${buttonVisibilityMarkup(vis, button.customVis)}<span class="btn-label">${escapeHtml(button.name || '')}</span>`;
+  copyBtn.innerHTML = `${buttonVisibilityMarkup(vis, button.customVis)}<span class="btn-label">${escapeHtml(button.name || '')}</span><span class="copy-feedback">✓ Copiado!</span>`;
   copyBtn.onclick = () => doCopy(wrap.dataset.text || '', copyBtn);
   bindButtonTextPreview(copyBtn, wrap.dataset.text, vis);
 
@@ -387,14 +387,12 @@ function updateSectionCount(sectionId) {
 
 async function doCopy(text, btn) {
   hideButtonPreview();
-  const originalHTML = btn.innerHTML;
   const originalDisabled = btn.disabled;
 
   try {
     btn.disabled = true;
     await copyToClipboard(text);
     recordButtonCopy(btn.closest('.btn-wrap')?.dataset.id);
-    btn.innerHTML = '✓ Copiado!';
     btn.classList.add('copied');
     notify('Copiado!');
     if (typeof showHalloweenCopyEffect === 'function') {
@@ -402,7 +400,6 @@ async function doCopy(text, btn) {
     }
 
     setTimeout(() => {
-      btn.innerHTML = originalHTML;
       btn.classList.remove('copied');
       btn.disabled = originalDisabled;
     }, 1500);

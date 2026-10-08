@@ -1990,6 +1990,10 @@ body.button-visual-new .copy-btn .button-visibility-svg { color: #fff; }
   filter: brightness(0.85);
 }
 
+.copy-btn .copy-feedback { display: none; }
+.copy-btn.copied > :not(.copy-feedback) { display: none; }
+.copy-btn.copied .copy-feedback { display: inline; }
+
 .copy-btn.vis-public {
   background: linear-gradient(135deg, var(--btn-public-1), var(--btn-public-2));
 }
