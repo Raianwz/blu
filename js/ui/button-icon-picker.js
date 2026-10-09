@@ -88,7 +88,8 @@ function customVisFromElement(element) {
 }
 
 function customButtonIconMarkup(id, className = '') {
-  const entry = BLU_BUTTON_ICONS.find(item => item.id === id);
+  const entry = BLU_BUTTON_ICONS.find(item => item.id === id)
+    || BLU_DEMO_SECTION_ICONS.find(item => item.id === id);
   if (!entry) return '';
   const content = entry.src
     ? `<image href="${new URL(entry.src, document.baseURI).href}" width="16" height="16"/>`

@@ -238,6 +238,11 @@ function renderAll(sectionsData) {
 // Legacy section names often begin with an emoji. Use a local icon as a visual
 // fallback without rewriting the name saved in JSON or shown in the editor.
 const LEGACY_SECTION_EMOJI_ICONS = Object.freeze({
+  '🎲': 'blu:demo-die',
+  '🍻': 'blu:tavern',
+  '🧙': 'blu:wizard-hat',
+  '🗝️': 'blu:secret-key',
+  '🗝': 'blu:secret-key',
   '💼': 'material:work',
   '💳': 'material:credit_card',
   '🏦': 'material:account_balance',

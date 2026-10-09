@@ -45,7 +45,7 @@ function updateSectionIconTrigger() {
   const icon = document.getElementById('renameSectionIcon').value;
   const trigger = document.getElementById('sectionIconTrigger');
   trigger.innerHTML = customButtonIconMarkup(icon) || '<span aria-hidden="true">＋</span>';
-  trigger.title = `Ícone da seção: ${BLU_BUTTON_ICONS.find(item => item.id === icon)?.label || 'Sem ícone'}`;
+  trigger.title = `Ícone da seção: ${[...BLU_BUTTON_ICONS, ...BLU_DEMO_SECTION_ICONS].find(item => item.id === icon)?.label || 'Sem ícone'}`;
 }
 
 function openSectionIconPicker() {
