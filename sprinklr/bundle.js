@@ -205,8 +205,9 @@ function setupDialogEvents() {
 // ==========================================================
 const STORAGE_KEY = 'blu:data';
 const SETTINGS_STORAGE_KEY = 'blu:settings';
-const VERSION = '1.6.3 LTS';
+const VERSION = '1.6.4 LTS';
 const BASE_TITLE = 'Blû';
+let preservedState = null;
 
 let editMode = false;
 let tags = [];
@@ -273,13 +274,18 @@ function clearBluPreferences() {
 
 function collectState() {
   const sections = [];
+  const previousSections = new Map((preservedState?.sections || []).map(section => [section.id, section]));
+  const previousButtons = new Map((preservedState?.sections || [])
+    .flatMap(section => section.buttons || []).map(button => [button.id, button]));
 
   document.querySelectorAll('.section-wrap').forEach(section => {
     const buttons = [];
+    const previousSection = previousSections.get(section.dataset.id);
 
     section.querySelectorAll('.btn-wrap').forEach(button => {
       const label = button.querySelector('.btn-label');
       buttons.push({
+        ...previousButtons.get(button.dataset.id),
         id: button.dataset.id,
         name: label ? label.textContent : '',
         text: button.dataset.text || '',
@@ -289,6 +295,7 @@ function collectState() {
     });
 
     sections.push({
+      ...previousSection,
       id: section.dataset.id,
       name: section.querySelector('.section-title').textContent,
       collapsed: section.classList.contains('collapsed'),
@@ -296,7 +303,7 @@ function collectState() {
     });
   });
 
-  return { tags: [...tags], sections };
+  return { ...preservedState, tags: [...tags], sections };
 }
 
 function getComparableStateString() {
@@ -324,7 +331,9 @@ function hasUnsavedChanges() {
 
 function persistState() {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(collectState()));
+    const state = collectState();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    preservedState = state;
     return true;
   } catch (error) {
     console.error('Erro ao salvar localmente:', error);
@@ -460,6 +469,7 @@ function pushRedoState(stateString) {
 
 function restoreState(state) {
   const normalizedState = normalizeImportedData(state);
+  preservedState = normalizedState;
   tags = [...normalizedState.tags];
   updateTagDatalist();
   renderAll(normalizedState.sections);
@@ -1611,6 +1621,7 @@ async function exportData() {
 }
 
 function normalizeImportedData(parsed) {
+  const source = parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
   const normalizedTags = [];
   const addNormalizedTag = value => {
     const tag = normalizeTag(value);
@@ -1619,21 +1630,25 @@ function normalizeImportedData(parsed) {
   };
 
   const base = {
+    ...source,
     tags: normalizedTags,
     sections: []
   };
+  delete base.categories;
 
-  if (Array.isArray(parsed.tags)) parsed.tags.forEach(addNormalizedTag);
+  if (Array.isArray(source.tags)) source.tags.forEach(addNormalizedTag);
 
-  const sourceSections = Array.isArray(parsed.sections)
-    ? parsed.sections
-    : Array.isArray(parsed.categories)
-      ? parsed.categories.map(category => ({
+  const sourceSections = Array.isArray(source.sections)
+    ? source.sections
+    : Array.isArray(source.categories)
+      ? source.categories.map(category => ({
+          ...category,
           id: category.id,
           name: `${sanitizeText(category.icon).trim()} ${sanitizeText(category.name).trim()}`.trim(),
           collapsed: !!category.collapsed,
           buttons: Array.isArray(category.buttons)
             ? category.buttons.map(button => ({
+                ...button,
                 id: button.id,
                 name: button.name ?? button.btnName ?? '',
                 text: button.text ?? '',
@@ -1645,11 +1660,13 @@ function normalizeImportedData(parsed) {
       : [];
 
   base.sections = sourceSections.map((section, sectionIndex) => ({
+    ...section,
     id: String(section.id || ('s' + Date.now() + sectionIndex)),
     name: sanitizeText(section.name || `Seção ${sectionIndex + 1}`),
     collapsed: !!section.collapsed,
     buttons: Array.isArray(section.buttons)
       ? section.buttons.map((button, buttonIndex) => ({
+          ...button,
           id: String(button.id || ('b' + Date.now() + buttonIndex)),
           name: sanitizeText(button.name ?? button.btnName ?? ''),
           text: sanitizeText(button.text),
@@ -1665,6 +1682,26 @@ function normalizeImportedData(parsed) {
   }));
 
   return base;
+}
+
+function getUnsupportedJsonFields(data) {
+  const fields = [];
+  const inspect = (value, supported, path) => {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return;
+    Object.keys(value).forEach(key => {
+      if (!supported.includes(key)) fields.push(`${path}.${key}`);
+    });
+  };
+  inspect(data, ['tags', 'sections', 'categories'], 'raiz');
+  const sections = Array.isArray(data.sections) ? data.sections : Array.isArray(data.categories) ? data.categories : [];
+  sections.forEach((section, sectionIndex) => {
+    inspect(section, ['id', 'name', 'collapsed', 'buttons', 'icon'], `seção ${sectionIndex + 1}`);
+    if (section?.icon && Array.isArray(data.sections)) fields.push(`seção ${sectionIndex + 1}.icon`);
+    (Array.isArray(section?.buttons) ? section.buttons : []).forEach((button, buttonIndex) => {
+      inspect(button, ['id', 'name', 'btnName', 'text', 'tag', 'vis'], `seção ${sectionIndex + 1}, botão ${buttonIndex + 1}`);
+    });
+  });
+  return fields;
 }
 
 function triggerImportFilePicker() {
@@ -1758,9 +1795,13 @@ async function importData() {
       }
     }
 
-    if (!parsed.sections && !parsed.categories) throw new Error('Formato inválido: esperado "sections" ou "categories"');
+    if (!Array.isArray(parsed?.sections) && !Array.isArray(parsed?.categories)) throw new Error('Formato inválido: esperado "sections" ou "categories"');
 
-    const ok = await confirmDialog('Isso substituirá todos os dados atuais. Continuar?', { title: '📥 Importar JSON', danger: true, confirmText: 'Importar' });
+    const unsupported = getUnsupportedJsonFields(parsed);
+    const extraNotice = unsupported.length
+      ? `\n\n${unsupported.length} campo(s) não usado(s) nesta edição (${unsupported.slice(0, 3).join(', ')}${unsupported.length > 3 ? ', ...' : ''}). Eles serão ignorados na interface, mas preservados no backup completo.`
+      : '';
+    const ok = await confirmDialog(`Isso substituirá todos os dados atuais.${extraNotice}\n\nContinuar?`, { title: '📥 Importar JSON', danger: true, confirmText: 'Importar' });
     if (!ok) return;
 
     pushHistory();
@@ -2633,6 +2674,7 @@ function init() {
   const saved = loadPersistedState();
   const sourceData = saved && Array.isArray(saved.sections) ? saved : getDemoState();
   const data = normalizeImportedData(sourceData);
+  preservedState = data;
 
   tags = Array.isArray(data.tags) ? [...data.tags] : [];
   renderAll(Array.isArray(data.sections) ? data.sections : []);
