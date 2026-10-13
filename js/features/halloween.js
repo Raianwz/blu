@@ -3,78 +3,14 @@ let halloweenVisualWasEnabled = null;
 let halloweenPaletteNoticePending = false;
 let halloweenUpdateCheckComplete = false;
 const HALLOWEEN_PALETTE_NOTICE_REVISION = 'palettes-v33';
-const HALLOWEEN_WEBS_RELEASED = false;
-const HALLOWEEN_WEB_FIRST_SEEN_KEY = 'blu:halloween:webFirstSeen';
-const HALLOWEEN_WEB_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
-
-function getHalloweenWebFirstSeen(buttonIds, now) {
-  let firstSeen = Object.create(null);
-  try {
-    const saved = JSON.parse(localStorage.getItem(HALLOWEEN_WEB_FIRST_SEEN_KEY) || '{}');
-    if (saved && typeof saved === 'object' && !Array.isArray(saved)) firstSeen = saved;
-  } catch (_) {}
-
-  const next = Object.create(null);
-  for (const id of buttonIds) {
-    next[id] = typeof firstSeen[id] === 'string' && Number.isFinite(Date.parse(firstSeen[id]))
-      ? firstSeen[id] : now.toISOString();
-  }
-  if (JSON.stringify(next) !== JSON.stringify(firstSeen)) {
-    try { localStorage.setItem(HALLOWEEN_WEB_FIRST_SEEN_KEY, JSON.stringify(next)); } catch (_) {}
-  }
-  return next;
-}
 
 function refreshHalloweenButtonWebs() {
-  const sections = [...document.querySelectorAll('#sections .section-wrap')];
-  sections.forEach(section => section.querySelectorAll('.btn-wrap.halloween-webbed')
-    .forEach(button => button.classList.remove('halloween-webbed')));
-  if (!document.body.classList.contains('halloween-theme')) return;
-
-  const preview = isBluLocalPreview();
-  if (!preview && !HALLOWEEN_WEBS_RELEASED) return;
-
-  const now = new Date();
-  const today = getLocalDateKey(now);
-  const days = userData.dailyMetrics.days;
-  const copiedDays = Object.keys(days).filter(date => date <= today && (days[date].activity?.copied || 0) > 0).sort();
-  if (!preview) {
-    const firstCopy = copiedDays[0];
-    const firstCopyAt = firstCopy && new Date(`${firstCopy}T00:00:00`);
-    const totalCopies = copiedDays.reduce((total, date) => total + days[date].activity.copied, 0);
-    if (!firstCopyAt || now - firstCopyAt < HALLOWEEN_WEB_WEEK_MS || copiedDays.length < 3 || totalCopies < 10) return;
-  }
-
-  const weekStart = getLocalDateKey(new Date(now.getTime() - HALLOWEEN_WEB_WEEK_MS));
-  const weeklyCopies = Object.create(null);
-  Object.entries(days).forEach(([date, entry]) => {
-    if (date < weekStart || date > today) return;
-    Object.entries(entry.buttons || {}).forEach(([id, metrics]) => {
-      weeklyCopies[id] = (weeklyCopies[id] || 0) + (metrics.copied || 0);
-    });
+  const halloweenEnabled = document.body.classList.contains('halloween-theme');
+  document.querySelectorAll('#sections .btn-wrap').forEach(button => {
+    const id = button.dataset.id;
+    button.classList.toggle('halloween-webbed',
+      halloweenEnabled && !!id && !(userData.stats[id]?.copies > 0));
   });
-
-  const ids = sections.flatMap(section => [...section.querySelectorAll('.btn-wrap')].map(button => button.dataset.id).filter(Boolean));
-  const firstSeen = preview ? {} : getHalloweenWebFirstSeen(ids, now);
-  let webCount = 0;
-  for (const section of sections) {
-    if (webCount >= 5) break;
-    const buttons = [...section.querySelectorAll('.btn-wrap')].filter(button => button.dataset.id);
-    if (buttons.length < 2) continue;
-    const eligible = buttons.filter(button => {
-      if (preview) return true;
-      const id = button.dataset.id;
-      const createdAt = userData.stats[id]?.createdAt || firstSeen[id];
-      return now - new Date(createdAt) >= HALLOWEEN_WEB_WEEK_MS;
-    });
-    if (eligible.length < 2) continue;
-    eligible.sort((left, right) => (weeklyCopies[left.dataset.id] || 0) - (weeklyCopies[right.dataset.id] || 0));
-    const least = weeklyCopies[eligible[0].dataset.id] || 0;
-    const most = weeklyCopies[eligible[eligible.length - 1].dataset.id] || 0;
-    if (!preview && least > 0 && (most === 0 || least > most * .25)) continue;
-    eligible[0].classList.add('halloween-webbed');
-    webCount++;
-  }
 }
 
 const halloweenWebObserver = new MutationObserver(refreshHalloweenButtonWebs);
