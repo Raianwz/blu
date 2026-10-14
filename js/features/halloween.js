@@ -13,6 +13,38 @@ function refreshHalloweenButtonWebs() {
   });
 }
 
+function activateHalloweenLivingEye() {
+  if (!document.body.classList.contains('halloween-theme') ||
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+  document.querySelector('#buttonViewTitle svg')?.classList.add('halloween-living-eye');
+}
+
+function resetHalloweenEyePupil() {
+  const pupil = document.querySelector('#buttonViewTitle .halloween-living-eye circle');
+  if (pupil) {
+    pupil.setAttribute('cx', '12');
+    pupil.setAttribute('cy', '12');
+  }
+}
+
+const halloweenEyeModal = document.querySelector('#buttonViewModal .modal');
+if (halloweenEyeModal) {
+  halloweenEyeModal.addEventListener('pointermove', event => {
+    if (!document.body.classList.contains('halloween-theme') ||
+        !window.matchMedia?.('(hover: hover) and (pointer: fine)').matches ||
+        window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+    const pupil = halloweenEyeModal.querySelector('.halloween-living-eye circle');
+    if (!pupil) return;
+    const eye = pupil.ownerSVGElement.getBoundingClientRect();
+    const x = Math.max(-1, Math.min(1, (event.clientX - eye.left - eye.width / 2) / 80));
+    const y = Math.max(-1, Math.min(1, (event.clientY - eye.top - eye.height / 2) / 80));
+    pupil.setAttribute('cx', String(12 + x * 1.5));
+    pupil.setAttribute('cy', String(12 + y * 1.5));
+  });
+  halloweenEyeModal.addEventListener('pointerleave', resetHalloweenEyePupil);
+  document.addEventListener('blu:modal-closed', resetHalloweenEyePupil);
+}
+
 const halloweenWebObserver = new MutationObserver(refreshHalloweenButtonWebs);
 const halloweenSections = document.getElementById('sections');
 if (halloweenSections) halloweenWebObserver.observe(halloweenSections, { childList: true, subtree: true });
@@ -119,6 +151,7 @@ function applyHalloweenPreference() {
     button.querySelector('.menu-btn-label').textContent = `Visual de Halloween: ${enabled ? 'ON' : 'OFF'}`;
   }
   if (!enabled) {
+    resetHalloweenEyePupil();
     halloweenPaletteNoticePending = false;
     dismissHalloweenPaletteBanner(false);
   }

@@ -717,6 +717,20 @@ body.halloween-theme .halloween-copy-effect--spiders .halloween-copy-particle {
 @media (prefers-reduced-motion: reduce) {
   body.halloween-theme .halloween-copy-effect { display: none; }
 }
+
+body.halloween-theme #buttonViewTitle .halloween-living-eye {
+  flex: none;
+  transform-origin: center;
+  animation: halloween-eye-blink 450ms ease-in-out both;
+}
+@keyframes halloween-eye-blink {
+  0%, 35%, 65%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(.12); }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.halloween-theme #buttonViewTitle .halloween-living-eye { animation: none; }
+}
+
 @media (forced-colors: active) {
   body.halloween-theme .halloween-toast-creature,
   body.halloween-theme .halloween-copy-effect { display: none; }
