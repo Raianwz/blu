@@ -684,6 +684,19 @@ body.halloween-theme .halloween-copy-effect--brooms .halloween-copy-particle {
 body.dark.halloween-theme .halloween-copy-effect--brooms .halloween-copy-particle {
   background: #e6b5dd;
 }
+body.halloween-theme .halloween-copy-effect--spiders .halloween-copy-particle {
+  width: 20px;
+  height: 20px;
+  background: #69416f;
+  -webkit-mask: url("../../libs/events/halloween/copy_spider.svg") center / contain no-repeat;
+  mask: url("../../libs/events/halloween/copy_spider.svg") center / contain no-repeat;
+  animation-name: halloween-copy-scurry;
+  animation-duration: 760ms;
+  animation-timing-function: cubic-bezier(.22, .7, .3, 1);
+}
+body.dark.halloween-theme .halloween-copy-effect--spiders .halloween-copy-particle {
+  background: #e6b5dd;
+}
 @keyframes halloween-copy-float {
   0% { opacity: 0; transform: translate(-50%, -50%) scale(.45); }
   18% { opacity: .9; }
@@ -693,6 +706,11 @@ body.dark.halloween-theme .halloween-copy-effect--brooms .halloween-copy-particl
   0% { opacity: 0; transform: translate(calc(-50% - 28px), calc(-50% + var(--copy-y))) scale(.75); }
   20% { opacity: .9; }
   100% { opacity: 0; transform: translate(calc(-50% + var(--copy-x)), calc(-50% + var(--copy-y) - 14px)) scale(1.05); }
+}
+@keyframes halloween-copy-scurry {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(.45); }
+  20% { opacity: .95; }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--copy-x)), calc(-50% + var(--copy-y))) scale(1.1); }
 }
 @media (prefers-reduced-motion: reduce) {
   body.halloween-theme .halloween-copy-effect { display: none; }

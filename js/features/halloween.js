@@ -23,7 +23,7 @@ function showHalloweenCopyEffect(button) {
 
   const bounds = button.getBoundingClientRect();
   if (!bounds.width || !bounds.height) return;
-  const effects = ['bubbles', 'ghosts', 'bats', 'hats', 'brooms'];
+  const effects = ['bubbles', 'ghosts', 'bats', 'hats', 'brooms', 'spiders'];
   const effect = effects[Math.floor(Math.random() * effects.length)];
   const burst = document.createElement('div');
   burst.className = `halloween-copy-effect halloween-copy-effect--${effect}`;
@@ -31,19 +31,19 @@ function showHalloweenCopyEffect(button) {
   burst.style.left = `${bounds.left + bounds.width / 2}px`;
   burst.style.top = `${bounds.top + bounds.height / 2}px`;
 
-  const count = effect === 'brooms' ? 3 : 5;
+  const count = ['brooms', 'spiders'].includes(effect) ? 3 : 5;
   for (let index = 0; index < count; index++) {
     const particle = document.createElement('span');
     particle.className = 'halloween-copy-particle';
-    const spread = (index - (count - 1) / 2) * (effect === 'bats' ? 19 : 15);
+    const spread = (index - (count - 1) / 2) * (effect === 'spiders' ? 38 : effect === 'bats' ? 19 : 15);
     particle.style.setProperty('--copy-x', `${effect === 'brooms' ? 42 + Math.random() * 20 : spread + (Math.random() - .5) * 12}px`);
     particle.style.setProperty('--copy-y', `${effect === 'brooms' ? spread - 12 : -30 - Math.random() * 25}px`);
-    particle.style.setProperty('--copy-delay', `${index * (effect === 'brooms' ? 65 : 35)}ms`);
+    particle.style.setProperty('--copy-delay', `${index * (effect === 'brooms' ? 65 : effect === 'spiders' ? 45 : 35)}ms`);
     burst.appendChild(particle);
   }
 
   document.body.appendChild(burst);
-  setTimeout(() => burst.remove(), 950);
+  setTimeout(() => burst.remove(), 1050);
 }
 
 function dismissHalloweenPaletteBanner(acknowledged = true) {
