@@ -634,68 +634,48 @@ body.halloween-theme .halloween-copy-particle {
   top: 0;
   width: 15px;
   height: 15px;
-  background: #f8c98d;
+  background: var(--halloween-copy-color, #f8c98d);
   opacity: 0;
   animation: halloween-copy-float 760ms var(--copy-delay) ease-out forwards;
 }
 body.halloween-theme .halloween-copy-effect--bubbles .halloween-copy-particle {
   width: 9px;
   height: 9px;
-  border: 2px solid #a5e2ba;
+  border: 2px solid var(--halloween-copy-color, #a5e2ba);
   border-radius: 50%;
-  background: rgba(105, 189, 137, .25);
-  box-shadow: 0 0 5px rgba(165, 226, 186, .65);
+  background: transparent;
+  box-shadow: 0 0 5px var(--halloween-copy-color, #a5e2ba);
 }
 body.halloween-theme .halloween-copy-effect--ghosts .halloween-copy-particle {
-  background: #71466f;
   -webkit-mask: url("../../libs/events/halloween/halloween_ghost.svg") center / contain no-repeat;
   mask: url("../../libs/events/halloween/halloween_ghost.svg") center / contain no-repeat;
 }
-body.dark.halloween-theme .halloween-copy-effect--ghosts .halloween-copy-particle {
-  background: #f7edf5;
-}
 body.halloween-theme .halloween-copy-effect--bats .halloween-copy-particle {
   width: 19px;
-  background: #704275;
   -webkit-mask: url("../../libs/events/halloween/toast_bat.svg") center / contain no-repeat;
   mask: url("../../libs/events/halloween/toast_bat.svg") center / contain no-repeat;
-}
-body.dark.halloween-theme .halloween-copy-effect--bats .halloween-copy-particle {
-  background: #d9bded;
 }
 body.halloween-theme .halloween-copy-effect--hats .halloween-copy-particle {
   width: 18px;
   height: 18px;
-  background: #774272;
   -webkit-mask: url("../../libs/events/halloween/toast_hat.svg") center / contain no-repeat;
   mask: url("../../libs/events/halloween/toast_hat.svg") center / contain no-repeat;
-}
-body.dark.halloween-theme .halloween-copy-effect--hats .halloween-copy-particle {
-  background: #e4a8db;
 }
 body.halloween-theme .halloween-copy-effect--brooms .halloween-copy-particle {
   width: 18px;
   height: 18px;
-  background: #78437a;
   -webkit-mask: url("../../libs/events/halloween/toast_broom.svg") center / contain no-repeat;
   mask: url("../../libs/events/halloween/toast_broom.svg") center / contain no-repeat;
   animation-name: halloween-copy-sweep;
 }
-body.dark.halloween-theme .halloween-copy-effect--brooms .halloween-copy-particle {
-  background: #e6b5dd;
-}
 body.halloween-theme .halloween-copy-effect--spiders .halloween-copy-particle {
   width: 20px;
   height: 20px;
-  background: #69416f;
   -webkit-mask: url("../../libs/events/halloween/copy_spider.svg") center / contain no-repeat;
   mask: url("../../libs/events/halloween/copy_spider.svg") center / contain no-repeat;
   animation-name: halloween-copy-scurry;
   animation-duration: 760ms;
   animation-timing-function: cubic-bezier(.22, .7, .3, 1);
-}
-body.dark.halloween-theme .halloween-copy-effect--spiders .halloween-copy-particle {
-  background: #e6b5dd;
 }
 @keyframes halloween-copy-float {
   0% { opacity: 0; transform: translate(-50%, -50%) scale(.45); }

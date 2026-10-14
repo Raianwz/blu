@@ -30,6 +30,11 @@ function showHalloweenCopyEffect(button) {
   burst.setAttribute('aria-hidden', 'true');
   burst.style.left = `${bounds.left + bounds.width / 2}px`;
   burst.style.top = `${bounds.top + bounds.height / 2}px`;
+  const buttonStyle = getComputedStyle(button);
+  const gradientColor = buttonStyle.backgroundImage.match(/rgba?\([^)]*\)|#[0-9a-f]{3,8}/i)?.[0];
+  const solidColor = buttonStyle.backgroundColor;
+  const copyColor = gradientColor || (solidColor !== 'rgba(0, 0, 0, 0)' && solidColor !== 'transparent' ? solidColor : '') || '#f8c98d';
+  burst.style.setProperty('--halloween-copy-color', copyColor);
 
   const count = ['brooms', 'spiders'].includes(effect) ? 3 : 5;
   for (let index = 0; index < count; index++) {
