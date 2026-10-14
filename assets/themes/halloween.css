@@ -430,8 +430,30 @@ body.halloween-theme #searchWrap:has(#searchInput:not(:placeholder-shown))::afte
 body.halloween-theme #searchWrap:has(#clearSearchBtn:not([hidden]))::after {
   content: none;
 }
+body.halloween-theme #noResultsMsg.show::before {
+  content: '';
+  display: block;
+  width: 34px;
+  height: 34px;
+  margin: 0 auto 12px;
+  background: #71466f;
+  -webkit-mask: url("../../libs/events/halloween/halloween_ghost.svg") center / contain no-repeat;
+  mask: url("../../libs/events/halloween/halloween_ghost.svg") center / contain no-repeat;
+  animation: halloween-empty-ghost 2.8s ease-in-out infinite;
+}
+body.dark.halloween-theme #noResultsMsg.show::before {
+  background: #f7edf5;
+}
+@keyframes halloween-empty-ghost {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.halloween-theme #noResultsMsg.show::before { animation: none; }
+}
 @media (forced-colors: active) {
-  body.halloween-theme #searchWrap::after { display: none; }
+  body.halloween-theme #searchWrap::after,
+  body.halloween-theme #noResultsMsg.show::before { display: none; }
 }
 
 body.halloween-theme .notif-message {

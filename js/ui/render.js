@@ -397,11 +397,12 @@ async function doCopy(text, btn) {
   try {
     btn.disabled = true;
     await copyToClipboard(text);
+    const hadHalloweenWeb = btn.closest('.btn-wrap')?.classList.contains('halloween-webbed') === true;
     recordButtonCopy(btn.closest('.btn-wrap')?.dataset.id);
     btn.classList.add('copied');
     notify('Copiado!');
     if (typeof showHalloweenCopyEffect === 'function') {
-      requestAnimationFrame(() => showHalloweenCopyEffect(btn));
+      requestAnimationFrame(() => showHalloweenCopyEffect(btn, hadHalloweenWeb));
     }
 
     setTimeout(() => {

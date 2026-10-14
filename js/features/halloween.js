@@ -17,14 +17,15 @@ const halloweenWebObserver = new MutationObserver(refreshHalloweenButtonWebs);
 const halloweenSections = document.getElementById('sections');
 if (halloweenSections) halloweenWebObserver.observe(halloweenSections, { childList: true, subtree: true });
 
-function showHalloweenCopyEffect(button) {
+function showHalloweenCopyEffect(button, hadWeb = false) {
   if (!document.body.classList.contains('halloween-theme') ||
       window.matchMedia?.('(prefers-reduced-motion: reduce)').matches || !button?.isConnected) return;
 
   const bounds = button.getBoundingClientRect();
   if (!bounds.width || !bounds.height) return;
   const effects = ['bubbles', 'ghosts', 'bats', 'hats', 'brooms', 'spiders'];
-  const effect = effects[Math.floor(Math.random() * effects.length)];
+  const effect = hadWeb && Math.random() < .6
+    ? 'spiders' : effects[Math.floor(Math.random() * effects.length)];
   const burst = document.createElement('div');
   burst.className = `halloween-copy-effect halloween-copy-effect--${effect}`;
   burst.setAttribute('aria-hidden', 'true');
@@ -36,14 +37,17 @@ function showHalloweenCopyEffect(button) {
   const copyColor = gradientColor || (solidColor !== 'rgba(0, 0, 0, 0)' && solidColor !== 'transparent' ? solidColor : '') || '#f8c98d';
   burst.style.setProperty('--halloween-copy-color', copyColor);
 
-  const count = ['brooms', 'spiders'].includes(effect) ? 3 : 5;
+  const count = effect === 'spiders' && hadWeb ? 4 + Math.floor(Math.random() * 5)
+    : ['brooms', 'spiders'].includes(effect) ? 3 : 5;
+  const spiderSpacing = hadWeb ? Math.min(24, Math.max(12, bounds.width / count)) : 38;
+  const delayStep = effect === 'brooms' ? 65 : effect === 'spiders' ? (hadWeb ? 30 : 45) : 35;
   for (let index = 0; index < count; index++) {
     const particle = document.createElement('span');
     particle.className = 'halloween-copy-particle';
-    const spread = (index - (count - 1) / 2) * (effect === 'spiders' ? 38 : effect === 'bats' ? 19 : 15);
+    const spread = (index - (count - 1) / 2) * (effect === 'spiders' ? spiderSpacing : effect === 'bats' ? 19 : 15);
     particle.style.setProperty('--copy-x', `${effect === 'brooms' ? 42 + Math.random() * 20 : spread + (Math.random() - .5) * 12}px`);
     particle.style.setProperty('--copy-y', `${effect === 'brooms' ? spread - 12 : -30 - Math.random() * 25}px`);
-    particle.style.setProperty('--copy-delay', `${index * (effect === 'brooms' ? 65 : effect === 'spiders' ? 45 : 35)}ms`);
+    particle.style.setProperty('--copy-delay', `${index * delayStep}ms`);
     burst.appendChild(particle);
   }
 
