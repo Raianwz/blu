@@ -544,6 +544,13 @@ body.halloween-theme #backupBanner::before {
   pointer-events: none;
   z-index: 0;
 }
+body.halloween-theme #backupBanner.show::before {
+  animation: halloween-backup-ghost-drift 12s ease-in-out infinite alternate;
+}
+@keyframes halloween-backup-ghost-drift {
+  from { right: 14px; }
+  to { right: calc(100% - 94px); }
+}
 body.dark.halloween-theme #backupBanner {
   border-color: #e7813e;
   background: linear-gradient(120deg, #2d202d, #251b2b);
@@ -603,6 +610,7 @@ body.halloween-theme #backupBanner .backup-banner-actions button:focus-visible {
 }
 @media (prefers-reduced-motion: reduce) {
   body.halloween-theme #backupBanner .backup-banner-actions button { transition: none; }
+  body.halloween-theme #backupBanner.show::before { animation: none; }
 }
 @media (forced-colors: active) {
   body.halloween-theme #backupBanner::before,

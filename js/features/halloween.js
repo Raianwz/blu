@@ -3,13 +3,58 @@ let halloweenVisualWasEnabled = null;
 let halloweenPaletteNoticePending = false;
 let halloweenUpdateCheckComplete = false;
 const HALLOWEEN_PALETTE_NOTICE_REVISION = 'palettes-v33';
+// The built-in JSON demo cycles its webs visually without changing copy statistics.
+const halloweenDemoWebCooldowns = new Map();
+
+function isHalloweenDemoJson() {
+  if (typeof getDemoState !== 'function') return false;
+  const current = collectState();
+  const demo = getDemoState();
+  return current.archived.buttons.length === 0 && current.archived.sections.length === 0 &&
+    current.sections.length === demo.sections.length &&
+    demo.sections.every((section, index) => {
+      const actual = current.sections[index];
+      return actual.id === section.id && actual.name === section.name &&
+        actual.buttons.length === section.buttons.length &&
+        section.buttons.every((button, buttonIndex) => {
+          const shown = actual.buttons[buttonIndex];
+          return ['id', 'name', 'text', 'tag', 'vis'].every(key => shown[key] === button[key]);
+        });
+    });
+}
+
+function clearHalloweenDemoWebCooldowns() {
+  halloweenDemoWebCooldowns.forEach(clearTimeout);
+  halloweenDemoWebCooldowns.clear();
+}
+
+function noteHalloweenDemoButtonCopy(id) {
+  if (!document.body.classList.contains('halloween-theme') || !isHalloweenDemoJson() ||
+      ![...document.querySelectorAll('#sections .btn-wrap')].some(button => button.dataset.id === id)) return;
+
+  clearTimeout(halloweenDemoWebCooldowns.get(id));
+  const timer = setTimeout(() => {
+    if (halloweenDemoWebCooldowns.get(id) !== timer) return;
+    halloweenDemoWebCooldowns.delete(id);
+    refreshHalloweenButtonWebs();
+  }, 2000 + Math.random() * 3000);
+  halloweenDemoWebCooldowns.set(id, timer);
+
+  if (halloweenDemoWebCooldowns.size === document.querySelectorAll('#sections .btn-wrap').length) {
+    clearHalloweenDemoWebCooldowns();
+  }
+}
 
 function refreshHalloweenButtonWebs() {
   const halloweenEnabled = document.body.classList.contains('halloween-theme');
+  const demoJson = halloweenEnabled && isHalloweenDemoJson();
+  if (!demoJson) clearHalloweenDemoWebCooldowns();
   document.querySelectorAll('#sections .btn-wrap').forEach(button => {
     const id = button.dataset.id;
     button.classList.toggle('halloween-webbed',
-      halloweenEnabled && !!id && !(userData.stats[id]?.copies > 0));
+      halloweenEnabled && !!id && (demoJson
+        ? !halloweenDemoWebCooldowns.has(id)
+        : !(userData.stats[id]?.copies > 0)));
   });
 }
 
