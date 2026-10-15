@@ -77,11 +77,18 @@ A antiga versão `legacy` foi removida da branch principal e permanece preservad
 ├── share.html            # Importação de links compartilhados
 ├── assets/               # CSS, identidade e ícones
 ├── js/                   # Módulos do front-end
+├── libs/                 # Bibliotecas, SVGs e JSON da demo local
 ├── api/                  # Funções serverless de compartilhamento
+├── sprinklr/             # Versão offline independente
+├── docs/                 # Planejamento e documentação
 ├── manifest.json         # Configuração da PWA
 ├── vercel.json           # Rotas e cabeçalhos do deploy
 └── package.json          # Dependências das funções serverless
 ```
+
+O planejamento do projeto está em [docs/roadmap.md](docs/roadmap.md).
+
+Em `assets/`, a folha principal fica em `style.css`; os ícones e a identidade ficam em `icons/`, o visual sazonal em `themes/` e os estilos opcionais em `experiments/`.
 
 ## Limitações conhecidas
 

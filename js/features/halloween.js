@@ -184,7 +184,7 @@ function applyHalloweenPreference() {
   if (paletteRow) paletteRow.hidden = !enabled;
   if (paletteSelect) paletteSelect.value = palette;
   const favicon = document.getElementById('bluFavicon');
-  const faviconPath = enabled ? 'assets/themes/blu-halloween.svg' : 'assets/blu.svg';
+  const faviconPath = enabled ? 'assets/themes/blu-halloween.svg' : 'assets/icons/blu.svg';
   if (favicon && favicon.getAttribute('href') !== faviconPath) favicon.setAttribute('href', faviconPath);
   const aboutLogo = document.getElementById('aboutBluLogo');
   const aboutLogoPath = enabled ? 'assets/themes/blu-halloween.svg' : 'assets/icons/icon-192.png';
