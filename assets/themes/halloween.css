@@ -658,7 +658,10 @@ body.halloween-theme .halloween-copy-particle {
   height: 15px;
   background: var(--halloween-copy-color, #f8c98d);
   opacity: 0;
-  animation: halloween-copy-float 760ms var(--copy-delay) ease-out forwards;
+  animation: halloween-copy-float 1260ms var(--copy-delay) ease-out forwards;
+}
+body.halloween-theme .halloween-copy-effect--inverted .halloween-copy-particle {
+  filter: invert(1);
 }
 body.halloween-theme .halloween-copy-effect--bubbles .halloween-copy-particle {
   width: 9px;
@@ -696,7 +699,7 @@ body.halloween-theme .halloween-copy-effect--spiders .halloween-copy-particle {
   -webkit-mask: url("../../libs/events/halloween/copy_spider.svg") center / contain no-repeat;
   mask: url("../../libs/events/halloween/copy_spider.svg") center / contain no-repeat;
   animation-name: halloween-copy-scurry;
-  animation-duration: 760ms;
+  animation-duration: 1260ms;
   animation-timing-function: cubic-bezier(.22, .7, .3, 1);
 }
 @keyframes halloween-copy-float {

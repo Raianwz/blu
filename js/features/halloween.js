@@ -60,6 +60,7 @@ function showHalloweenCopyEffect(button, hadWeb = false) {
     ? 'spiders' : effects[Math.floor(Math.random() * effects.length)];
   const burst = document.createElement('div');
   burst.className = `halloween-copy-effect halloween-copy-effect--${effect}`;
+  burst.classList.toggle('halloween-copy-effect--inverted', Math.random() < .25);
   burst.setAttribute('aria-hidden', 'true');
   burst.style.left = `${bounds.left + bounds.width / 2}px`;
   burst.style.top = `${bounds.top + bounds.height / 2}px`;
@@ -84,7 +85,7 @@ function showHalloweenCopyEffect(button, hadWeb = false) {
   }
 
   document.body.appendChild(burst);
-  setTimeout(() => burst.remove(), 1050);
+  setTimeout(() => burst.remove(), 1260 + (count - 1) * delayStep + 100);
 }
 
 function dismissHalloweenPaletteBanner(acknowledged = true) {
