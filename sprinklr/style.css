@@ -599,6 +599,10 @@ body.edit-mode .btn-wrap.dragging {
   filter: brightness(0.85);
 }
 
+.copy-btn.copied > :not(.copy-feedback) {
+  display: none;
+}
+
 .copy-btn.vis-public {
   background: linear-gradient(135deg, var(--btn-public-1), var(--btn-public-2));
 }

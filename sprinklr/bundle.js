@@ -203,9 +203,12 @@ function setupDialogEvents() {
 // ==========================================================
 // Estado, persistência local (autosave) e lembrete de backup
 // ==========================================================
-const STORAGE_KEY = 'blu:data';
-const SETTINGS_STORAGE_KEY = 'blu:settings';
-const VERSION = '1.6.4 LTS';
+const STORAGE_KEY = 'blu:offline';
+const SETTINGS_STORAGE_KEY = 'blu:offline:settings';
+const MIGRATION_STORAGE_KEY = 'blu:offline:migrated';
+const LEGACY_STORAGE_KEY = 'blu:data';
+const LEGACY_SETTINGS_STORAGE_KEY = 'blu:settings';
+const VERSION = '1.6.5 LTS';
 const BASE_TITLE = 'Blû';
 let preservedState = null;
 
@@ -223,7 +226,9 @@ const isPopoutWindow = !!window.opener && ['BluePopout', 'BluePopOut'].includes(
 
 function loadSettings() {
   try {
-    const parsed = JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY) || '{}');
+    const raw = localStorage.getItem(SETTINGS_STORAGE_KEY)
+      || (localStorage.getItem(MIGRATION_STORAGE_KEY) ? null : localStorage.getItem(LEGACY_SETTINGS_STORAGE_KEY));
+    const parsed = JSON.parse(raw || '{}');
     return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
   } catch (_) { return {}; }
 }
@@ -244,9 +249,8 @@ function setSetting(name, value) {
 function migrateLegacySettings() {
   const settings = loadSettings();
   try {
-    const legacyTheme = localStorage.getItem('blu:theme');
+    const legacyTheme = localStorage.getItem(MIGRATION_STORAGE_KEY) ? null : localStorage.getItem('blu:theme');
     if (!Object.prototype.hasOwnProperty.call(settings, 'theme') && legacyTheme !== null) settings.theme = legacyTheme;
-    if (legacyTheme !== null) localStorage.removeItem('blu:theme');
     localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
   } catch (_) {}
 }
@@ -255,7 +259,7 @@ function clearBluLocalStorage() {
   try {
     for (let index = localStorage.length - 1; index >= 0; index--) {
       const key = localStorage.key(index);
-      if (key?.startsWith('blu:')) localStorage.removeItem(key);
+      if ((key === STORAGE_KEY || key?.startsWith('blu:offline:')) && key !== MIGRATION_STORAGE_KEY) localStorage.removeItem(key);
     }
   } catch (_) {}
 }
@@ -263,8 +267,6 @@ function clearBluLocalStorage() {
 function clearBluPreferences() {
   try {
     localStorage.removeItem(SETTINGS_STORAGE_KEY);
-    localStorage.removeItem('blu:theme');
-    localStorage.removeItem('blu:textPreview');
     return true;
   } catch (error) {
     console.error('Erro ao redefinir preferências:', error);
@@ -333,6 +335,7 @@ function persistState() {
   try {
     const state = collectState();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    localStorage.setItem(MIGRATION_STORAGE_KEY, '1');
     preservedState = state;
     return true;
   } catch (error) {
@@ -344,7 +347,8 @@ function persistState() {
 
 function loadPersistedState() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEY)
+      || (localStorage.getItem(MIGRATION_STORAGE_KEY) ? null : localStorage.getItem(LEGACY_STORAGE_KEY));
     if (!raw) return null;
     return JSON.parse(raw);
   } catch (error) {
@@ -649,16 +653,15 @@ function renderSection(section, container) {
   wrap.dataset.id = String(section.id);
 
   const count = Array.isArray(section.buttons) ? section.buttons.length : 0;
-  const safeSectionId = String(section.id).replace(/'/g, "\\'");
 
   wrap.innerHTML = `
     <div class="section-head">
       <button class="section-collapse-btn" onclick="toggleCollapse(this)" title="${section.collapsed ? 'Expandir' : 'Recolher'}">▾</button>
-      <button class="section-add-btn" onclick="openAddBtn('${safeSectionId}')" title="Adicionar botão em ${escapeHtmlAttr(section.name)}">＋</button>
+      <button class="section-add-btn" title="Adicionar botão em ${escapeHtmlAttr(section.name)}">＋</button>
       <span class="section-title">${escapeHtml(section.name)}</span>
       <span class="section-count" title="${count} botão(ões)">${count}</span>
-      <button class="section-rename-btn" onclick="renameSection('${safeSectionId}')" title="Renomear seção">✏️</button>
-      <button class="section-del-btn" onclick="deleteSection('${safeSectionId}')" title="Excluir seção">🗑️</button>
+      <button class="section-rename-btn" title="Renomear seção">✏️</button>
+      <button class="section-del-btn" title="Excluir seção">🗑️</button>
       <div class="section-move-controls">
         <button onclick="moveSectionUp(this)" title="Mover seção para cima">⬆️</button>
         <button onclick="moveSectionDown(this)" title="Mover seção para baixo">⬇️</button>
@@ -667,6 +670,9 @@ function renderSection(section, container) {
     <div class="section-body" data-section="${escapeHtmlAttr(String(section.id))}"></div>
   `;
 
+  wrap.querySelector('.section-add-btn').addEventListener('click', () => openAddBtn(wrap.dataset.id));
+  wrap.querySelector('.section-rename-btn').addEventListener('click', () => renameSection(wrap.dataset.id));
+  wrap.querySelector('.section-del-btn').addEventListener('click', () => deleteSection(wrap.dataset.id));
   const body = wrap.querySelector('.section-body');
   (section.buttons || []).forEach(button => body.appendChild(createBtnEl(button, String(section.id))));
   setupDrop(body);
@@ -755,18 +761,20 @@ function updateSectionCount(sectionId) {
 }
 
 async function doCopy(text, btn) {
-  const originalHTML = btn.innerHTML;
   const originalDisabled = btn.disabled;
 
   try {
     btn.disabled = true;
     await copyToClipboard(text);
-    btn.innerHTML = '✓ Copiado!';
+    const feedback = document.createElement('span');
+    feedback.className = 'copy-feedback';
+    feedback.textContent = '✓ Copiado!';
+    btn.appendChild(feedback);
     btn.classList.add('copied');
     notify('Copiado!');
 
     setTimeout(() => {
-      btn.innerHTML = originalHTML;
+      feedback.remove();
       btn.classList.remove('copied');
       btn.disabled = originalDisabled;
     }, 1500);
@@ -1363,19 +1371,23 @@ function saveBtn() {
     return;
   }
 
-  if (tag && !tags.includes(tag)) {
-    tags.push(tag);
-    tags.sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base', numeric: true }));
-    updateTagDatalist();
-  }
-
   const body = document.querySelector(`.section-body[data-section="${cssEscape(currentSectionId)}"]`);
   if (!body) {
     notify('Seção não encontrada', 'err');
     return;
   }
+  const old = currentBtnId ? body.querySelector(`.btn-wrap[data-id="${cssEscape(currentBtnId)}"]`) : null;
+  if (currentBtnId && !old) {
+    notify('Botão original não encontrado', 'err');
+    return;
+  }
 
   pushHistory();
+  if (tag && !tags.includes(tag)) {
+    tags.push(tag);
+    tags.sort((a, b) => a.localeCompare(b, 'pt-BR', { sensitivity: 'base', numeric: true }));
+    updateTagDatalist();
+  }
 
   const button = {
     id: currentBtnId || ('b' + Date.now()),
@@ -1386,11 +1398,6 @@ function saveBtn() {
   };
 
   if (currentBtnId) {
-    const old = body.querySelector(`.btn-wrap[data-id="${cssEscape(currentBtnId)}"]`);
-    if (!old) {
-      notify('Botão original não encontrado', 'err');
-      return;
-    }
     const oldTag = old.dataset.tag;
     old.replaceWith(createBtnEl(button, currentSectionId));
     if (oldTag && oldTag !== tag) removeTagIfOrphan(oldTag);
@@ -1431,7 +1438,7 @@ async function deleteBtn(sectionId, btnId) {
 // --- Tags --------------------------------------------------
 
 function getTagUsageMap() {
-  const usage = {};
+  const usage = Object.create(null);
   document.querySelectorAll('.btn-wrap').forEach(button => {
     const tag = button.dataset.tag;
     if (tag) usage[tag] = (usage[tag] || 0) + 1;
@@ -1453,11 +1460,12 @@ function renderTagList() {
 
   visibleTags.forEach(tag => {
     const count = usage[tag] || 0;
-    const safeTag = String(tag).replace(/'/g, "\\'");
     const chip = document.createElement('span');
     chip.className = 'tag-chip';
     chip.title = count > 0 ? `Usada em ${count} botão(ões)` : 'Nenhum botão usa esta tag';
-    chip.innerHTML = `${escapeHtml(tag)} <span class="tag-chip-count">${count}</span> <button class="tag-chip-btn tag-chip-edit" onclick="renameTag('${safeTag}')" title="Renomear tag">✏️</button> <button class="tag-chip-btn tag-chip-del" onclick="removeTag('${safeTag}')" title="Remover tag">✕</button>`;
+    chip.innerHTML = `${escapeHtml(tag)} <span class="tag-chip-count">${count}</span> <button class="tag-chip-btn tag-chip-edit" title="Renomear tag">✏️</button> <button class="tag-chip-btn tag-chip-del" title="Remover tag">✕</button>`;
+    chip.querySelector('.tag-chip-edit').addEventListener('click', () => renameTag(tag));
+    chip.querySelector('.tag-chip-del').addEventListener('click', () => removeTag(tag));
     list.appendChild(chip);
   });
 
@@ -1615,7 +1623,7 @@ async function exportData() {
   link.href = url;
   link.download = `blu_data-${exportDate}-${exportTime}${filenameSuffix}.json`;
   link.click();
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
   markCurrentStateAsExported();
   notify(shouldEncrypt && filenameSuffix ? 'Exportado (criptografado)!' : 'Exportado!');
 }
@@ -1659,15 +1667,32 @@ function normalizeImportedData(parsed) {
         }))
       : [];
 
+  const usedIds = new Set();
+  sourceSections.forEach(section => {
+    if (section?.id) usedIds.add(String(section.id));
+    (Array.isArray(section?.buttons) ? section.buttons : []).forEach(button => {
+      if (button?.id) usedIds.add(String(button.id));
+    });
+  });
+  let generatedIdSequence = 0;
+  const nextImportedId = prefix => {
+    let id;
+    do {
+      id = `${prefix}${Date.now().toString(36)}-${++generatedIdSequence}`;
+    } while (usedIds.has(id));
+    usedIds.add(id);
+    return id;
+  };
+
   base.sections = sourceSections.map((section, sectionIndex) => ({
     ...section,
-    id: String(section.id || ('s' + Date.now() + sectionIndex)),
+    id: String(section.id || nextImportedId('s')),
     name: sanitizeText(section.name || `Seção ${sectionIndex + 1}`),
     collapsed: !!section.collapsed,
     buttons: Array.isArray(section.buttons)
-      ? section.buttons.map((button, buttonIndex) => ({
+      ? section.buttons.map(button => ({
           ...button,
-          id: String(button.id || ('b' + Date.now() + buttonIndex)),
+          id: String(button.id || nextImportedId('b')),
           name: sanitizeText(button.name ?? button.btnName ?? ''),
           text: sanitizeText(button.text),
           tag: addNormalizedTag(button.tag || ''),
@@ -1816,7 +1841,7 @@ async function importData() {
 }
 
 async function clearAll() {
-  const ok = await confirmDialog('Limpar TODOS os dados e preferências locais do Blû? Os botões e seções poderão ser recuperados com Ctrl+Z enquanto esta página permanecer aberta; as preferências continuarão limpas.', { title: '🗑️ Limpar Tudo', danger: true, confirmText: 'Limpar tudo' });
+  const ok = await confirmDialog('Limpar TODOS os dados e preferências locais do Blû Offline? Os botões e seções poderão ser recuperados com Ctrl+Z enquanto esta página permanecer aberta; as preferências continuarão limpas.', { title: '🗑️ Limpar Tudo', danger: true, confirmText: 'Limpar tudo' });
   if (!ok) return;
 
   const stateBeforeClear = JSON.stringify(collectState());
@@ -2925,7 +2950,7 @@ function openPopoutBlank() {
     const link = doc.createElement('link');
     link.rel = 'icon';
     link.type = 'image/svg+xml';
-    link.href = './assets/blu.svg';
+    link.href = '/sprinklr/blu.svg';
     doc.head.appendChild(link);
   }, 50);
 }

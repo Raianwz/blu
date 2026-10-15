@@ -90,6 +90,8 @@ O planejamento do projeto está em [docs/roadmap.md](docs/roadmap.md).
 
 Em `assets/`, a folha principal fica em `style.css`; os ícones e a identidade ficam em `icons/`, o visual sazonal em `themes/` e os estilos opcionais em `experiments/`.
 
+O `sprinklr/` usa armazenamento próprio (`blu:offline`). Na primeira abertura, copia os dados legados disponíveis sem apagar as chaves anteriores.
+
 ## Limitações conhecidas
 
 - O drag-and-drop utiliza a API HTML5 e ainda não oferece suporte completo a dispositivos touch.

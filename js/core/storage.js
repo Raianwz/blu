@@ -189,7 +189,7 @@ function clearBluLocalStorage({ includeClientId = false } = {}) {
     for (let index = localStorage.length - 1; index >= 0; index--) {
       const key = localStorage.key(index);
       if (!includeClientId && key === CLIENT_ID_STORAGE_KEY) continue;
-      if (key?.startsWith('blu:')) localStorage.removeItem(key);
+      if (key?.startsWith('blu:') && key !== 'blu:offline' && !key.startsWith('blu:offline:')) localStorage.removeItem(key);
     }
   } catch (_) {}
 }
