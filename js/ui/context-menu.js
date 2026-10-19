@@ -200,9 +200,6 @@ function getButtonContextMenuItems(buttonWrap) {
   if (isArchiveContextMenuEnabled()) {
     items.push(createContextMenuItem('Arquivar botão', 'archive', () => archiveButton(sectionId, buttonId)));
   }
-  if (isFavoriteButton(buttonId)) {
-    items.push(createContextMenuItem('Remover dos favoritos', 'star', () => removeLegacyFavorite(buttonId)));
-  }
   items.push(
     createContextMenuSeparator(),
     createContextMenuItem('Excluir botão', 'trash_2', () => deleteBtn(sectionId, buttonId), { danger: true })

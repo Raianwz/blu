@@ -1,5 +1,5 @@
 // ==========================================================
-// Prateleira de favoritos e painel secundário de conteúdo
+// Painel secundário de conteúdo e estatísticas
 // ==========================================================
 
 let activeContentView = 'home';
@@ -138,49 +138,19 @@ function resetDashboardPeriod() {
   renderContentDashboard();
 }
 
-function isFavoritesShelfEnabled() {
-  return getSetting('favoritesShelf', 'off') === 'on';
-}
-
 function isContentDashboardEnabled() {
   return getSetting('contentDashboard', 'off') === 'on';
 }
 
-function isFavoritesShelfCollapsed() {
-  return getSetting('favoritesShelfCollapsed', 'off') === 'on';
-}
-
-function isFavoriteContextMenuEnabled() {
-  return getSetting('favoriteContextMenu', 'off') === 'on';
-}
-
 function updateContentPreferenceButtons() {
-  const shelfButton = document.getElementById('favoritesShelfBtn');
   const dashboardButton = document.getElementById('contentDashboardBtn');
-  const contextButton = document.getElementById('favoriteContextMenuBtn');
   const contentToggle = document.querySelector('.menu-submenu-toggle[data-submenu="conteudo"]');
-  const shelfEnabled = isFavoritesShelfEnabled();
   const dashboardEnabled = isContentDashboardEnabled();
-  if (shelfButton) {
-    shelfButton.classList.toggle('active', shelfEnabled);
-    shelfButton.querySelector('.menu-btn-label').textContent = `Favoritos na Tela Inicial: ${shelfEnabled ? 'ON' : 'OFF'}`;
-  }
   if (dashboardButton) {
     dashboardButton.classList.toggle('active', dashboardEnabled);
     dashboardButton.querySelector('.menu-btn-label').textContent = `Estatísticas: ${dashboardEnabled ? 'ON' : 'OFF'}`;
   }
-  if (contextButton) {
-    const enabled = isFavoriteContextMenuEnabled();
-    contextButton.classList.toggle('active', enabled);
-    contextButton.querySelector('.menu-btn-label').textContent = `Favoritar pelo Menu: ${enabled ? 'ON' : 'OFF'}`;
-  }
-  contentToggle?.classList.toggle('active', shelfEnabled || dashboardEnabled || isFavoriteContextMenuEnabled() || getSetting('searchHistory', 'off') === 'on');
-}
-
-function toggleFavoritesShelfPreference() {
-  setSetting('favoritesShelf', isFavoritesShelfEnabled() ? 'off' : 'on');
-  updateContentPreferenceButtons();
-  renderFavoritesShelf();
+  contentToggle?.classList.toggle('active', dashboardEnabled || getSetting('searchHistory', 'off') === 'on');
 }
 
 function toggleContentDashboardPreference() {
@@ -189,63 +159,6 @@ function toggleContentDashboardPreference() {
   if (!enabled) showContentView('home');
   updateContentPreferenceButtons();
   updateContentViewSwitcher();
-}
-
-function toggleFavoriteContextMenuPreference() {
-  setSetting('favoriteContextMenu', isFavoriteContextMenuEnabled() ? 'off' : 'on');
-  updateContentPreferenceButtons();
-}
-
-function toggleFavoritesShelfCollapsed() {
-  const collapsed = !isFavoritesShelfCollapsed();
-  setSetting('favoritesShelfCollapsed', collapsed ? 'on' : 'off');
-  renderFavoritesShelf();
-}
-
-function createFavoriteCard(info, removable = false) {
-  const card = document.createElement('div');
-  card.className = `favorite-card vis-${info.vis}`;
-  applyOtherButtonColor(card, info.vis, info.customVis);
-  card.dataset.favoriteId = info.id;
-  const copy = document.createElement('button');
-  copy.type = 'button';
-  copy.className = 'favorite-card-copy';
-  copy.innerHTML = `<strong>${buttonVisibilityMarkup(info.vis, info.customVis)} ${escapeHtml(info.name)}</strong><small>${escapeHtml(info.section)}</small>`;
-  copy.onclick = () => copyUserDataButton(info.id);
-  bindButtonTextPreview(copy, info.text, info.vis);
-  card.appendChild(copy);
-  if (removable || editMode) {
-    const remove = document.createElement('button');
-    remove.type = 'button';
-    remove.className = 'favorite-card-remove';
-    remove.textContent = '×';
-    remove.title = 'Remover dos favoritos';
-    remove.onclick = () => removeLegacyFavorite(info.id);
-    card.appendChild(remove);
-  }
-  return card;
-}
-
-function renderFavoritesShelf() {
-  const shelf = document.getElementById('favoritesShelf');
-  const list = document.getElementById('favoritesShelfList');
-  const count = document.getElementById('favoritesShelfCount');
-  if (!shelf || !list || !count) return;
-  const entries = userData.favorites.map(getButtonInfo).filter(Boolean);
-  const collapsed = isFavoritesShelfCollapsed();
-  const searchActive = !!document.getElementById('searchInput')?.value.trim();
-  shelf.hidden = !isFavoritesShelfEnabled() || entries.length === 0 || activeContentView !== 'home' || searchActive;
-  shelf.classList.toggle('collapsed', collapsed);
-  shelf.querySelector('.favorites-shelf-head')?.setAttribute('aria-expanded', String(!collapsed));
-  count.textContent = entries.length;
-  list.replaceChildren(...entries.map(info => createFavoriteCard(info)));
-}
-
-function updateFavoritesShelfSearchState(searching) {
-  const shelf = document.getElementById('favoritesShelf');
-  if (!shelf) return;
-  if (searching) shelf.hidden = true;
-  else renderFavoritesShelf();
 }
 
 function createUsageRow(info, stats) {
@@ -377,11 +290,9 @@ async function confirmClearActivityLog() {
 
 function renderContentDashboard() {
   const metrics = document.getElementById('dashboardMetricCards');
-  const favorites = document.getElementById('dashboardFavoritesList');
-  const favoritesEmpty = document.getElementById('dashboardFavoritesEmpty');
   const mostUsed = document.getElementById('dashboardMostUsed');
   const leastUsed = document.getElementById('dashboardLeastUsed');
-  if (!metrics || !favorites || !mostUsed || !leastUsed) return;
+  if (!metrics || !mostUsed || !leastUsed) return;
 
   const range = dashboardPeriod === 'total' ? null : getDashboardPeriodRange();
   const periodMetrics = range ? aggregateDailyMetrics(range) : null;
@@ -405,12 +316,6 @@ function renderContentDashboard() {
     card.innerHTML = `<strong>${value}</strong><span>${escapeHtml(label)}</span>${comparison ? `<small class="${comparison.className}">${escapeHtml(comparison.text)}</small>` : ''}`;
     return card;
   }));
-
-  const favoriteEntries = userData.favorites.map(getButtonInfo).filter(Boolean);
-  const favoritesCard = document.getElementById('dashboardFavoritesCard');
-  if (favoritesCard) favoritesCard.hidden = favoriteEntries.length === 0;
-  favoritesEmpty.hidden = favoriteEntries.length > 0;
-  favorites.replaceChildren(...favoriteEntries.map(info => createFavoriteCard(info, true)));
 
   const usage = [...document.querySelectorAll('.btn-wrap')].map(button => {
     const id = button.dataset.id;
@@ -454,7 +359,6 @@ function showContentView(view) {
   document.getElementById('homeViewBtn')?.classList.toggle('active', activeContentView === 'home');
   document.getElementById('dashboardViewBtn')?.classList.toggle('active', activeContentView === 'dashboard');
   document.getElementById('menuOverlay')?.classList.remove('open');
-  renderFavoritesShelf();
   if (activeContentView === 'dashboard') renderContentDashboard();
   if (activeContentView === 'archive' && typeof renderArchiveView === 'function') renderArchiveView();
   if (typeof updateArchiveMenuCount === 'function') updateArchiveMenuCount();
@@ -466,19 +370,3 @@ function initContentDashboard() {
   showContentView('home');
   renderUserDataPanels();
 }
-
-document.addEventListener('contextmenu', event => {
-  const card = event.target.closest('.favorite-card');
-  if (!card) return;
-  const buttonId = card.dataset.favoriteId;
-  const info = getButtonInfo(buttonId);
-  if (!info) return;
-  event.preventDefault();
-  const sourceButton = document.querySelector(`.btn-wrap[data-id="${cssEscape(buttonId)}"]`);
-  openContextMenu([
-    createContextMenuItem('Copiar texto', 'copy', () => copyUserDataButton(buttonId)),
-    createContextMenuItem('Visualizar botão', 'eye', () => viewContextButton(sourceButton)),
-    createContextMenuSeparator(),
-    createContextMenuItem('Remover dos favoritos', 'star', () => removeLegacyFavorite(buttonId), { danger: true })
-  ], event.clientX, event.clientY, card);
-});

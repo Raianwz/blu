@@ -83,7 +83,6 @@ function toggleEditMode() {
   button.classList.toggle('active', editMode);
 
   updateShiftMode();
-  renderFavoritesShelf();
   notify(editMode ? 'Modo de edição ativado' : 'Modo de edição desativado');
 }
 
@@ -167,7 +166,7 @@ function initEditAnimationPreference() {
 
 async function resetPreferences() {
   const ok = await confirmDialog(
-    'As configurações de aparência e comportamento, incluindo cores e ícones personalizados dos botões, voltarão ao padrão. Textos, seções, favoritos e estatísticas serão preservados.',
+    'As configurações de aparência e comportamento, incluindo cores e ícones personalizados dos botões, voltarão ao padrão. Textos, seções e estatísticas serão preservados.',
     { title: '↺ Redefinir Preferências', confirmText: 'Redefinir' }
   );
   if (!ok) return;
@@ -205,7 +204,6 @@ async function resetPreferences() {
   updateContentPreferenceButtons();
   updateContentViewSwitcher();
   showContentView('home');
-  renderFavoritesShelf();
   document.getElementById('menuOverlay')?.classList.remove('open');
   notify('Preferências redefinidas');
 }

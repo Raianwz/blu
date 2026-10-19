@@ -41,43 +41,45 @@ Ideias para uma próxima expansão sazonal (não incluídas na 1.9.5):
 - [x] Terceira etapa: liberar Bruxa; manter Fantasma indisponível até a definição do contraste da paleta clara.
 - [x] Quarta etapa: liberar Fantasma com letras/ícones escuros no Público claro e brancos no Privado escuro.
 - [x] Oferecer cinco paletas para botões Público/Privado: Abóbora (laranja queimado e roxo sombrio, atual), Zumbi (verde musgo e terra escura), Vampiro (vinho-sangue e carvão), Bruxa (roxo de poção e verde de ervas/vassoura) e Fantasma (névoa/lavanda apagada e osso ou cinza de cemitério).
-- [ ] Trocar somente as cores visuais dos botões Público/Privado nos visuais Clássico e Novo. Manter o tema base de Halloween, inclusive o menu hambúrguer com abóbora, igual em todas as paletas.
-- [ ] Não recolorir por padrão ações como Salvar, Cancelar, Sim e Não. Considerar apenas um ajuste pontual de destaque ou hover das seções se os testes de contraste realmente exigirem; preservar cores semânticas de confirmação, cancelamento e perigo.
+- [x] Trocar somente as cores visuais dos botões Público/Privado nos visuais Clássico e Novo. Manter o tema base de Halloween, inclusive o menu hambúrguer com abóbora, igual em todas as paletas.
+- [x] Não recolorir por padrão ações como Salvar, Cancelar, Sim e Não. Considerar apenas um ajuste pontual de destaque ou hover das seções se os testes de contraste realmente exigirem; preservar cores semânticas de confirmação, cancelamento e perigo.
 - [x] Adicionar em Conteúdo um seletor discreto “Estilo:”, visível apenas com o tema sazonal ativo.
 - [x] Mostrar um banner curto na primeira ativação após a novidade, com amostras das paletas disponíveis e atalho para o seletor; não repetir após escolha ou fechamento.
-- [ ] Validar contraste e distinção entre Público/Privado nos temas Claro/Escuro e visuais Clássico/Novo; a paleta Fantasma pode exigir texto/ícones escuros sobre o tom claro. Aplicar as paletas só na apresentação, sem alterar JSON ou cores dos botões “Outro”.
+- [x] Aplicar as paletas só na apresentação, sem alterar JSON ou cores dos botões “Outro”; usar texto/ícones escuros no Público da paleta Fantasma.
+- [ ] Validar visualmente contraste e distinção entre Público/Privado nos temas Claro/Escuro e visuais Clássico/Novo.
 
 ### Histórico de atividade
 
-Registrar em `blu:userdata` as alterações estruturais feitas no Blû, sem misturá-las aos dados compartilháveis de `blu:data`.
+Registro implementado em `blu:userdata`, separado dos dados compartilháveis de `blu:data`. As verificações abaixo são do código; os testes de interação seguem pendentes.
 
-Eventos previstos:
+Eventos implementados:
 
-- Botão criado, editado, removido, restaurado e duplicado.
-- Seção criada, editada, removida, restaurada e duplicada.
-- Botão transferido de uma seção para outra.
-- Botão reordenado dentro da mesma seção.
-- Seção reordenada.
-- Resumo das propriedades alteradas durante uma edição.
+- [x] Botão criado, editado, removido, restaurado por desfazer e duplicado.
+- [x] Seção criada, editada, removida, restaurada por desfazer e duplicada.
+- [x] Botão transferido de uma seção para outra.
+- [x] Botão reordenado dentro da mesma seção.
+- [x] Seção reordenada.
+- [x] Resumo das propriedades alteradas durante uma edição.
 
 Decisões:
 
-- Usar SVGs consistentes com a interface do Blû.
-- Diferenciar transferência `⇄` de reordenação `↕`.
-- Manter um retrato mínimo do nome e da seção para itens já removidos.
-- Mostrar os eventos recentes nas Estatísticas e o histórico completo em uma janela própria.
-- Permitir filtros por alvo e ação.
-- Agrupar eventos por data.
-- Limitar o histórico aos 500 eventos mais recentes.
-- Limpar o histórico sem apagar métricas, favoritos ou botões.
-- Registrar restauração quando uma remoção for desfeita.
+- [x] Usar SVGs consistentes com a interface do Blû.
+- [x] Diferenciar transferência `⇄` de reordenação `↕`.
+- [x] Manter um retrato mínimo do nome e da seção para itens já removidos.
+- [x] Mostrar os eventos recentes nas Estatísticas e o histórico completo em uma janela própria.
+- [x] Permitir filtros por alvo e ação.
+- [x] Agrupar eventos por data.
+- [x] Limitar o histórico aos 500 eventos mais recentes.
+- [x] Limpar o histórico sem apagar métricas ou botões.
+- [x] Registrar restauração quando uma remoção for desfeita.
 
 Polimentos pendentes:
 
-- Testar todos os movimentos com mouse, toque e controles de organização.
-- Avaliar detalhes expansíveis para edições.
-- Avaliar a apresentação de valores anteriores e posteriores para campos curtos.
-- Revisar como eventos de refazer devem aparecer.
+- [ ] Testar todos os movimentos com mouse, toque e controles de organização.
+- [ ] Avaliar detalhes expansíveis para edições.
+- [ ] Avaliar a apresentação de valores anteriores e posteriores para campos curtos.
+- [ ] Revisar como eventos de refazer devem aparecer.
+- [ ] Decidir se arquivar, restaurar do arquivo e excluir definitivamente também devem gerar eventos; esses fluxos ainda não registram atividade.
 
 ## Próximos recursos
 
@@ -116,28 +118,15 @@ Fundação do recurso:
 - [x] Preservar rolagem e expansão ao marcar itens no compartilhamento personalizado.
 - [x] Manter arquivados fora da pesquisa e da tela inicial comuns.
 
-### Descontinuação dos Favoritos — antecipada
+### Remoção dos Favoritos
 
-Migração antecipada para abrir espaço ao recurso Arquivar.
+O recurso foi removido em favor de Arquivados. Backups antigos continuam importáveis; o campo de favoritos é ignorado, enquanto botões, seções e estatísticas são mantidos.
 
-Comportamento após a descontinuação:
-
-- [x] Impedir a inclusão de novos favoritos.
-- Manter a leitura dos favoritos já existentes nos dados locais e em JSONs antigos.
-- [x] Exibir os favoritos existentes somente na tela de **Estatísticas**, enquanto houver itens legados.
-- [x] Continuar permitindo a remoção individual e o desfazer com `Ctrl+Z`.
-- [x] Remover a prateleira de Favoritos da tela inicial.
-- [x] Remover as opções “Favoritos na Tela Inicial” e “Favoritar pelo Menu”.
-- Não incluir o campo ou estado de favorito em novos JSONs exportados.
-- Preservar a compatibilidade de importação com arquivos e backups antigos que contenham favoritos.
-- Não apagar automaticamente os favoritos existentes; mantê-los até que o usuário os remova.
-
-Cuidados de implementação:
-
-- Separar a ação atual de alternância entre inclusão e remoção, bloqueando apenas a inclusão.
-- Garantir que a importação de dados antigos não reative controles de inclusão descontinuados.
-- Revisar os presets, escopos e campos da Exportação Personalizada relacionados a Favoritos.
-- Atualizar textos de backup, ajuda e interface que ainda mencionem a criação ou exportação de favoritos.
+- [x] Remover painel, ações e preferências de Favoritos.
+- [x] Remover favoritos do estado `blu:userdata` e dos novos backups de estatísticas.
+- [x] Remover preset, escopo e campo de Favoritos da Exportação Personalizada.
+- [x] Atualizar textos de backup, importação e interface.
+- [x] Aceitar backups antigos sem reintroduzir Favoritos.
 
 ### Criptografia versionada para o Blû
 
@@ -415,16 +404,16 @@ Botões com o mesmo nome:
 
 ### Exportação personalizada
 
-- Renomear o item do menu para “Exportação Personalizada” ou “Exportação Avançada”.
-- Na aba de prévia, substituir “Visualizar” por “Voltar para configurar” ou ocultar o botão redundante.
-- Bloquear exportações sem conteúdo útil em vez de produzir apenas `{}`.
-- Melhorar CSV contendo somente seções.
-- Exibir o nome final do arquivo na prévia.
-- Destacar “Reimportável no Blû” ou “Somente consulta”.
-- Avaliar renderização visual da prévia Markdown.
-- Adicionar debounce para arquivos grandes.
-- Limitar apenas a prévia de arquivos enormes sem truncar o arquivo exportado.
-- Testar todas as combinações de campos, escopos, formatos e estruturas.
+- [x] Renomear o item do menu para “Exportação Personalizada” ou “Exportação Avançada”.
+- [ ] Na aba de prévia, substituir “Visualizar” por “Voltar para configurar” ou ocultar o botão redundante.
+- [ ] Bloquear exportações sem conteúdo útil em vez de produzir apenas `{}`.
+- [ ] Melhorar CSV contendo somente seções.
+- [ ] Exibir o nome final do arquivo na prévia.
+- [ ] Destacar “Reimportável no Blû” ou “Somente consulta”.
+- [ ] Avaliar renderização visual da prévia Markdown.
+- [ ] Adicionar debounce para arquivos grandes.
+- [ ] Limitar apenas a prévia de arquivos enormes sem truncar o arquivo exportado.
+- [ ] Testar todas as combinações de campos, escopos, formatos e estruturas.
 
 ### Pesquisa
 

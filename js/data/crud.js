@@ -1146,19 +1146,21 @@ async function importData() {
 
     if (parsed.format === 'blu-userdata') {
       if (Number(parsed.version) > USERDATA_FORMAT_VERSION) throw new Error('backup de dados pessoais criado por uma versão mais nova');
-      const ok = await confirmDialog('Isso substituirá os favoritos e as estatísticas locais. Seus botões não serão alterados. Continuar?', { title: '📥 Importar estatísticas', danger: true, confirmText: 'Importar' });
+      const ignoredFavorites = Array.isArray(parsed.userdata?.favorites) && parsed.userdata.favorites.length > 0;
+      const ok = await confirmDialog(`Isso substituirá as estatísticas locais. Seus botões não serão alterados.${ignoredFavorites ? ' Os favoritos do arquivo serão ignorados.' : ''} Continuar?`, { title: '📥 Importar estatísticas', danger: true, confirmText: 'Importar' });
       if (!ok) return;
       replaceUserData(parsed.userdata, getCurrentButtonIds());
       closeModal('importModal');
       clearImportSource();
-      notify('Estatísticas e favoritos importados!');
+      notify('Estatísticas importadas!');
       return;
     }
 
     if (parsed.format === 'blu-appdata') {
       if (Number(parsed.version) > USERDATA_FORMAT_VERSION) throw new Error('backup completo criado por uma versão mais nova');
       if (!parsed.data?.sections && !parsed.data?.categories) throw new Error('backup completo sem dados de botões válidos');
-      const ok = await confirmDialog('Isso substituirá os botões, favoritos e estatísticas atuais. Os botões poderão ser recuperados com Ctrl+Z; os dados pessoais não. Continuar?', { title: '📥 Importar backup do Blû', danger: true, confirmText: 'Importar' });
+      const ignoredFavorites = Array.isArray(parsed.userdata?.favorites) && parsed.userdata.favorites.length > 0;
+      const ok = await confirmDialog(`Isso substituirá os botões e as estatísticas atuais. Os botões poderão ser recuperados com Ctrl+Z; as estatísticas não.${ignoredFavorites ? ' Os favoritos do arquivo serão ignorados.' : ''} Continuar?`, { title: '📥 Importar backup do Blû', danger: true, confirmText: 'Importar' });
       if (!ok) return;
       pushHistory();
       restoreState(normalizeImportedData(parsed.data));
@@ -1166,7 +1168,7 @@ async function importData() {
       markCurrentStateAsExported();
       closeModal('importModal');
       clearImportSource();
-      notify('Dados, estatísticas e favoritos importados!');
+      notify('Dados e estatísticas importados!');
       return;
     }
 
@@ -1226,7 +1228,6 @@ async function clearAll(event = null) {
   updateWhatsNewButtonUI();
   updateContentPreferenceButtons();
   updateContentViewSwitcher();
-  renderFavoritesShelf();
 
   // Reflete imediatamente os padrões na interface sem recriar as
   // preferências que acabaram de ser removidas.

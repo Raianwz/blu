@@ -72,7 +72,7 @@ function getCopyButtonTitle(button) {
 }
 
 function syncCopyButtonTitles() {
-  document.querySelectorAll('.copy-btn, .favorite-card-copy').forEach(button => {
+  document.querySelectorAll('.copy-btn').forEach(button => {
     if (textPreviewMode === 'native') {
       const title = getCopyButtonTitle(button);
       if (title) button.title = title;
@@ -222,7 +222,7 @@ function bindButtonTextPreview(button, text, visibility = 'other') {
 window.addEventListener('scroll', hideButtonPreview, true);
 window.addEventListener('resize', hideButtonPreview);
 document.addEventListener('pointerdown', event => {
-  if (textPreviewEl?.classList.contains('show') && !event.target.closest('.copy-btn, .favorite-card-copy')) {
+  if (textPreviewEl?.classList.contains('show') && !event.target.closest('.copy-btn')) {
     hideButtonPreview();
   }
 }, true);

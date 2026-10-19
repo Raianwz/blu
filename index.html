@@ -241,9 +241,9 @@
 
       <div id="customExportConfigPanel" class="custom-export-panel">
         <div class="custom-export-top-grid">
-          <label>Preset<select id="customExportPreset" onchange="applyCustomExportPreset(this.value)"><option value="index">Índice de seções e botões</option><option value="full">Backup completo</option><option value="content">Somente conteúdo</option><option value="names">Somente nomes</option><option value="public">Somente públicos</option><option value="favorites">Favoritos</option><option value="spreadsheet">Planilha de botões</option><option value="documentation">Documentação Markdown</option><option value="custom">Personalizado</option></select></label>
+          <label>Preset<select id="customExportPreset" onchange="applyCustomExportPreset(this.value)"><option value="index">Índice de seções e botões</option><option value="full">Backup completo</option><option value="content">Somente conteúdo</option><option value="names">Somente nomes</option><option value="public">Somente públicos</option><option value="spreadsheet">Planilha de botões</option><option value="documentation">Documentação Markdown</option><option value="custom">Personalizado</option></select></label>
           <label>Formato<select id="customExportFormat" onchange="updateCustomExportUI()"><option value="json">JSON</option><option value="csv">CSV</option><option value="markdown">Markdown</option><option value="text">Texto</option></select></label>
-          <label>Escopo<select id="customExportScope" onchange="updateCustomExportUI()"><option value="all">Tudo</option><option value="search">Resultados da pesquisa</option><option value="favorites">Favoritos</option><option value="public">Somente públicos</option><option value="private">Somente privados</option><option value="other">Visibilidade “Outro”</option><option value="sections">Seções selecionadas</option><option value="tags">Tags selecionadas</option></select></label>
+          <label>Escopo<select id="customExportScope" onchange="updateCustomExportUI()"><option value="all">Tudo</option><option value="search">Resultados da pesquisa</option><option value="public">Somente públicos</option><option value="private">Somente privados</option><option value="other">Visibilidade “Outro”</option><option value="sections">Seções selecionadas</option><option value="tags">Tags selecionadas</option></select></label>
           <label>Organização<select id="customExportStructure" onchange="markCustomExportCustomized()"><option value="hierarchy">Preservar hierarquia</option><option value="flat">Lista plana</option></select></label>
         </div>
 
@@ -269,7 +269,6 @@
             <label><input type="checkbox" data-export-field="buttonTag" data-field-group="button"> Tags dos botões</label>
             <label><input type="checkbox" data-export-field="buttonVisibility" data-field-group="button"> Visibilidade</label>
             <label><input type="checkbox" data-export-field="buttonSection" data-field-group="button"> Seção de origem</label>
-            <label><input type="checkbox" data-export-field="buttonFavorite" data-field-group="button"> Estado de favorito</label>
             <label><input type="checkbox" data-export-field="buttonStats" data-field-group="button"> Estatísticas de uso</label>
           </div></section>
 
@@ -440,12 +439,6 @@
       <div id="dashboardActivityList" class="activity-list activity-list-compact"></div>
     </section>
     <div class="content-dashboard-grid">
-      <section class="dashboard-card" id="dashboardFavoritesCard">
-        <h2>⭐ Favoritos</h2>
-        <p class="favorites-deprecation-note">Recurso legado — remova os itens que não precisa mais.</p>
-        <div id="dashboardFavoritesEmpty" class="userdata-empty">Nenhum botão favorito ainda.</div>
-        <div id="dashboardFavoritesList" class="userdata-list"></div>
-      </section>
       <section class="dashboard-card">
         <h2>📈 Mais usados</h2>
         <div id="dashboardMostUsed" class="userdata-list"></div>
@@ -456,9 +449,9 @@
       </section>
       <section class="dashboard-card dashboard-backup-card">
         <h2>📄 Backup e portabilidade</h2>
-        <p>Favoritos e estatísticas permanecem locais e não entram nos links compartilhados.</p>
+        <p>As estatísticas permanecem locais e não entram nos links compartilhados.</p>
         <div class="dashboard-backup-actions">
-          <button class="mbtn ghost" type="button" onclick="exportUserDataBackup()">Exportar estatísticas e favoritos</button>
+          <button class="mbtn ghost" type="button" onclick="exportUserDataBackup()">Exportar estatísticas</button>
           <button class="mbtn primary" type="button" onclick="exportAppDataBackup()">Exportar dados + estatísticas</button>
           <button class="mbtn ghost" type="button" onclick="openUserDataImport()">Importar backup</button>
         </div>
@@ -499,7 +492,7 @@
       <div id="statisticsList" class="userdata-list statistics-list"></div>
       <div class="userdata-backup">
         <h3>Backup e portabilidade</h3>
-        <button class="mbtn ghost" type="button" onclick="exportUserDataBackup()">Exportar estatísticas e favoritos</button>
+        <button class="mbtn ghost" type="button" onclick="exportUserDataBackup()">Exportar estatísticas</button>
         <button class="mbtn primary" type="button" onclick="exportAppDataBackup()">Exportar dados + estatísticas</button>
         <button class="mbtn ghost" type="button" onclick="openUserDataImport()">Importar backup</button>
       </div>

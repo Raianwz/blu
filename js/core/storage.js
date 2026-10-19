@@ -155,6 +155,13 @@ function migrateLegacySettings() {
     changed = true;
   }
 
+  ['favoritesShelf', 'favoritesShelfCollapsed', 'favoriteContextMenu'].forEach(key => {
+    if (Object.prototype.hasOwnProperty.call(settings, key)) {
+      delete settings[key];
+      changed = true;
+    }
+  });
+
   // A primeira versão da dica marcava como vista apenas por aparecer.
   // O novo estado só registra quando o usuário a dispensa explicitamente.
   if (Object.prototype.hasOwnProperty.call(settings, 'searchHistoryTipSeen')) {
@@ -458,7 +465,6 @@ function dismissBackupBanner() {
 // --- Histórico (undo/redo) ---------------------------------
 
 function pushHistory() {
-  if (typeof favoriteRemovalUndo !== 'undefined') favoriteRemovalUndo = [];
   history.push(getCurrentStateSnapshot().stateString);
   if (history.length > 30) history.shift();
 
@@ -513,7 +519,6 @@ function recordRestoredStateItems(beforeState, afterState) {
 }
 
 function undoLastAction() {
-  if (typeof undoLegacyFavoriteRemoval === 'function' && undoLegacyFavoriteRemoval()) return;
   if (history.length === 0) return;
   document.querySelectorAll('#notifArea .notif.has-action').forEach(element => element.remove());
 

@@ -8,7 +8,6 @@ const CUSTOM_EXPORT_PRESETS = {
   content: { format: 'json', scope: 'all', structure: 'hierarchy', fields: ['sections', 'sectionName', 'buttons', 'buttonName', 'buttonText', 'buttonTag', 'buttonVisibility'] },
   names: { format: 'text', scope: 'all', structure: 'hierarchy', fields: ['sections', 'sectionName', 'buttons', 'buttonName'] },
   public: { format: 'json', scope: 'public', structure: 'hierarchy', fields: ['sections', 'sectionName', 'buttons', 'buttonName', 'buttonText', 'buttonTag', 'buttonVisibility'] },
-  favorites: { format: 'json', scope: 'favorites', structure: 'hierarchy', fields: ['sections', 'sectionName', 'buttons', 'buttonName', 'buttonText', 'buttonTag', 'buttonVisibility', 'buttonFavorite'] },
   spreadsheet: { format: 'csv', scope: 'all', structure: 'flat', fields: ['sections', 'sectionName', 'buttons', 'buttonName', 'buttonText', 'buttonTag', 'buttonVisibility', 'buttonSection'] },
   documentation: { format: 'markdown', scope: 'all', structure: 'hierarchy', fields: ['sections', 'sectionName', 'buttons', 'buttonName', 'buttonText', 'buttonTag', 'buttonVisibility'] }
 };
@@ -79,7 +78,7 @@ function updateCustomExportUI(markCustom = true) {
 function updateCustomExportDependencies() {
   const fields = getCustomExportFields();
   const sectionChildren = ['sectionId', 'sectionName', 'sectionCollapsed', 'sectionCount'];
-  const buttonChildren = ['buttonId', 'buttonName', 'buttonText', 'buttonTag', 'buttonVisibility', 'buttonSection', 'buttonFavorite', 'buttonStats'];
+  const buttonChildren = ['buttonId', 'buttonName', 'buttonText', 'buttonTag', 'buttonVisibility', 'buttonSection', 'buttonStats'];
   document.querySelectorAll('[data-export-field]').forEach(input => {
     const disabled = (sectionChildren.includes(input.dataset.exportField) && !fields.has('sections'))
       || (buttonChildren.includes(input.dataset.exportField) && !fields.has('buttons'));
@@ -156,7 +155,6 @@ function getCustomExportConfig() {
 
 function prepareCustomExportData(config) {
   const state = collectState();
-  const favoriteIds = new Set(userData?.favorites || []);
   const selected = customExportScopeSelections[config.scope] || new Set();
   const visibleSections = new Set([...document.querySelectorAll('.section-wrap:not(.search-hidden)')].map(el => el.dataset.id));
   const visibleButtons = new Set([...document.querySelectorAll('.btn-wrap:not(.search-hidden)')].map(el => el.dataset.id));
@@ -164,7 +162,6 @@ function prepareCustomExportData(config) {
   if (config.scope === 'sections') sections = sections.filter(section => selected.has(section.id));
   if (config.scope === 'search') sections = sections.filter(section => visibleSections.has(section.id)).map(section => ({ ...section, buttons: section.buttons.filter(button => visibleButtons.has(button.id)) }));
   sections = sections.map(section => ({ ...section, buttons: section.buttons.filter(button => {
-    if (config.scope === 'favorites') return favoriteIds.has(button.id);
     if (['public', 'private', 'other'].includes(config.scope)) return button.vis === config.scope;
     if (config.scope === 'tags') return selected.has(button.tag) || selected.has(normalizeTag(button.tag));
     return true;
@@ -187,7 +184,6 @@ function prepareCustomExportData(config) {
   const archived = { buttons: [], sections: [] };
   if (config.includeArchived && config.scope !== 'search') {
     const acceptsArchivedButton = button => {
-      if (config.scope === 'favorites') return favoriteIds.has(button.id);
       if (['public', 'private', 'other'].includes(config.scope)) return button.vis === config.scope;
       if (config.scope === 'tags') return selected.has(button.tag) || selected.has(normalizeTag(button.tag));
       return true;
@@ -203,7 +199,7 @@ function prepareCustomExportData(config) {
       if (acceptsArchivedButton(record.item)) archived.buttons.push(JSON.parse(JSON.stringify(record)));
     });
   }
-  return { tags, sections, favoriteIds, archived };
+  return { tags, sections, archived };
 }
 
 function assignCustomExportField(target, key, value, config) {
@@ -211,7 +207,7 @@ function assignCustomExportField(target, key, value, config) {
   target[key] = value;
 }
 
-function customExportButtonObject(button, section, config, favoriteIds) {
+function customExportButtonObject(button, section, config) {
   const f = config.fields; const out = {};
   if (f.has('buttonId')) assignCustomExportField(out, 'id', button.id, config);
   if (f.has('buttonName')) assignCustomExportField(out, 'name', button.name, config);
@@ -220,7 +216,6 @@ function customExportButtonObject(button, section, config, favoriteIds) {
   if (f.has('buttonVisibility')) assignCustomExportField(out, 'vis', button.vis, config);
   if (f.has('buttonVisibility') && button.vis === 'other') out.customVis = normalizeCustomVis(button.customVis);
   if (f.has('buttonSection')) { assignCustomExportField(out, 'section', section.name, config); assignCustomExportField(out, 'sectionId', section.id, config); }
-  if (f.has('buttonFavorite')) out.favorite = favoriteIds.has(button.id);
   if (f.has('buttonStats')) out.stats = { copies: 0, views: 0, edits: 0, lastUsed: null, createdAt: null, ...(userData?.stats?.[button.id] || {}) };
   return out;
 }
@@ -229,7 +224,7 @@ function customExportArchivedObject(data, config) {
   const f = config.fields;
   return {
     buttons: data.archived.buttons.map(record => ({
-      item: customExportButtonObject(record.item, { id: record.sectionId, name: record.sectionName }, config, data.favoriteIds),
+      item: customExportButtonObject(record.item, { id: record.sectionId, name: record.sectionName }, config),
       sectionId: record.sectionId,
       sectionName: record.sectionName,
       originalIndex: record.originalIndex,
@@ -241,7 +236,7 @@ function customExportArchivedObject(data, config) {
       if (f.has('sectionName')) assignCustomExportField(item, 'name', record.item.name, config);
       if (f.has('sectionName') && record.item.icon) item.icon = record.item.icon;
       if (f.has('sectionCollapsed') && config.state !== 'omit') item.collapsed = record.item.collapsed;
-      if (f.has('buttons')) item.buttons = record.item.buttons.map(button => customExportButtonObject(button, record.item, config, data.favoriteIds));
+      if (f.has('buttons')) item.buttons = record.item.buttons.map(button => customExportButtonObject(button, record.item, config));
       return { item, originalIndex: record.originalIndex, archivedAt: record.archivedAt };
     })
   };
@@ -255,13 +250,13 @@ function buildCustomExportObject(data, config) {
   // possível extrair somente os campos dos botões sem gerar um JSON vazio.
   if (!f.has('sections')) {
     if (f.has('buttons')) {
-      root.buttons = data.sections.flatMap(section => section.buttons.map(button => customExportButtonObject(button, section, config, data.favoriteIds)));
+      root.buttons = data.sections.flatMap(section => section.buttons.map(button => customExportButtonObject(button, section, config)));
     }
     if (config.includeArchived) root.archived = customExportArchivedObject(data, config);
     return root;
   }
   if (config.structure === 'flat') {
-    root.buttons = f.has('buttons') ? data.sections.flatMap(section => section.buttons.map(button => customExportButtonObject(button, section, config, data.favoriteIds))) : [];
+    root.buttons = f.has('buttons') ? data.sections.flatMap(section => section.buttons.map(button => customExportButtonObject(button, section, config))) : [];
     if (config.includeArchived) root.archived = customExportArchivedObject(data, config);
     return root;
   }
@@ -272,7 +267,7 @@ function buildCustomExportObject(data, config) {
     if (f.has('sectionName') && section.icon) out.icon = section.icon;
     if (f.has('sectionCollapsed') && config.state !== 'omit') out.collapsed = section.collapsed;
     if (f.has('sectionCount')) out.buttonCount = section.buttons.length;
-    if (f.has('buttons')) out.buttons = section.buttons.map(button => customExportButtonObject(button, section, config, data.favoriteIds));
+    if (f.has('buttons')) out.buttons = section.buttons.map(button => customExportButtonObject(button, section, config));
     return out;
   });
   if (config.includeArchived) root.archived = customExportArchivedObject(data, config);
@@ -281,18 +276,18 @@ function buildCustomExportObject(data, config) {
 
 function getCustomExportRows(data, config) {
   const rows = data.sections.flatMap(section => section.buttons.map(button => {
-    const object = customExportButtonObject(button, section, config, data.favoriteIds);
+    const object = customExportButtonObject(button, section, config);
     if (config.fields.has('sectionId') && !('sectionId' in object)) object.sectionId = section.id;
     if (config.fields.has('sectionName') && !('section' in object)) object.section = section.name;
     return object;
   }));
   if (config.includeArchived) {
     data.archived.sections.forEach(record => record.item.buttons.forEach(button => {
-      rows.push({ ...customExportButtonObject(button, record.item, config, data.favoriteIds), archived: true, archivedAt: record.archivedAt });
+      rows.push({ ...customExportButtonObject(button, record.item, config), archived: true, archivedAt: record.archivedAt });
     }));
     data.archived.buttons.forEach(record => {
       const section = { id: record.sectionId, name: record.sectionName };
-      rows.push({ ...customExportButtonObject(record.item, section, config, data.favoriteIds), archived: true, archivedAt: record.archivedAt });
+      rows.push({ ...customExportButtonObject(record.item, section, config), archived: true, archivedAt: record.archivedAt });
     });
   }
   return rows;
@@ -323,7 +318,6 @@ function customExportReadable(data, config, markdown) {
       if (f.has('buttonTag')) lines.push(`  Tag: ${button.tag}`);
       if (f.has('buttonVisibility')) lines.push(`  Visibilidade: ${button.vis}`);
       if (f.has('buttonSection')) lines.push(`  Seção: ${section.name}`);
-      if (f.has('buttonFavorite')) lines.push(`  Favorito: ${data.favoriteIds.has(button.id) ? 'sim' : 'não'}`);
       if (f.has('buttonStats')) lines.push(`  Estatísticas: ${JSON.stringify(userData?.stats?.[button.id] || {})}`);
     });
     lines.push('');

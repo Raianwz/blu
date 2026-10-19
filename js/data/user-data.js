@@ -1,9 +1,9 @@
 // ==========================================================
-// Dados pessoais locais: favoritos, estatísticas e backups
+// Dados pessoais locais: estatísticas, atividade e backups
 // ==========================================================
 
 const USERDATA_STORAGE_KEY = 'blu:userdata';
-const USERDATA_FORMAT_VERSION = 3;
+const USERDATA_FORMAT_VERSION = 4;
 const ACTIVITY_LOG_LIMIT = 500;
 const DAILY_METRICS_EPOCH = '2026-08-17';
 const USER_ACTIVITY_TYPES = ['created', 'deleted', 'edited', 'copied', 'viewed'];
@@ -57,8 +57,6 @@ function sanitizeDailyMetrics(source) {
 
 function sanitizeUserData(source) {
   const value = source && typeof source === 'object' && !Array.isArray(source) ? source : {};
-  const favorites = [...new Set((Array.isArray(value.favorites) ? value.favorites : [])
-    .map(String).filter(Boolean))];
   const stats = {};
   if (value.stats && typeof value.stats === 'object' && !Array.isArray(value.stats)) {
     Object.entries(value.stats).forEach(([id, entry]) => {
@@ -99,7 +97,6 @@ function sanitizeUserData(source) {
     .slice(0, ACTIVITY_LOG_LIMIT);
   return {
     version: USERDATA_FORMAT_VERSION,
-    favorites,
     stats,
     activity,
     dailyMetrics: sanitizeDailyMetrics(value.dailyMetrics),
@@ -138,7 +135,12 @@ function clearActivityLog() {
 
 function loadUserData() {
   try {
-    return sanitizeUserData(JSON.parse(localStorage.getItem(USERDATA_STORAGE_KEY) || '{}'));
+    const stored = JSON.parse(localStorage.getItem(USERDATA_STORAGE_KEY) || '{}');
+    const normalized = sanitizeUserData(stored);
+    if (stored && Object.prototype.hasOwnProperty.call(stored, 'favorites')) {
+      try { localStorage.setItem(USERDATA_STORAGE_KEY, JSON.stringify(normalized)); } catch (_) {}
+    }
+    return normalized;
   } catch (_) {
     return sanitizeUserData({});
   }
@@ -150,7 +152,7 @@ function persistUserData() {
     return true;
   } catch (error) {
     console.error('Erro ao salvar dados pessoais:', error);
-    notify('Não foi possível salvar favoritos e estatísticas', 'err');
+    notify('Não foi possível salvar as estatísticas', 'err');
     return false;
   }
 }
@@ -195,7 +197,6 @@ function getCurrentButtonIds() {
 }
 
 function pruneUserData(validIds = getCurrentButtonIds()) {
-  userData.favorites = userData.favorites.filter(id => validIds.has(id));
   Object.keys(userData.stats).forEach(id => {
     if (!validIds.has(id)) delete userData.stats[id];
   });
@@ -203,36 +204,9 @@ function pruneUserData(validIds = getCurrentButtonIds()) {
 }
 
 function removeButtonUserData(buttonId) {
-  userData.favorites = userData.favorites.filter(id => id !== buttonId);
   delete userData.stats[buttonId];
   persistUserData();
   renderUserDataPanels();
-}
-
-function isFavoriteButton(buttonId) {
-  return userData.favorites.includes(String(buttonId));
-}
-
-let favoriteRemovalUndo = [];
-
-function removeLegacyFavorite(buttonId) {
-  const id = String(buttonId || '');
-  if (!id || !isFavoriteButton(id)) return;
-  favoriteRemovalUndo.push(id);
-  userData.favorites = userData.favorites.filter(item => item !== id);
-  persistUserData();
-  renderUserDataPanels();
-  notify('Removido dos favoritos — Ctrl+Z para desfazer');
-}
-
-function undoLegacyFavoriteRemoval() {
-  const id = favoriteRemovalUndo.pop();
-  if (!id) return false;
-  if (!userData.favorites.includes(id) && getButtonInfo(id)) userData.favorites.push(id);
-  persistUserData();
-  renderUserDataPanels();
-  notify('Favorito restaurado!');
-  return true;
 }
 
 function recordButtonCopy(buttonId) {
@@ -287,46 +261,6 @@ function getButtonInfo(buttonId) {
   };
 }
 
-async function copyUserDataButton(buttonId) {
-  const info = getButtonInfo(buttonId);
-  if (!info) return;
-  try {
-    await copyToClipboard(info.text);
-    recordButtonCopy(buttonId);
-    notify('Copiado!');
-  } catch (error) {
-    notify('Não foi possível copiar o texto', 'err');
-  }
-}
-
-function renderFavoritesPanel() {
-  const list = document.getElementById('favoritesList');
-  const empty = document.getElementById('favoritesEmpty');
-  if (!list || !empty) return;
-  list.replaceChildren();
-  const entries = userData.favorites.map(getButtonInfo).filter(Boolean);
-  empty.hidden = entries.length > 0;
-  entries.forEach(info => {
-    const row = document.createElement('div');
-    row.className = 'userdata-row';
-    const meta = document.createElement('div');
-    meta.className = 'userdata-row-meta';
-    meta.innerHTML = `<strong>${escapeHtml(info.name)}</strong><small>${escapeHtml(info.section)}</small>`;
-    const copy = document.createElement('button');
-    copy.className = 'mbtn primary';
-    copy.type = 'button';
-    copy.textContent = 'Copiar';
-    copy.onclick = () => copyUserDataButton(info.id);
-    const remove = document.createElement('button');
-    remove.className = 'mbtn ghost';
-    remove.type = 'button';
-    remove.textContent = 'Remover';
-    remove.onclick = () => removeLegacyFavorite(info.id);
-    row.append(meta, copy, remove);
-    list.appendChild(row);
-  });
-}
-
 function renderStatisticsPanel() {
   const summary = document.getElementById('statisticsSummary');
   const list = document.getElementById('statisticsList');
@@ -336,7 +270,7 @@ function renderStatisticsPanel() {
     .filter(entry => entry.info)
     .sort((left, right) => right.stats.copies - left.stats.copies);
   const total = entries.reduce((sum, entry) => sum + (entry.stats.copies || 0), 0);
-  summary.textContent = `${total} cópia(s) registrada(s) • ${userData.favorites.length} favorito(s)`;
+  summary.textContent = `${total} cópia(s) registrada(s)`;
   list.replaceChildren();
   entries.forEach(({ info, stats }) => {
     const row = document.createElement('div');
@@ -349,16 +283,8 @@ function renderStatisticsPanel() {
 }
 
 function renderUserDataPanels() {
-  renderFavoritesPanel();
   renderStatisticsPanel();
-  if (typeof renderFavoritesShelf === 'function') renderFavoritesShelf();
   if (typeof renderContentDashboard === 'function') renderContentDashboard();
-}
-
-function openFavoritesModal() {
-  pruneUserData();
-  renderFavoritesPanel();
-  openModal('favoritesModal');
 }
 
 function openStatisticsModal() {
@@ -387,7 +313,7 @@ function exportUserDataBackup() {
     exportedAt: new Date().toISOString(),
     userdata: userData
   }, 'blu_userdata');
-  notify('Estatísticas e favoritos exportados!');
+  notify('Estatísticas exportadas!');
 }
 
 function exportAppDataBackup() {

@@ -20,7 +20,7 @@ body.dark.halloween-theme {
 }
 
 /* Seasonal visibility colors are presentation only. The shared variables also
-   cover archived buttons and legacy favorite cards without changing JSON. */
+   cover archived buttons without changing JSON. */
 body.halloween-theme {
   --btn-public-1: #b6470e;
   --btn-public-2: #8c310b;
@@ -83,9 +83,7 @@ body.halloween-theme.button-visual-new[data-halloween-palette="ghost"] {
   --btn-private-2: #505a53;
 }
 /* The fog-colored public button needs dark ink; private stays white. */
-body.halloween-theme[data-halloween-palette="ghost"] :is(.copy-btn, .favorite-card, .archive-section-button).vis-public,
-body.halloween-theme[data-halloween-palette="ghost"] .favorite-card.vis-public .favorite-card-copy,
-body.halloween-theme[data-halloween-palette="ghost"] .favorite-card.vis-public .favorite-card-copy small,
+body.halloween-theme[data-halloween-palette="ghost"] :is(.copy-btn, .archive-section-button).vis-public,
 body.halloween-theme.button-visual-new[data-halloween-palette="ghost"] .copy-btn.vis-public .button-visibility-svg {
   color: #242331;
 }

@@ -392,7 +392,6 @@ function doSearch(options = {}) {
   const raw = document.getElementById('searchInput').value.trim();
   const q = normalizeSearchText(raw);
   const type = document.getElementById('searchType').value;
-  if (typeof updateFavoritesShelfSearchState === 'function') updateFavoritesShelfSearchState(!!raw);
 
   // A pesquisa atua sobre os botões da tela inicial. Se o usuário começar
   // a digitar enquanto visualiza as estatísticas, retorna ao início antes
