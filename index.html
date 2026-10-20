@@ -157,7 +157,12 @@
 
   <div class="modal-bg" id="btnModal">
     <div class="modal">
-      <h2 id="btnModalTitle">&#10133; Novo Botão</h2>
+      <div class="button-edit-header">
+        <h2 id="btnModalTitle">&#10133; Novo Botão</h2>
+        <div id="buttonAppearancePreviewGroup" class="button-appearance-preview" aria-label="Prévia da aparência do botão" hidden>
+          <span>Prévia:</span><span id="buttonAppearancePreview" class="copy-btn vis-other"><span class="button-preview-icon"></span><span class="btn-label">Botão</span></span>
+        </div>
+      </div>
       <div class="form-group"><label>Nome</label><input id="bName" placeholder="Ex: Bem-vindo"></div>
       <div class="form-group"><label>Texto a copiar</label><textarea id="bText" placeholder="Texto que será copiado ao clicar"></textarea></div>
       <div class="form-group"><label>Tag / Grupo</label><input id="bTag" list="tagOptions" placeholder="(opcional)"><datalist id="tagOptions"></datalist></div>

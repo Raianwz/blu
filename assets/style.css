@@ -1638,6 +1638,12 @@ body.edit-mode.drag-organizing .section-wrap:not(.section-drag-placeholder) {
 .button-appearance-controls { display: flex; gap: 8px; }
 body:not(.button-visual-new) #buttonIconTrigger { display: none; }
 
+.button-edit-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 12px; margin-bottom: 18px; }
+#btnModal .button-edit-header h2 { margin: 0; }
+.button-appearance-preview { display: flex; align-items: center; gap: 8px; margin-left: auto; color: var(--text2); font-size: 13px; }
+.button-appearance-preview[hidden] { display: none; }
+.button-appearance-preview .copy-btn { border-radius: 8px; cursor: default; pointer-events: none; }
+
 .button-appearance-trigger {
   display: flex;
   align-items: center;

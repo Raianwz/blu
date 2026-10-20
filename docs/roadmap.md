@@ -46,7 +46,7 @@ Ideias para uma próxima expansão sazonal (não incluídas na 1.9.5):
 - [x] Adicionar em Conteúdo um seletor discreto “Estilo:”, visível apenas com o tema sazonal ativo.
 - [x] Mostrar um banner curto na primeira ativação após a novidade, com amostras das paletas disponíveis e atalho para o seletor; não repetir após escolha ou fechamento.
 - [x] Aplicar as paletas só na apresentação, sem alterar JSON ou cores dos botões “Outro”; usar texto/ícones escuros no Público da paleta Fantasma.
-- [ ] Validar visualmente contraste e distinção entre Público/Privado nos temas Claro/Escuro e visuais Clássico/Novo.
+- [x] Validar visualmente contraste e distinção entre Público/Privado nos temas Claro/Escuro e visuais Clássico/Novo. Conferidas as 20 combinações de cores em amostras geradas do CSS; menor contraste entre texto e fundo: 5,39:1.
 
 ### Histórico de atividade
 
@@ -83,23 +83,28 @@ Polimentos pendentes:
 
 ## Próximos recursos
 
-### Espaços de trabalho temporários (Compartilhar 2 / Sincronizar)
+### Espaço Sincronizado
 
-Proposta para discutir e implementar depois: publicar uma cópia dos dados compartilháveis em um espaço identificado por nome, sem gerar link. Trata-se de versões enviadas manualmente, não de sincronização em tempo real. Cada publicação dura quatro dias sem novos envios; cada alteração publicada reinicia esse prazo.
+Nome curto da interface: **Espaço Sincronizado**. Descrição: “Publique versões dos seus botões para outras pessoas acessarem pelo nome do espaço.” As versões são enviadas manualmente; não há edição simultânea nem sincronização em tempo real. O espaço expira quatro dias após a última publicação, e uma nova publicação reinicia o prazo.
 
-- [ ] Criador: Menu > Compartilhar > Avançado > Enviar para Sincronização; informar nome do espaço e senha de atualização, revisar os dados e publicar.
-- [ ] Participante: Menu > Compartilhar > Sincronizar; informar apenas o nome do espaço para receber os dados em `blu:data-sync`, separados de `blu:data`. A primeira implementação guarda um espaço; estruturar para permitir até três futuramente.
-- [ ] Oferecer, em etapa posterior, importação completa ou personalizada dos dados sincronizados pelo fluxo `/share/sync-data` via POST e confirmação explícita; não substituir `blu:data` ao receber ou atualizar o espaço.
-- [ ] Criador: enviar uma nova versão ao mesmo espaço mediante nome e senha, substituindo a versão publicada; não gerar link.
-- [ ] Ao detectar nova versão de um espaço já recebido, perguntar se o participante deseja atualizar `blu:data-sync`, sem alterar `blu:data` automaticamente.
-- [ ] Permitir alternar entre a visualização dos dados locais normais e a dos dados sincronizados, com identificação clara da origem exibida (posição do indicador ainda a decidir).
-- [ ] Verificar novas versões sob demanda quando o usuário buscar; com a sincronização ativada, fazer também até duas tentativas automáticas dentro de uma hora. Guardar temporariamente o controle dessas tentativas no navegador e zerá-lo em “Limpar Tudo”.
-- [ ] Reaproveitar validação, limites e proteção criptográfica do compartilhamento, com expiração no servidor; nunca armazenar a senha em texto puro.
-- [ ] Reservar o nome enquanto o espaço existir; ao expirar, apagar conteúdo e metadados do servidor e liberar o nome.
-- [ ] Manter a cópia já recebida em `blu:data-sync` mesmo após a expiração do espaço no servidor, até ação explícita do usuário; informar a expiração quando ele tentar sincronizar novamente.
-- [ ] Mostrar claramente versão/data da publicação e prazo de expiração; tratar espaço inexistente, expirado e senha incorreta sem expor dados.
+Primeira etapa:
 
-Decisões: o nome sozinho autoriza a leitura; a senha autoriza apenas criação/alterações pelo criador. Portanto o nome deve ser tratado como identificador público, não como segredo; avisar para não publicar conteúdo sensível. As verificações automáticas só ficam ativas quando o recurso de sincronização estiver ativado. Ainda definir regras para nomes equivalentes/colisões e o comportamento de edição na visualização sincronizada.
+- [ ] Em Compartilhar > Espaço Sincronizado, oferecer **Criar espaço**, **Acessar espaço** e, para o criador, **Publicar atualização**. Reaproveitar a seleção e a prévia dos dados compartilháveis antes do envio; não gerar link.
+- [ ] Criar o espaço com nome público e senha de atualização. A leitura exige somente o nome; a senha autoriza publicações. Explicar na interface que qualquer pessoa com o nome pode ler os dados e que conteúdo sensível não deve ser publicado.
+- [ ] Normalizar nomes de forma única e previsível (acentos, maiúsculas e espaços), rejeitar colisões e reservar o nome até a expiração. Não permitir que duas criações simultâneas ocupem o mesmo nome.
+- [ ] Guardar no servidor uma versão crescente, data de publicação e prazo de expiração; validar tamanho e estrutura dos dados, limitar requisições e proteger a senha sem armazená-la em texto puro.
+- [ ] Ao acessar, salvar a cópia em `blu:data-sync`, separada de `blu:data`. A primeira versão local guarda um espaço; definir o formato para permitir até três depois. Não substituir dados locais ao receber ou atualizar.
+- [ ] Oferecer **Ver meus dados** e **Ver espaço** com indicação persistente da origem. Na visualização do espaço, bloquear edição até definir um fluxo explícito para importar uma cópia aos dados locais.
+- [ ] Permitir **Buscar atualização** sob demanda. Se houver nova versão, mostrar data, versão e resumo das mudanças antes de atualizar `blu:data-sync`; manter a cópia anterior se o usuário cancelar ou ocorrer erro.
+- [ ] Manter a cópia recebida após a expiração no servidor até o usuário removê-la; explicar que novas buscas deixarão de funcionar. Liberar o nome e apagar conteúdo e metadados do servidor quando expirar.
+
+Etapas seguintes:
+
+- [ ] Importar total ou parcialmente os dados recebidos com prévia e confirmação explícita, aproveitando o fluxo `/share/sync-data` via POST; nunca substituir `blu:data` apenas por buscar uma versão.
+- [ ] Com o espaço ativo, tentar verificar novas versões até duas vezes em uma hora. Guardar esse controle temporariamente no navegador e zerá-lo em “Limpar Tudo”; evitar tentativas quando estiver offline.
+- [ ] Permitir até três espaços recebidos, com seleção e remoção independentes.
+
+Antes de implementar, definir o comportamento quando duas publicações ocorrerem quase ao mesmo tempo e como apresentar versões publicadas que diferem da cópia local.
 
 ### Arquivar botões e seções
 

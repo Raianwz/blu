@@ -134,6 +134,7 @@ function updateButtonIconTrigger(icon) {
   const entry = BLU_BUTTON_ICONS.find(item => item.id === icon);
   document.getElementById('buttonIconTriggerPreview').innerHTML = customButtonIconMarkup(icon);
   document.getElementById('buttonIconTriggerText').textContent = entry?.label || 'Sem ícone';
+  updateButtonAppearancePreview();
 }
 
 function defaultOtherButtonColor() {
@@ -148,6 +149,18 @@ function updateButtonColorTrigger(color) {
   document.getElementById('buttonColorTriggerText').textContent = entry?.label || 'Cor padrão';
   document.getElementById('buttonColorTriggerPreview').style.background = entry?.background || entry?.color
     || defaultColor.background || defaultColor.color;
+  updateButtonAppearancePreview();
+}
+
+function updateButtonAppearancePreview() {
+  const preview = document.getElementById('buttonAppearancePreview');
+  const picker = document.getElementById('buttonIconPicker');
+  if (!preview || !picker) return;
+  const color = picker.dataset.color || '';
+  const background = otherButtonBackground({ color, colorSelected: !!color });
+  if (background) preview.style.setProperty('--other-button-bg', background);
+  else preview.style.removeProperty('--other-button-bg');
+  preview.querySelector('.button-preview-icon').innerHTML = customButtonIconMarkup(picker.dataset.icon, 'button-visibility-svg');
 }
 
 function initButtonIconPicker(value) {
@@ -244,6 +257,7 @@ function updateButtonColorPicker() {
 function updateButtonIconPickerVisibility() {
   const visible = document.getElementById('bVis').value === 'other';
   document.getElementById('buttonIconOptions').hidden = !visible;
+  document.getElementById('buttonAppearancePreviewGroup').hidden = !visible;
   if (!visible) {
     closeModal('buttonIconModal');
     closeModal('buttonColorModal');
