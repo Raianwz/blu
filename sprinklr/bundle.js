@@ -1906,11 +1906,10 @@ function getUnsupportedJsonFields(data) {
       if (!supported.includes(key)) fields.push(`${path}.${key}`);
     });
   };
-  inspect(data, ['tags', 'sections', 'categories'], 'raiz');
+  inspect(data, ['tags', 'sections', 'categories', 'archived'], 'raiz');
   const sections = Array.isArray(data.sections) ? data.sections : Array.isArray(data.categories) ? data.categories : [];
   sections.forEach((section, sectionIndex) => {
     inspect(section, ['id', 'name', 'collapsed', 'buttons', 'icon'], `seção ${sectionIndex + 1}`);
-    if (section?.icon && Array.isArray(data.sections)) fields.push(`seção ${sectionIndex + 1}.icon`);
     (Array.isArray(section?.buttons) ? section.buttons : []).forEach((button, buttonIndex) => {
       const buttonPath = `seção ${sectionIndex + 1}, botão ${buttonIndex + 1}`;
       inspect(button, ['id', 'name', 'btnName', 'text', 'tag', 'vis', 'customVis'], buttonPath);
@@ -1918,6 +1917,28 @@ function getUnsupportedJsonFields(data) {
     });
   });
   return fields;
+}
+
+function getOfflineCompatibilityNotice(data) {
+  const limitations = [];
+  // These fields are carried through preservedState/collectState even though
+  // this edition does not provide their corresponding interface.
+  if (data.archived && (data.archived.buttons?.length || data.archived.sections?.length)) {
+    limitations.push('Itens arquivados: não podem ser consultados, editados ou restaurados no Offline.');
+  }
+  if (Array.isArray(data.sections) && data.sections.some(section => section?.icon)) {
+    limitations.push('Ícones de seção: não são exibidos nem editados no Offline.');
+  }
+  const sections = Array.isArray(data.sections) ? data.sections : (data.categories || []);
+  if (sections.some(section => Array.isArray(section?.buttons) && section.buttons.some(button => button?.customVis?.icon))) {
+    limitations.push('Ícones de botão: a exibição e a seleção dependem de conexão e da disponibilidade do catálogo.');
+  }
+  const unknown = getUnsupportedJsonFields(data);
+  if (unknown.length) {
+    limitations.push(`Outros campos não reconhecidos: ${unknown.slice(0, 3).join(', ')}${unknown.length > 3 ? ', ...' : ''}.`);
+  }
+  if (!limitations.length) return '';
+  return `\n\nRecursos com suporte limitado no Blû Offline:\n${limitations.map(item => `• ${item}`).join('\n')}\n\nOs campos importados são mantidos no backup padrão, mesmo quando não aparecem na interface. Editar o texto mantém esses campos; alterar um ícone de botão atualiza o ícone escolhido. Para voltar ao Blû principal, use o backup padrão; exportações personalizadas podem omitir campos.`;
 }
 
 function triggerImportFilePicker() {
@@ -2013,10 +2034,7 @@ async function importData() {
 
     if (!Array.isArray(parsed?.sections) && !Array.isArray(parsed?.categories)) throw new Error('Formato inválido: esperado "sections" ou "categories"');
 
-    const unsupported = getUnsupportedJsonFields(parsed);
-    const extraNotice = unsupported.length
-      ? `\n\n${unsupported.length} campo(s) não usado(s) nesta edição (${unsupported.slice(0, 3).join(', ')}${unsupported.length > 3 ? ', ...' : ''}). Eles serão ignorados na interface, mas preservados no backup completo.`
-      : '';
+    const extraNotice = getOfflineCompatibilityNotice(parsed);
     const ok = await confirmDialog(`Isso substituirá todos os dados atuais.${extraNotice}\n\nContinuar?`, { title: '📥 Importar JSON', danger: true, confirmText: 'Importar' });
     if (!ok) return;
 

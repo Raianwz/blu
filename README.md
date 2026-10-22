@@ -19,6 +19,8 @@ O **Blû Offline**, em [`sprinklr/`](sprinklr/), é uma versão independente pen
 
 As duas versões não sincronizam dados automaticamente. Exporte um JSON para manter um backup ou transferir conteúdo entre navegadores e dispositivos. Limpar os dados do site também apaga o conteúdo salvo localmente.
 
+O backup padrão dos botões pode ser transferido entre as duas versões. Ao importar no Offline, ícones de seção, itens arquivados e campos não reconhecidos são preservados para a próxima exportação padrão, mesmo sem uma interface para usá-los. Editar textos mantém esses campos; trocar um ícone de botão atualiza o ícone escolhido. O Offline informa na importação quais recursos do arquivo têm suporte limitado, incluindo ícones de botão que dependem de conexão. Exportações personalizadas podem omitir campos e não substituem esse backup para transferências entre versões.
+
 ## Rodar localmente
 
 Não há etapa de build para o projeto principal. Na raiz do repositório, inicie um servidor HTTP, por exemplo com Python 3:
