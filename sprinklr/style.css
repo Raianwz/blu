@@ -612,7 +612,7 @@ body.edit-mode .btn-wrap.dragging {
 }
 
 .copy-btn.vis-other {
-  background: linear-gradient(135deg, var(--btn-default-1), var(--btn-default-2));
+  background: var(--other-button-bg, linear-gradient(135deg, var(--btn-default-1), var(--btn-default-2)));
 }
 
 .copy-btn .btn-label {
@@ -620,6 +620,14 @@ body.edit-mode .btn-wrap.dragging {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.copy-btn .online-button-icon { width: 18px; height: 18px; flex: 0 0 18px; }
+.online-button-icon .external-icon-image, .online-icon-preview .external-icon-image { filter: brightness(0) invert(1); }
+#buttonIconOption { position: relative; }
+#buttonIconOption select { padding-right: 62px; }
+.online-icon-preview { position: absolute; right: 34px; bottom: 9px; width: 18px; height: 18px; pointer-events: none; }
+.online-icon-preview svg { width: 18px; height: 18px; fill: currentColor; }
+#buttonIconOption[hidden], .online-icon-preview[hidden] { display: none; }
 
 #buttonPreviewTooltip {
   position: fixed;

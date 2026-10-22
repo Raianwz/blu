@@ -286,13 +286,15 @@ function collectState() {
 
     section.querySelectorAll('.btn-wrap').forEach(button => {
       const label = button.querySelector('.btn-label');
+      const customVis = customVisFromWrap(button);
       buttons.push({
         ...previousButtons.get(button.dataset.id),
         id: button.dataset.id,
         name: label ? label.textContent : '',
         text: button.dataset.text || '',
         tag: button.dataset.tag || '',
-        vis: button.dataset.vis || 'other'
+        vis: button.dataset.vis || 'other',
+        ...(customVis ? { customVis } : {})
       });
     });
 
@@ -320,7 +322,8 @@ function getComparableStateString() {
         name: button.name,
         text: button.text,
         tag: button.tag,
-        vis: button.vis
+        vis: button.vis,
+        customVis: button.customVis || null
       }))
     }))
   });
@@ -533,6 +536,175 @@ function redoLastAction() {
 /* ------------------ render.js (shim) ------------------ */
 // ==========================================================
 
+const OTHER_BUTTON_GRADIENTS = Object.freeze({
+  'legacy-gradient': 'linear-gradient(135deg, #667eea, #764ba2)',
+  'gradient-aurora': 'linear-gradient(135deg, #5B21B6, #9D174D)',
+  'gradient-forest': 'linear-gradient(135deg, #166534, #0F766E)',
+  'gradient-ember': 'linear-gradient(135deg, #9A3412, #9D174D)',
+  'gradient-gold': 'linear-gradient(135deg, #996100, #AD5300)',
+  'gradient-ocean': 'linear-gradient(135deg, #0F766E, #4338CA)',
+  'gradient-night': 'linear-gradient(135deg, #312E81, #164E63)',
+  'gradient-vineyard': 'linear-gradient(135deg, #86198F, #881337)',
+  'gradient-autumn': 'linear-gradient(135deg, #966400, #A13621)',
+  'gradient-moss': 'linear-gradient(135deg, #657018, #285438)',
+  'gradient-cocoa': 'linear-gradient(135deg, #825438, #45271D)'
+});
+
+function otherButtonBackground(customVis) {
+  const color = String(customVis?.color || '').toLowerCase();
+  if (color === '#7c3aed' && customVis?.colorSelected !== true) return null;
+  if (color === '#806700') return '#856B00';
+  if (/^#[0-9a-f]{6}$/.test(color)) return color;
+  return OTHER_BUTTON_GRADIENTS[color] || null;
+}
+
+function customVisFromWrap(wrap) {
+  if (!wrap) return null;
+  try { return wrap.dataset.customVis ? JSON.parse(wrap.dataset.customVis) : null; }
+  catch { return null; }
+}
+
+// Icon catalogs are optional so a single-file build still works without them.
+const ICON_CDN_BASE = 'https://cdn.jsdelivr.net/gh/Raianwz/blu@main/libs/';
+const ICON_CDN_FILES = ['blu/blu-icons.js', 'bootstrap-icons/button-icons.js', 'material-icons/button-icons.js'];
+const BOOTSTRAP_ICON_CDN = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.2/icons/';
+const MATERIAL_ICON_CDN = 'https://cdn.jsdelivr.net/npm/@material-symbols/svg-400@0.46.0/outlined/';
+const BOOTSTRAP_FALLBACK_NAMES = `chat-text chat-fill chat-dots-fill envelope envelope-fill inbox file-earmark-text-fill sticky-fill exclamation-triangle-fill info-circle-fill question-circle-fill flag robot clock-fill emoji-smile emoji-smile-fill emoji-neutral-fill emoji-frown-fill hand-thumbs-up hand-thumbs-down heart heart-fill heart-half star star-fill star-half bookmark-star bookmark-star-fill dice-1 dice-2 dice-3 dice-4 dice-5 dice-6 facebook instagram twitter tiktok youtube google linkedin messenger folder folder2-open tag tag-fill tags tags-fill pin pin-fill pin-angle pin-angle-fill lightbulb lightbulb-fill lightbulb-off lightbulb-off-fill lightning lightning-fill lightning-charge lightning-charge-fill rocket rocket-fill rocket-takeoff rocket-takeoff-fill ban dash-lg dash-circle dash-circle-fill dash-circle-dotted x x-lg x-circle x-circle-fill`.split(' ');
+const MATERIAL_FALLBACK_NAMES = `book2 book_4 book_ribbon mobile mobile_2 mobile_3 kid_star_out kid_star_fill owl block cancel do_not_disturb_off work business_center apartment handshake storefront account_balance credit_card account_balance_wallet trending_up candlestick_chart calculate table_chart description receipt_long balance gavel support_agent headset_mic waving_hand warning error_outline local_activity event`.split(' ');
+const iconScriptLoads = new Map();
+let availableIconEntries = [];
+let onlineIconsReady = false;
+let onlineIconsLoading = false;
+
+function onlineIconEntries() {
+  return onlineIconsReady ? availableIconEntries : [];
+}
+
+function onlineIconMarkup(id, className = '') {
+  const entry = onlineIconEntries().find(icon => icon.id === id);
+  if (!entry) return '';
+  const content = entry.src
+    ? `<image href="${entry.src}" width="16" height="16"${entry.external ? ' class="external-icon-image"' : ''}/>`
+    : entry.paths;
+  return `<svg class="${className}" viewBox="${entry.viewBox || '0 0 16 16'}" fill="currentColor" aria-hidden="true">${content}</svg>`;
+}
+
+function refreshOnlineButtonIcons() {
+  document.querySelectorAll('.btn-wrap').forEach(wrap => {
+    const button = wrap.querySelector('.copy-btn');
+    button?.querySelector('.online-button-icon')?.remove();
+    if (!onlineIconsReady || wrap.dataset.vis !== 'other' || !button) return;
+    const markup = onlineIconMarkup(customVisFromWrap(wrap)?.icon, 'online-button-icon');
+    if (markup) button.insertAdjacentHTML('afterbegin', markup);
+  });
+}
+
+function populateOnlineIconSelect(icon = '') {
+  const select = document.getElementById('bCustomIcon');
+  select.replaceChildren(new Option('Sem ícone', ''));
+  if (onlineIconsReady) {
+    onlineIconEntries().forEach(entry => select.add(new Option(entry.label, entry.id)));
+    if (icon && !onlineIconEntries().some(entry => entry.id === icon)) {
+      select.add(new Option(`Ícone importado (${icon})`, icon));
+    }
+  }
+  select.value = icon || '';
+  updateOnlineIconOption();
+}
+
+function updateOnlineIconPreview() {
+  const preview = document.getElementById('buttonIconPreview');
+  const markup = onlineIconMarkup(document.getElementById('bCustomIcon').value);
+  preview.innerHTML = markup;
+  preview.hidden = !markup;
+}
+
+function updateOnlineIconOption() {
+  const visible = onlineIconsReady && document.getElementById('bVis').value === 'other';
+  document.getElementById('buttonIconOption').hidden = !visible;
+  updateOnlineIconPreview();
+}
+
+function loadIconScript(file) {
+  if (iconScriptLoads.has(file)) return iconScriptLoads.get(file);
+  const promise = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    const timeout = setTimeout(() => { script.remove(); reject(new Error('Tempo esgotado')); }, 8000);
+    script.src = ICON_CDN_BASE + file;
+    script.crossOrigin = 'anonymous';
+    script.onload = () => { clearTimeout(timeout); resolve(); };
+    script.onerror = () => { clearTimeout(timeout); script.remove(); reject(new Error('Catálogo indisponível')); };
+    document.head.appendChild(script);
+  });
+  iconScriptLoads.set(file, promise);
+  promise.catch(() => iconScriptLoads.delete(file));
+  return promise;
+}
+
+async function officialIconFallback(needsBootstrap, needsMaterial) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+  async function sourceAvailable(url) {
+    try {
+      const response = await fetch(url, { cache: 'no-store', signal: controller.signal });
+      return response.ok && (response.headers.get('content-type') || '').includes('image/svg+xml');
+    } catch { return false; }
+  }
+  try {
+    const [bootstrapAvailable, materialAvailable] = await Promise.all([
+      needsBootstrap && sourceAvailable(BOOTSTRAP_ICON_CDN + 'chat-text.svg'),
+      needsMaterial && sourceAvailable(MATERIAL_ICON_CDN + 'book_2.svg')
+    ]);
+    const bootstrap = bootstrapAvailable ? BOOTSTRAP_FALLBACK_NAMES.map(name => ({
+      id: `bootstrap:${name}`,
+      label: name.replaceAll('-', ' '),
+      src: `${BOOTSTRAP_ICON_CDN}${name}.svg`,
+      external: true
+    })) : [];
+    const material = materialAvailable ? MATERIAL_FALLBACK_NAMES.map(name => {
+      const fileName = name === 'book2' ? 'book_2' : name.startsWith('kid_star_') ? 'kid_star' : name;
+      return {
+        id: `material:${name}`,
+        label: name.replaceAll('_', ' '),
+        src: `${MATERIAL_ICON_CDN}${fileName}${name === 'kid_star_fill' ? '-fill' : ''}.svg`,
+        external: true
+      };
+    }) : [];
+    return [...bootstrap, ...material];
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function loadOnlineIcons() {
+  if (onlineIconsReady || onlineIconsLoading) return;
+  onlineIconsLoading = true;
+  try {
+    await Promise.allSettled(ICON_CDN_FILES.map(loadIconScript));
+    const hasBootstrap = typeof BLU_BOOTSTRAP_ICONS !== 'undefined';
+    const hasMaterial = typeof BLU_MATERIAL_ICONS !== 'undefined' && typeof BLU_APP_ICONS !== 'undefined';
+    const fallback = await officialIconFallback(!hasBootstrap, !hasMaterial);
+    availableIconEntries = [
+      ...(typeof BLU_BRAND_ICONS !== 'undefined' ? BLU_BRAND_ICONS : []),
+      ...(hasBootstrap ? BLU_BOOTSTRAP_ICONS : []),
+      ...(hasMaterial ? [...BLU_MATERIAL_ICONS, ...BLU_APP_ICONS] : []),
+      ...fallback
+    ];
+    onlineIconsReady = availableIconEntries.length > 0;
+    refreshOnlineButtonIcons();
+    if (document.getElementById('btnModal').classList.contains('open')) {
+      const wrap = currentBtnId && document.querySelector(`.btn-wrap[data-id="${cssEscape(currentBtnId)}"]`);
+      populateOnlineIconSelect(customVisFromWrap(wrap)?.icon || '');
+    }
+  } catch (_) {
+    availableIconEntries = [];
+    onlineIconsReady = false;
+    updateOnlineIconOption();
+  } finally {
+    onlineIconsLoading = false;
+  }
+}
+
 let textPreviewMode = 'floating';
 let textPreviewEnabled = true;
 let textPreviewEl = null;
@@ -688,6 +860,7 @@ function createBtnEl(button, sectionId) {
   wrap.dataset.tag = normalizeTag(button.tag);
   wrap.dataset.text = sanitizeText(button.text);
   wrap.dataset.vis = sanitizeText(button.vis || 'other') || 'other';
+  if (button.customVis && typeof button.customVis === 'object') wrap.dataset.customVis = JSON.stringify(button.customVis);
   wrap.draggable = editMode;
 
   const vis = wrap.dataset.vis;
@@ -696,6 +869,10 @@ function createBtnEl(button, sectionId) {
 
   const copyBtn = document.createElement('button');
   copyBtn.className = `copy-btn ${visClass}`;
+  if (vis === 'other') {
+    const background = otherButtonBackground(button.customVis);
+    if (background) copyBtn.style.setProperty('--other-button-bg', background);
+  }
   copyBtn.dataset.preview = vis === 'private'
     ? `🔒 Privado\n\n${previewText(wrap.dataset.text)}`
     : previewText(wrap.dataset.text);
@@ -703,6 +880,10 @@ function createBtnEl(button, sectionId) {
     copyBtn.title = vis === 'private' ? `🔒 Privado\n\n${wrap.dataset.text || ''}` : (wrap.dataset.text || '');
   }
   copyBtn.innerHTML = `${visIcon ? `<span>${visIcon}</span>` : ''}<span class="btn-label">${escapeHtml(button.name || '')}</span>`;
+  if (onlineIconsReady && vis === 'other') {
+    const markup = onlineIconMarkup(button.customVis?.icon, 'online-button-icon');
+    if (markup) copyBtn.insertAdjacentHTML('afterbegin', markup);
+  }
   copyBtn.onclick = () => doCopy(wrap.dataset.text || '', copyBtn);
 
   copyBtn.addEventListener('mouseenter', () => {
@@ -1333,6 +1514,7 @@ function openAddBtn(sectionId) {
   document.getElementById('bText').value = '';
   document.getElementById('bTag').value = '';
   document.getElementById('bVis').value = 'other';
+  populateOnlineIconSelect();
   openModal('btnModal');
 }
 
@@ -1352,6 +1534,7 @@ function openEditBtn(sectionId, btnId) {
   document.getElementById('bText').value = wrap.dataset.text || '';
   document.getElementById('bTag').value = wrap.dataset.tag || '';
   document.getElementById('bVis').value = wrap.dataset.vis || 'other';
+  populateOnlineIconSelect(customVisFromWrap(wrap)?.icon || '');
   openModal('btnModal');
 }
 
@@ -1389,12 +1572,18 @@ function saveBtn() {
     updateTagDatalist();
   }
 
+  let customVis = old && customVisFromWrap(old);
+  if (onlineIconsReady && vis === 'other') {
+    const icon = document.getElementById('bCustomIcon').value || null;
+    if (icon || customVis?.icon) customVis = { ...customVis, icon };
+  }
   const button = {
     id: currentBtnId || ('b' + Date.now()),
     name,
     text,
     tag,
-    vis
+    vis,
+    ...(customVis ? { customVis } : {})
   };
 
   if (currentBtnId) {
@@ -1723,7 +1912,9 @@ function getUnsupportedJsonFields(data) {
     inspect(section, ['id', 'name', 'collapsed', 'buttons', 'icon'], `seção ${sectionIndex + 1}`);
     if (section?.icon && Array.isArray(data.sections)) fields.push(`seção ${sectionIndex + 1}.icon`);
     (Array.isArray(section?.buttons) ? section.buttons : []).forEach((button, buttonIndex) => {
-      inspect(button, ['id', 'name', 'btnName', 'text', 'tag', 'vis'], `seção ${sectionIndex + 1}, botão ${buttonIndex + 1}`);
+      const buttonPath = `seção ${sectionIndex + 1}, botão ${buttonIndex + 1}`;
+      inspect(button, ['id', 'name', 'btnName', 'text', 'tag', 'vis', 'customVis'], buttonPath);
+      inspect(button?.customVis, ['color', 'colorSelected', 'icon'], `${buttonPath}.customVis`);
     });
   });
   return fields;
@@ -2554,7 +2745,15 @@ function closeContextMenu() {
 }
 
 function getContextButtonData(wrap) {
-  return { id: wrap.dataset.id, name: wrap.querySelector('.btn-label')?.textContent || '', text: wrap.dataset.text || '', tag: wrap.dataset.tag || '', vis: wrap.dataset.vis || 'other' };
+  const customVis = customVisFromWrap(wrap);
+  return {
+    id: wrap.dataset.id,
+    name: wrap.querySelector('.btn-label')?.textContent || '',
+    text: wrap.dataset.text || '',
+    tag: wrap.dataset.tag || '',
+    vis: wrap.dataset.vis || 'other',
+    ...(customVis ? { customVis } : {})
+  };
 }
 
 function viewContextButton(wrap) {
@@ -3077,6 +3276,13 @@ initDragPreviewPreference();
 initSearchGuidance();
 upgradeSprinklrMenu();
 init();
+loadOnlineIcons();
+window.addEventListener('online', loadOnlineIcons);
+window.addEventListener('offline', () => {
+  onlineIconsReady = false;
+  refreshOnlineButtonIcons();
+  updateOnlineIconOption();
+});
 
 /* ------------------ custom-export.js ------------------ */
 // Exportação personalizada local do Blû Offline.
