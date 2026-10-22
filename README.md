@@ -1,104 +1,48 @@
 # Blû
 
-Blû é um painel de textos reutilizáveis organizados em seções e tags. Ele permite criar botões para copiar rapidamente respostas, comandos de RPG, prompts, links ou qualquer conteúdo usado com frequência.
+Blû é um painel para guardar textos reutilizáveis em seções e botões. Serve para copiar rapidamente respostas, comandos, prompts, links e outros conteúdos frequentes.
 
 **Acesse:** [blu.rwz.app](https://blu.rwz.app)
 
-## Funcionalidades
+## O que oferece
 
-- Criação e edição de seções, botões e tags
-- Cópia de texto com um clique
-- Busca por nome, tag, seção ou conteúdo
-- Reordenação de botões e seções
-- Menus de contexto para ações rápidas
-- Desfazer e refazer alterações
-- Tema claro e escuro
-- Importação e exportação em JSON
-- Diagnóstico e visualização de JSON
-- Diagnóstico, normalização e mesclagem de tags
-- Compartilhamento temporário por link
-- Instalação como PWA e suporte offline
-- Janela compacta e pop-out
+- Criação e organização de seções, botões e tags, com busca e ações rápidas.
+- Cópia com um clique, histórico para desfazer/refazer e importação/exportação em JSON.
+- Temas, visualização compacta e instalação como PWA na versão principal.
+- Compartilhamento temporário por link na versão hospedada.
 
-## Como os dados são armazenados
+## Versões e dados
 
-O Blû não exige conta. Os dados principais ficam no `localStorage` do navegador em uso.
+O **Blû principal** salva os dados no `localStorage` do navegador e pode funcionar offline após o carregamento dos arquivos pelo PWA. Links compartilhados ficam disponíveis por até três dias.
 
-Isso significa que limpar os dados do site, trocar de navegador ou usar outro dispositivo não transfere automaticamente o conteúdo. Exporte regularmente um arquivo JSON para manter um backup externo.
+O **Blû Offline**, em [`sprinklr/`](sprinklr/), é uma versão independente pensada para distribuição em um HTML único ou com arquivos locais. Usa a chave `blu:offline`, não depende de funções de compartilhamento, e pode importar e exportar JSON. Os ícones opcionais são carregados de uma CDN quando há conexão.
 
-Links de compartilhamento são armazenados temporariamente no Upstash Redis e expiram após três dias.
+As duas versões não sincronizam dados automaticamente. Exporte um JSON para manter um backup ou transferir conteúdo entre navegadores e dispositivos. Limpar os dados do site também apaga o conteúdo salvo localmente.
 
-### Sobre a criptografia
+## Rodar localmente
 
-Exportações podem ser ofuscadas com AES-GCM, e compartilhamentos são enviados ao servidor nesse formato. Entretanto, a chave é fixa e está presente no código-fonte.
-
-Essa funcionalidade protege contra leitura casual, mas **não deve ser considerada segurança criptográfica real**. Não utilize o Blû para armazenar segredos, senhas ou informações altamente sensíveis.
-
-## Executar localmente
-
-O projeto principal não possui etapa de build. Sirva a pasta por HTTP e abra o endereço informado pelo servidor.
-
-Exemplo com Python:
+Não há etapa de build para o projeto principal. Na raiz do repositório, inicie um servidor HTTP, por exemplo com Python 3:
 
 ```bash
 python -m http.server 5500
 ```
 
-Depois, acesse:
+Abra [http://localhost:5500](http://localhost:5500) para o Blû principal ou [http://localhost:5500/sprinklr/](http://localhost:5500/sprinklr/) para o Blû Offline. Nesta árvore, o HTML do Offline usa caminhos absolutos `/sprinklr/`, então também deve ser aberto pelo servidor local.
 
-```text
-http://localhost:5500
-```
+O servidor estático não executa as rotas `api/`. Criar e abrir links compartilhados exige o ambiente de funções da Vercel com Upstash configurado; as demais funções do painel podem ser usadas localmente.
 
-Também é possível usar extensões como Live Server.
+## Organização
 
-> O compartilhamento por link depende das Vercel Functions e das variáveis de ambiente do Upstash, portanto não funciona integralmente em um servidor estático local.
+- `index.html` e `share.html`: aplicação principal e página de links compartilhados.
+- `js/` e `assets/`: código, estilos e recursos da aplicação principal.
+- `libs/`: catálogos de ícones e dados de demonstração.
+- `sprinklr/`: Blû Offline, mantido de forma independente.
+- `api/`: funções de compartilhamento; `docs/roadmap.md`: planejamento.
 
-## Stack
+O front-end usa HTML, CSS e JavaScript sem framework. A [ordem de carregamento dos scripts](js/README.md) é intencional.
 
-- HTML, CSS e JavaScript puro
-- Web Crypto API
-- `localStorage`
-- Service Worker e Web App Manifest
-- Vercel Functions
-- Upstash Redis e Upstash Ratelimit
+## Privacidade e licença
 
-O projeto não utiliza framework nem processo de build no front-end. Essa é uma decisão deliberada para preservar simplicidade, portabilidade e facilidade de manutenção.
+A criptografia atual usa uma chave fixa incluída no código. Ela dificulta a leitura casual dos arquivos e compartilhamentos, mas não é adequada para guardar senhas ou outros segredos. A marcação **Privado** é visual e não impede que um botão seja incluído em backups ou compartilhamentos.
 
-## Versões arquivadas
-
-A antiga versão `legacy` foi removida da branch principal e permanece preservada na branch [`archive/legacy`](../../tree/archive/legacy) e na tag [`legacy-final`](../../tree/legacy-final).
-
-## Estrutura resumida
-
-```text
-.
-├── index.html            # Aplicação principal
-├── share.html            # Importação de links compartilhados
-├── assets/               # CSS, identidade e ícones
-├── js/                   # Módulos do front-end
-├── libs/                 # Bibliotecas, SVGs e JSON da demo local
-├── api/                  # Funções serverless de compartilhamento
-├── sprinklr/             # Versão offline independente
-├── docs/                 # Planejamento e documentação
-├── manifest.json         # Configuração da PWA
-├── vercel.json           # Rotas e cabeçalhos do deploy
-└── package.json          # Dependências das funções serverless
-```
-
-O planejamento do projeto está em [docs/roadmap.md](docs/roadmap.md).
-
-Em `assets/`, a folha principal fica em `style.css`; os ícones e a identidade ficam em `icons/`, o visual sazonal em `themes/` e os estilos opcionais em `experiments/`.
-
-O `sprinklr/` usa armazenamento próprio (`blu:offline`). Na primeira abertura, copia os dados legados disponíveis sem apagar as chaves anteriores.
-
-## Limitações conhecidas
-
-- O drag-and-drop utiliza a API HTML5 e ainda não oferece suporte completo a dispositivos touch.
-- Não há contas ou sincronização automática entre dispositivos.
-- A classificação `private` é visual; botões privados continuam incluídos em exportações e compartilhamentos.
-- A criptografia disponível é ofuscação, não proteção adequada para dados sensíveis.
-
-## Licença
-
-Distribuído sob a licença MIT. Consulte [LICENSE](LICENSE) para mais informações.
+Distribuído sob a licença MIT. Consulte [LICENSE](LICENSE).
