@@ -27,15 +27,15 @@
   }
 
   function load({ getSetting, setSetting }) {
-    const menu = document.getElementById('submenu-aparencia');
-    if (!menu) throw new Error('Menu de aparência indisponível');
+    const menu = document.getElementById('submenu-conteudo');
+    if (!menu) throw new Error('Menu de conteúdo indisponível');
     const button = document.createElement('button');
     button.type = 'button';
     button.id = 'buttonVisualBtn';
     button.className = 'menu-btn';
     button.title = 'Alternar o visual dos botões entre Novo e Clássico';
     button.innerHTML = '<svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="8" cy="12" r="2"/><path d="M13 12h5"/></svg><span class="menu-btn-label"></span>';
-    document.getElementById('themeSettingRow')?.after(button);
+    menu.appendChild(button);
 
     function apply() {
       const modern = getSetting('buttonVisual', 'classic') === 'new';

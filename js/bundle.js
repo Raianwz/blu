@@ -68,6 +68,7 @@ const ICONS = {
   arrow_up: `<path d="m18 15-6-6-6 6" />`,
   arrow_down: `<path d="m6 9 6 6 6-6" />`,
   sliders_horizontal: `<path d="M3 6h7" /><path d="M14 6h7" /><circle cx="12" cy="6" r="2" /><path d="M3 12h3" /><path d="M10 12h11" /><circle cx="8" cy="12" r="2" /><path d="M3 18h11" /><path d="M18 18h3" /><circle cx="16" cy="18" r="2" />`,
+  chart_pie: `<path d="M21.21 15.89A10 10 0 1 1 8 2.83" /><path d="M22 12A10 10 0 0 0 12 2v10z" />`,
   palette: `<path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z" /><circle cx="13.5" cy="6.5" r=".5" fill="currentColor" /><circle cx="17.5" cy="10.5" r=".5" fill="currentColor" /><circle cx="6.5" cy="12.5" r=".5" fill="currentColor" /><circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />`,
   wrench: `<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z" />`,
   copy: `<rect width="14" height="14" x="8" y="8" rx="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />`,
@@ -208,7 +209,7 @@ const SETTINGS_STORAGE_KEY = 'blu:offline:settings';
 const MIGRATION_STORAGE_KEY = 'blu:offline:migrated';
 const LEGACY_STORAGE_KEY = 'blu:data';
 const LEGACY_SETTINGS_STORAGE_KEY = 'blu:settings';
-const VERSION = '1.6.5 LTS';
+const VERSION = '1.7.0 LTS';
 const BASE_TITLE = 'Blû';
 let preservedState = null;
 
@@ -676,6 +677,7 @@ async function loadOnlineIcons() {
   try {
     availableIconEntries = await window.BluExtras.loadExtra('icons');
     onlineIconsReady = availableIconEntries.length > 0;
+    updateAboutExtras();
     refreshOnlineButtonIcons();
     if (document.getElementById('btnModal').classList.contains('open')) {
       const wrap = currentBtnId && document.querySelector(`.btn-wrap[data-id="${cssEscape(currentBtnId)}"]`);
@@ -684,6 +686,7 @@ async function loadOnlineIcons() {
   } catch (_) {
     availableIconEntries = [];
     onlineIconsReady = false;
+    updateAboutExtras();
     updateOnlineIconOption();
   } finally {
     onlineIconsLoading = false;
@@ -695,6 +698,7 @@ async function loadButtonColors() {
   buttonColorsLoading = true;
   try {
     buttonColors = await window.BluExtras.loadExtra('button-colors');
+    updateAboutExtras();
     const modal = document.getElementById('btnModal');
     if (modal.classList.contains('open')) {
       const wrap = currentBtnId && document.querySelector(`.btn-wrap[data-id="${cssEscape(currentBtnId)}"]`);
@@ -708,6 +712,7 @@ async function loadButtonColors() {
     }
   } catch (_) {
     buttonColors = null;
+    updateAboutExtras();
   } finally {
     buttonColorsLoading = false;
   }
@@ -718,8 +723,10 @@ async function loadButtonVisual() {
   buttonVisualLoading = true;
   try {
     buttonVisual = await window.BluExtras.loadExtra('button-visual', { getSetting, setSetting });
+    updateAboutExtras();
   } catch (_) {
     buttonVisual = null;
+    updateAboutExtras();
   } finally {
     buttonVisualLoading = false;
   }
@@ -3068,13 +3075,52 @@ async function resetPreferences() {
   applyEditAnimationPreference();
   buttonVisual?.apply();
   updateSearchGuidance();
+  advancedOptionsVisible = false;
+  applyAdvancedOptionsPreference();
   document.getElementById('menuOverlay')?.classList.remove('open');
   notify('Preferências redefinidas');
+}
+
+function updateAboutExtras() {
+  const details = document.querySelector('#aboutModal .about-details');
+  const privacyTitle = document.querySelector('#aboutModal .about-privacy strong');
+  if (!details || !privacyTitle) return;
+  const description = document.querySelector('#aboutModal .about-description');
+  const active = [
+    onlineIconsReady && 'Ícones',
+    buttonColors && 'Cores dos botões',
+    buttonVisual && 'Visual Novo/Clássico'
+  ].filter(Boolean);
+  let row = document.getElementById('aboutExtras');
+  privacyTitle.textContent = active.length
+    ? 'Seus dados permanecem locais.'
+    : 'Funcionamento totalmente local.';
+  if (description) {
+    const original = description.dataset.offlineText || description.textContent;
+    description.dataset.offlineText = original;
+    description.textContent = active.length
+      ? original.replace('com funcionamento totalmente local.', 'com seus dados armazenados localmente.')
+      : original;
+  }
+  if (!active.length) {
+    row?.remove();
+    return;
+  }
+  if (!row) {
+    row = document.createElement('div');
+    row.id = 'aboutExtras';
+    const label = document.createElement('dt');
+    label.textContent = 'Extras ativos';
+    row.append(label, document.createElement('dd'));
+    details.appendChild(row);
+  }
+  row.querySelector('dd').textContent = active.join(', ');
 }
 
 function openAboutModal() {
   const version = document.getElementById('aboutVersion');
   if (version) version.textContent = `Versão ${VERSION}`;
+  updateAboutExtras();
   document.getElementById('menuOverlay')?.classList.remove('open');
   openModal('aboutModal');
 }
@@ -3104,6 +3150,36 @@ function createSprinklrSubmenu(name, label, icon, buttons) {
   return wrapper;
 }
 
+let advancedOptionsVisible = getSetting('advancedOptions', false) === true;
+
+function applyAdvancedOptionsPreference() {
+  const button = document.getElementById('advancedOptionsBtn');
+  const content = document.getElementById('settingsAdvancedOptions');
+  if (!button || !content) return;
+  content.hidden = !advancedOptionsVisible;
+  for (const name of ['ferramentas', 'janelas']) {
+    const body = document.getElementById(`submenu-${name}`);
+    const group = body?.closest('.menu-submenu');
+    if (!group) continue;
+    group.hidden = !advancedOptionsVisible;
+    if (!advancedOptionsVisible) {
+      body.classList.remove('open');
+      const toggle = group.querySelector('.menu-submenu-toggle');
+      toggle.classList.remove('open');
+      toggle.setAttribute('aria-expanded', 'false');
+    }
+  }
+  button.classList.toggle('active', advancedOptionsVisible);
+  button.setAttribute('aria-expanded', String(advancedOptionsVisible));
+  button.querySelector('.menu-btn-label').textContent = `Opções Avançadas: ${advancedOptionsVisible ? 'ON' : 'OFF'}`;
+}
+
+function toggleAdvancedOptions() {
+  advancedOptionsVisible = !advancedOptionsVisible;
+  setSetting('advancedOptions', advancedOptionsVisible);
+  applyAdvancedOptionsPreference();
+}
+
 function toggleSubmenu(name) {
   const body = document.getElementById(`submenu-${name}`);
   const toggle = document.querySelector(`.menu-submenu-toggle[data-submenu="${name}"]`);
@@ -3129,29 +3205,51 @@ function upgradeSprinklrMenu() {
 
   const findByOnclick = value => [...overlay.querySelectorAll('.menu-btn')]
     .find(button => button.getAttribute('onclick') === value);
-  const dangerGroup = overlay.querySelector('.menu-btn-danger')?.closest('.menu-group');
+  const dataSeparator = document.createElement('div');
+  dataSeparator.className = 'menu-sep';
+  const settingsSeparator = document.createElement('div');
+  settingsSeparator.className = 'menu-sep';
+  const aboutButton = findByOnclick('openAboutModal()');
+  const advancedButton = document.createElement('button');
+  advancedButton.type = 'button';
+  advancedButton.id = 'advancedOptionsBtn';
+  advancedButton.className = 'menu-btn';
+  advancedButton.setAttribute('aria-controls', 'settingsAdvancedOptions submenu-ferramentas submenu-janelas');
+  advancedButton.title = 'Mostrar ou ocultar configurações, ferramentas e janelas';
+  advancedButton.innerHTML = `${iconSvg('sliders_horizontal')}<span class="menu-btn-label"></span>`;
+  advancedButton.onclick = toggleAdvancedOptions;
+  const advancedContent = document.createElement('div');
+  advancedContent.id = 'settingsAdvancedOptions';
+  advancedContent.className = 'menu-advanced';
+  advancedContent.hidden = true;
+  advancedContent.appendChild(document.getElementById('dragPreviewBtn'));
 
   const submenus = [
     createSprinklrSubmenu('dados', 'Dados', 'download', [
       document.getElementById('exportBtn'),
       findByOnclick("openModal('importModal')"),
-      findByOnclick('openCustomExportModal()')
+      findByOnclick('openCustomExportModal()'),
+      dataSeparator,
+      findByOnclick('clearAll()')
     ]),
     createSprinklrSubmenu('aparencia', 'Configurações', 'sliders_horizontal', [
-      document.getElementById('toggleSectionsBtn'),
       document.getElementById('themeSettingRow'),
+      findByOnclick("openModal('shortcutsModal')"),
       document.getElementById('textPreviewBtn'),
       document.getElementById('editAnimationBtn'),
-      document.getElementById('dragPreviewBtn')
+      advancedButton,
+      advancedContent,
+      settingsSeparator,
+      findByOnclick('resetPreferences()')
+    ]),
+    createSprinklrSubmenu('conteudo', 'Conteúdo', 'chart_pie', [
+      document.getElementById('toggleSectionsBtn')
     ]),
     createSprinklrSubmenu('ferramentas', 'Ferramentas', 'wrench', [
-      findByOnclick("openModal('shortcutsModal')"),
       findByOnclick("openJsonModal('diagnostic')"),
-      findByOnclick("openTagModal('diagnostic')"),
-      findByOnclick('resetPreferences()'),
-      findByOnclick('openAboutModal()')
+      findByOnclick("openTagModal('diagnostic')")
     ]),
-    createSprinklrSubmenu('janela', 'Janela', 'app_window', [
+    createSprinklrSubmenu('janelas', 'Janelas', 'app_window', [
       findByOnclick('openPopout()'),
       findByOnclick('openPopoutBlank()')
     ])
@@ -3159,15 +3257,17 @@ function upgradeSprinklrMenu() {
 
   overlay.querySelectorAll('.menu-sep').forEach(separator => separator.remove());
   overlay.querySelectorAll('.menu-group').forEach(group => {
-    if (group !== dangerGroup && !group.children.length) group.remove();
+    if (!group.children.length) group.remove();
   });
 
   const fragment = document.createDocumentFragment();
-  submenus.forEach(submenu => fragment.appendChild(submenu));
   const separator = document.createElement('div');
   separator.className = 'menu-sep';
   fragment.appendChild(separator);
-  overlay.insertBefore(fragment, dangerGroup || null);
+  submenus.forEach(submenu => fragment.appendChild(submenu));
+  if (aboutButton) fragment.appendChild(aboutButton);
+  overlay.appendChild(fragment);
+  applyAdvancedOptionsPreference();
   overlay.dataset.organized = 'true';
 }
 
@@ -3378,6 +3478,7 @@ window.addEventListener('online', () => {
 });
 window.addEventListener('offline', () => {
   onlineIconsReady = false;
+  updateAboutExtras();
   refreshOnlineButtonIcons();
   updateOnlineIconOption();
 });

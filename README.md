@@ -1,5 +1,7 @@
 # Blû Offline
 
+Versão atual: **1.7.0 LTS**.
+
 Versão independente do [Blû](https://github.com/Raianwz/blu), feita para organizar e copiar textos sem depender de conta, servidor ou PWA. Seções, botões e tags ficam salvos no navegador em `blu:offline`.
 
 ## Rodar

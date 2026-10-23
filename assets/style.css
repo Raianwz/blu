@@ -245,6 +245,7 @@ textarea::placeholder {
 }
 
 .menu-submenu { display: flex; flex-direction: column; gap: 6px; }
+.menu-submenu[hidden] { display: none; }
 
 .menu-submenu-toggle {
   display: flex;
@@ -276,6 +277,9 @@ textarea::placeholder {
 }
 
 .menu-submenu-body.open { display: flex; }
+
+.menu-advanced { display: flex; flex-direction: column; gap: 6px; }
+.menu-advanced[hidden] { display: none; }
 
 .menu-setting-row {
   display: flex;
@@ -1022,7 +1026,7 @@ body.edit-mode .btn-del {
   cursor: pointer;
 }
 
-.about-modal { max-width: 500px; }
+.about-modal { max-width: 500px; max-height: calc(100vh - 32px); overflow-y: auto; box-sizing: border-box; }
 .about-brand { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
 .about-brand img { border-radius: 15px; box-shadow: 0 8px 22px rgba(30, 95, 217, .22); }
 .about-brand h2 { margin: 0 0 4px; }
