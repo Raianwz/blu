@@ -39,7 +39,9 @@
   const loadScript = file => loadAsset(file, 'script');
   const loadStyle = file => loadAsset(file, 'style');
   const extraPaths = Object.freeze({
-    icons: { script: 'js/extra/icons.js', style: 'assets/extra/icons.css' }
+    icons: { script: 'js/extra/icons.js', style: 'assets/extra/icons.css' },
+    'button-colors': { script: 'js/extra/button-colors.js', style: 'assets/extra/button-colors.css' },
+    'button-visual': { script: 'js/extra/button-visual.js', style: 'assets/extra/button-visual.css' }
   });
   const modules = new Map();
 
@@ -47,13 +49,13 @@
     if (extraPaths[name]) modules.set(name, module);
   }
 
-  async function loadExtra(name) {
+  async function loadExtra(name, context) {
     const extra = extraPaths[name];
     if (!extra) throw new Error(`Extra desconhecido: ${name}`);
     await Promise.all([loadScript(extra.script), ...(extra.style ? [loadStyle(extra.style)] : [])]);
     const module = modules.get(name);
     if (!module) throw new Error(`Extra não registrado: ${name}`);
-    return module.load();
+    return module.load(context);
   }
 
   window.BluExtras = Object.freeze({ loadExtra, loadScript, loadStyle, register });

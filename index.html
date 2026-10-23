@@ -186,7 +186,7 @@
           placeholder="Texto que será copiado ao clicar"></textarea></div>
       <div class="form-group"><label>Tag / Grupo</label><input id="bTag" list="tagOptions"
           placeholder="(opcional)"><datalist id="tagOptions"></datalist></div>
-      <div class="form-group"><label>Visibilidade</label><select id="bVis" onchange="updateOnlineIconOption()">
+      <div class="form-group"><label>Visibilidade</label><select id="bVis" onchange="updateButtonExtraOptions()">
           <option value="other">Outro (padrão)</option>
           <option value="public">&#127758; Público</option>
           <option value="private">&#128274; Privado</option>
@@ -201,6 +201,7 @@
         </button>
         <div id="buttonIconList" class="online-icon-list" role="listbox" aria-labelledby="buttonIconLabel" hidden></div>
       </div>
+      <div id="buttonColorMount" class="form-group" hidden></div>
       <div class="modal-footer"><button class="mbtn cancel" onclick="requestModalDismiss('btnModal')">Cancelar</button><button
           class="mbtn primary" onclick="saveBtn()">Salvar</button></div>
     </div>

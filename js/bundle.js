@@ -568,6 +568,10 @@ function customVisFromWrap(wrap) {
 let availableIconEntries = [];
 let onlineIconsReady = false;
 let onlineIconsLoading = false;
+let buttonColors = null;
+let buttonColorsLoading = false;
+let buttonVisual = null;
+let buttonVisualLoading = false;
 
 function onlineIconEntries() {
   return onlineIconsReady ? availableIconEntries : [];
@@ -660,6 +664,11 @@ function updateOnlineIconOption() {
   updateOnlineIconPreview();
 }
 
+function updateButtonExtraOptions() {
+  updateOnlineIconOption();
+  buttonColors?.updateVisibility();
+}
+
 async function loadOnlineIcons() {
   if (!window.BluExtras?.loadExtra) return;
   if (onlineIconsReady || onlineIconsLoading) return;
@@ -678,6 +687,41 @@ async function loadOnlineIcons() {
     updateOnlineIconOption();
   } finally {
     onlineIconsLoading = false;
+  }
+}
+
+async function loadButtonColors() {
+  if (!window.BluExtras?.loadExtra || buttonColors || buttonColorsLoading) return;
+  buttonColorsLoading = true;
+  try {
+    buttonColors = await window.BluExtras.loadExtra('button-colors');
+    const modal = document.getElementById('btnModal');
+    if (modal.classList.contains('open')) {
+      const wrap = currentBtnId && document.querySelector(`.btn-wrap[data-id="${cssEscape(currentBtnId)}"]`);
+      buttonColors.setValue(customVisFromWrap(wrap));
+      const baseline = modalInitialValues.get('btnModal');
+      if (baseline) {
+        const fields = JSON.parse(baseline);
+        fields.push({ id: 'bCustomColor', value: document.getElementById('bCustomColor').value });
+        modalInitialValues.set('btnModal', JSON.stringify(fields));
+      }
+    }
+  } catch (_) {
+    buttonColors = null;
+  } finally {
+    buttonColorsLoading = false;
+  }
+}
+
+async function loadButtonVisual() {
+  if (!window.BluExtras?.loadExtra || buttonVisual || buttonVisualLoading) return;
+  buttonVisualLoading = true;
+  try {
+    buttonVisual = await window.BluExtras.loadExtra('button-visual', { getSetting, setSetting });
+  } catch (_) {
+    buttonVisual = null;
+  } finally {
+    buttonVisualLoading = false;
   }
 }
 
@@ -856,6 +900,7 @@ function createBtnEl(button, sectionId) {
     copyBtn.title = vis === 'private' ? `🔒 Privado\n\n${wrap.dataset.text || ''}` : (wrap.dataset.text || '');
   }
   copyBtn.innerHTML = `${visIcon ? `<span>${visIcon}</span>` : ''}<span class="btn-label">${escapeHtml(button.name || '')}</span>`;
+  buttonVisual?.decorate(copyBtn);
   if (onlineIconsReady && vis === 'other') {
     const markup = onlineIconMarkup(button.customVis?.icon, 'online-button-icon');
     if (markup) copyBtn.insertAdjacentHTML('afterbegin', markup);
@@ -1378,7 +1423,10 @@ function openModal(id) {
 }
 
 function closeModal(id) {
-  if (id === 'btnModal') closeOnlineIconPicker();
+  if (id === 'btnModal') {
+    closeOnlineIconPicker();
+    buttonColors?.close();
+  }
   document.getElementById(id).classList.remove('open');
   modalInitialValues.delete(id);
 }
@@ -1492,6 +1540,7 @@ function openAddBtn(sectionId) {
   document.getElementById('bTag').value = '';
   document.getElementById('bVis').value = 'other';
   populateOnlineIconSelect();
+  buttonColors?.setValue(null);
   openModal('btnModal');
 }
 
@@ -1512,6 +1561,7 @@ function openEditBtn(sectionId, btnId) {
   document.getElementById('bTag').value = wrap.dataset.tag || '';
   document.getElementById('bVis').value = wrap.dataset.vis || 'other';
   populateOnlineIconSelect(customVisFromWrap(wrap)?.icon || '');
+  buttonColors?.setValue(customVisFromWrap(wrap));
   openModal('btnModal');
 }
 
@@ -1553,6 +1603,12 @@ function saveBtn() {
   if (onlineIconsReady && vis === 'other') {
     const icon = document.getElementById('bCustomIcon').value || null;
     if (icon || customVis?.icon) customVis = { ...customVis, icon };
+  }
+  if (buttonColors && vis === 'other') {
+    const selectedColor = buttonColors.getValue();
+    if (selectedColor.changed) {
+      customVis = { ...customVis, color: selectedColor.color, colorSelected: selectedColor.colorSelected };
+    }
   }
   const button = {
     id: currentBtnId || ('b' + Date.now()),
@@ -3010,6 +3066,7 @@ async function resetPreferences() {
   dragPreviewEnabled = false;
   applyDragPreviewState();
   applyEditAnimationPreference();
+  buttonVisual?.apply();
   updateSearchGuidance();
   document.getElementById('menuOverlay')?.classList.remove('open');
   notify('Preferências redefinidas');
@@ -3245,6 +3302,12 @@ document.addEventListener('keydown', event => {
       return;
     }
 
+    if (buttonColors?.isOpen()) {
+      event.preventDefault();
+      buttonColors.close(true);
+      return;
+    }
+
     const openModals = [...document.querySelectorAll('.modal-bg.open')];
     const topModal = openModals[openModals.length - 1];
     if (topModal) {
@@ -3306,7 +3369,13 @@ initSearchGuidance();
 upgradeSprinklrMenu();
 init();
 loadOnlineIcons();
-window.addEventListener('online', loadOnlineIcons);
+loadButtonColors();
+loadButtonVisual();
+window.addEventListener('online', () => {
+  loadOnlineIcons();
+  loadButtonColors();
+  loadButtonVisual();
+});
 window.addEventListener('offline', () => {
   onlineIconsReady = false;
   refreshOnlineButtonIcons();

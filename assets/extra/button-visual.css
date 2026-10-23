@@ -1,0 +1,21 @@
+/* The classic appearance is the Offline default; the new visual uses solid colors. */
+.button-visual-svg {
+  display: none;
+  flex: 0 0 18px;
+  width: 18px;
+  height: 18px;
+  color: #fff;
+  vertical-align: middle;
+}
+
+body.button-visual-new {
+  --btn-public-1: #2563eb;
+  --btn-public-2: #2563eb;
+  --btn-private-1: #475569;
+  --btn-private-2: #475569;
+  --btn-default-1: #7c3aed;
+  --btn-default-2: #7c3aed;
+}
+
+body.button-visual-new .button-visual-emoji { display: none; }
+body.button-visual-new .button-visual-svg { display: inline-block; }
