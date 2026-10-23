@@ -1,0 +1,58 @@
+.copy-btn .online-button-icon { width: 18px; height: 18px; flex: 0 0 18px; }
+.online-button-icon .external-icon-image { filter: brightness(0) invert(1); }
+#buttonIconOption { position: relative; }
+#buttonIconOption select[hidden] { display: none; }
+.online-icon-trigger {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 38px;
+  padding: 8px 11px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface2);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.online-icon-trigger:focus-visible, .online-icon-choice:focus-visible { outline: 2px solid var(--accent1); outline-offset: 2px; }
+.online-icon-chevron { margin-left: auto; font-size: 18px; line-height: 12px; }
+.online-icon-preview, .online-icon-choice-preview { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 18px; width: 18px; height: 18px; }
+.online-icon-preview svg, .online-icon-choice-preview svg { width: 18px; height: 18px; fill: currentColor; }
+.online-icon-preview .external-icon-image, .online-icon-choice-preview .external-icon-image { filter: brightness(0); }
+body.dark .online-icon-preview .external-icon-image, body.dark .online-icon-choice-preview .external-icon-image { filter: brightness(0) invert(1); }
+.online-icon-list {
+  position: absolute;
+  bottom: 42px;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  max-height: min(320px, 45vh);
+  overflow-y: auto;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: 0 12px 28px var(--shadow);
+}
+.online-icon-choice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.online-icon-choice:hover, .online-icon-choice:focus-visible { background: var(--surface2); }
+.online-icon-choice[aria-selected="true"] { background: color-mix(in srgb, var(--accent1) 18%, var(--surface)); }
+#buttonIconOption[hidden], .online-icon-preview[hidden], .online-icon-list[hidden] { display: none; }

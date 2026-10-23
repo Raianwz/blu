@@ -12,7 +12,9 @@ python -m http.server 5500
 
 Depois acesse [http://localhost:5500](http://localhost:5500). O servidor local oferece uma origem estável para o armazenamento do navegador; em `file://`, a persistência pode variar entre navegadores.
 
-O núcleo funciona sem conexão. O seletor de ícones é opcional: carrega os catálogos de `libs/` pelo jsDelivr a partir da branch `blu/offline`, com fallback para os pacotes oficiais de Bootstrap e Material. Se nenhuma fonte estiver disponível, o seletor fica oculto. Ícones já presentes em um JSON continuam preservados no backup padrão.
+O núcleo funciona sem conexão. Os **Extras** são opcionais: `js/extras-loader.js` carrega o JS e o CSS de cada módulo, começando por `js/extra/icons.js` e `assets/extra/icons.css`. O módulo de ícones busca os catálogos de `libs/` pelo jsDelivr a partir da branch `blu/offline`, com fallback para os pacotes oficiais de Bootstrap e Material. Se nenhuma fonte estiver disponível, o seletor fica oculto. Ícones já presentes em um JSON continuam preservados no backup padrão.
+
+Para testar os módulos e catálogos desta pasta sem publicar no CDN, abra `index.html?extras=local` (ou `http://localhost:5500/?extras=local`). Sem esse parâmetro, o carregador usa o jsDelivr. Se o carregador ou um módulo estiver ausente, o Offline continua funcionando sem esse Extra.
 
 ## Dados e compatibilidade
 
@@ -25,7 +27,10 @@ Os dados não sincronizam automaticamente. Limpar os dados do navegador remove a
 ```text
 index.html          Interface
 js/bundle.js        Aplicação
+js/extras-loader.js Carregador opcional de Extras
+js/extra/icons.js  Módulo opcional de ícones
 assets/style.css    Estilos
+assets/extra/icons.css Estilos opcionais dos ícones
 assets/blu.svg      Ícone
 libs/               Catálogos e SVGs de ícones
 ```
