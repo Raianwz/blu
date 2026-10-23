@@ -1,57 +1,32 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script>
-    // Resolve o tema antes do CSS e da primeira pintura, sem alterar preferências.
-    (() => {
-      let theme;
-      try {
-        let settings;
-        try { settings = JSON.parse(localStorage.getItem('blu:settings') || '{}'); } catch (_) {}
-        theme = settings && typeof settings === 'object' && !Array.isArray(settings) && Object.prototype.hasOwnProperty.call(settings, 'theme')
-          ? settings.theme : localStorage.getItem('blu:theme');
-      } catch (_) {}
-      const dark = theme === 'dark' || (theme !== 'light' && !!window.matchMedia?.('(prefers-color-scheme: dark)').matches);
-      document.documentElement.dataset.theme = dark ? 'dark' : 'light';
-      document.documentElement.classList.add('theme-booting');
-    })();
-  </script>
-  <style>
-    html[data-theme="light"] { background: #f0f2f8; color-scheme: light; }
-    html[data-theme="dark"] { background: #0f1117; color-scheme: dark; }
-    html.theme-booting body { transition: none; }
-  </style>
-  <link id="bluFavicon" rel="shortcut icon" href="assets/icons/blu.svg" type="image/svg+xml">
-  <title>Blû</title>
-  <link rel="stylesheet" href="assets/style.css">
-  <link rel="stylesheet" href="assets/themes/halloween.css">
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#1E5FD9">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Blû">
-  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+  <link rel="shortcut icon" href="./assets/blu.svg?sprinklr-version=1.6.5" type="image/svg+xml">
+  <title>Blû Offline</title>
+  <link rel="stylesheet" href="./assets/style.css?sprinklr-version=1.6.5">
 </head>
+
 <body>
-  <script>document.body.classList.toggle('dark', document.documentElement.dataset.theme === 'dark');</script>
   <div id="topbar">
-    <button id="hamburger" title="Menu" onclick="toggleMenu()"><svg class="menu-icon hamburger-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16" /> <path d="M4 12h16" /> <path d="M4 19h16" /></svg></button>
-    <button id="whatsNewBtn" type="button" onclick="openWhatsNew()" title="Ver novidades desta versão" aria-label="Novidades não lidas" hidden><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.27 21a2 2 0 0 0 3.46 0"/><path d="M3.26 15.33A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.67C19.41 13.86 18 12.38 18 8A6 6 0 0 0 6 8c0 4.38-1.41 5.86-2.74 7.33"/></svg></button>
+    <button id="hamburger" title="Menu" onclick="toggleMenu()"><svg class="menu-icon hamburger-icon" viewBox="0 0 24 24"
+        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+        aria-hidden="true">
+        <path d="M4 5h16" />
+        <path d="M4 12h16" />
+        <path d="M4 19h16" />
+      </svg></button>
     <div id="searchWrap">
-      <svg class="menu-icon search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 21-4.34-4.34" /> <circle cx="11" cy="11" r="8" /></svg>
-      <input title="Pesquisar por Nome/Tag, @Seção ou &quot;texto&quot;" id="searchInput" type="text" placeholder="Pesquisar..." autocomplete="off" aria-controls="searchHistoryPopover" aria-expanded="false" oninput="doSearch({ collapseOnClear: true })">
+      <svg class="menu-icon search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="m21 21-4.34-4.34" />
+        <circle cx="11" cy="11" r="8" />
+      </svg>
+      <input title="Pesquisar por Nome/Tag ou @Seção" id="searchInput" type="text" placeholder="Pesquisar..."
+        oninput="doSearch({ collapseOnClear: true })">
       <button id="clearSearchBtn" type="button" onclick="clearSearch()" title="Limpar pesquisa" aria-label="Limpar pesquisa" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m18 6-12 12" /><path d="m6 6 12 12" /></svg></button>
-      <div id="searchHistoryPopover" class="search-history-popover" aria-label="Pesquisas recentes" hidden>
-        <div class="search-history-head"><span>Pesquisas recentes</span><button type="button" onclick="clearSearchHistory()">Limpar</button></div>
-        <div id="searchHistoryList" class="search-history-list"></div>
-      </div>
-      <div id="searchHistoryTip" class="search-history-tip" role="status" hidden>
-        <span>💡 Ative ou desative o histórico de pesquisas com <kbd>Alt</kbd> + <kbd>H</kbd></span>
-        <button type="button" onclick="dismissSearchHistoryTip()" title="Fechar dica" aria-label="Fechar dica">×</button>
-      </div>
     </div>
     <select id="searchType" title="Filtrar por" onchange="doSearch()">
       <option value="all">Tudo</option>
@@ -62,91 +37,139 @@
     </select>
   </div>
 
-  <nav id="contentViewSwitcher" class="content-view-switcher" aria-label="Alternar visualização" hidden>
-    <button id="homeViewBtn" class="active" type="button" onclick="showContentView('home')">Início</button>
-    <button id="dashboardViewBtn" type="button" onclick="showContentView('dashboard')">Estatísticas</button>
-  </nav>
-
   <div id="menuOverlay">
     <div class="menu-group">
-      <button class="menu-btn" id="editModeBtn" onclick="toggleEditMode()" title="Ativar/desativar modo de edição — Alt + G"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /> <path d="m15 5 4 4" /></svg><span class="menu-btn-label">Modo de Edição: OFF</span></button>
-      <button class="menu-btn menu-edit-subitem" id="organizeModeBtn" onclick="toggleOrganizeMode()" title="Ativar/desativar modo de organização (requer modo de edição) — duplo Shift" aria-pressed="false" disabled><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20" /> <path d="m15 19-3 3-3-3" /> <path d="m19 9 3 3-3 3" /> <path d="M2 12h20" /> <path d="m5 9-3 3 3 3" /> <path d="m9 5 3-3 3 3" /></svg><span class="menu-btn-label">Modo de Organização: OFF</span></button>
-      <button class="menu-btn" onclick="openModal('sectionModal')" title="Criar nova seção — Alt + N"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 10v6" /> <path d="M9 13h6" /> <path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" /></svg><span class="menu-btn-label">Nova Seção</span></button>
-      <button class="menu-btn" onclick="openTagModal('manage')" title="Gerenciar tags"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z" /> <circle cx="7.5" cy="7.5" r=".5" fill="currentColor" /></svg><span class="menu-btn-label">Gerenciar Tags</span></button>
-      <button class="menu-btn" id="shareBtn" onclick="openShareModal()" title="Compartilhar dados via link (expira em 3 dias)"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3" /> <circle cx="6" cy="12" r="3" /> <circle cx="18" cy="19" r="3" /> <line x1="8.59" x2="15.42" y1="13.51" y2="17.49" /> <line x1="15.41" x2="8.59" y1="6.51" y2="10.49" /></svg><span class="menu-btn-label">Compartilhar</span></button>
+      <button class="menu-btn" id="editModeBtn" onclick="toggleEditMode()"
+        title="Ativar/desativar modo de edição — Alt + G"><svg class="menu-icon" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path
+            d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />
+          <path d="m15 5 4 4" />
+        </svg><span class="menu-btn-label">Modo de Edição: OFF</span></button>
+      <button class="menu-btn menu-edit-subitem" id="shiftLockBtn" onclick="toggleShiftLock()"
+        title="Ativar/desativar modo de organização (requer modo de edição) — duplo Shift" aria-pressed="false" disabled><svg class="menu-icon"
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 2v20" />
+          <path d="m15 19-3 3-3-3" />
+          <path d="m19 9 3 3-3 3" />
+          <path d="M2 12h20" />
+          <path d="m5 9-3 3 3 3" />
+          <path d="m9 5 3-3 3 3" />
+        </svg><span class="menu-btn-label">Modo de Organização: OFF</span></button>
+      <button class="menu-btn" onclick="openModal('sectionModal')" title="Criar nova seção — Alt + N"><svg
+          class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 10v6" />
+          <path d="M9 13h6" />
+          <path
+            d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" />
+        </svg><span class="menu-btn-label">Nova Seção</span></button>
+      <button class="menu-btn" onclick="openTagModal('manage')" title="Gerenciar tags"><svg class="menu-icon"
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round" aria-hidden="true">
+          <path
+            d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z" />
+          <circle cx="7.5" cy="7.5" r=".5" fill="currentColor" />
+        </svg><span class="menu-btn-label">Tags</span></button>
     </div>
 
     <div class="menu-sep"></div>
 
-    <div class="menu-submenu">
-      <button class="menu-submenu-toggle" type="button" data-submenu="dados" onclick="toggleSubmenu('dados')" aria-expanded="false" aria-controls="submenu-dados"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3" /> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /> <path d="m7 10 5 5 5-5" /></svg><span class="menu-btn-label">Dados</span><span class="menu-btn-dot" id="dadosSubmenuDot" aria-hidden="true"></span><svg class="menu-icon chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg></button>
-      <div class="menu-submenu-body" id="submenu-dados">
-        <button class="menu-btn" id="exportBtn" onclick="exportData()" title="Exportar backup JSON — Ctrl + S | Criptografia: Alt + C"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3" /> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /> <path d="m7 10 5 5 5-5" /></svg><span class="menu-btn-label">Exportar Backup</span><svg id="exportLockIcon" class="menu-icon export-lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" title="Criptografia ativada"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /> <path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg><span class="menu-btn-dot" aria-hidden="true"></span></button>
-        <button class="menu-btn" onclick="openModal('importModal')" title="Importar backup JSON"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12" /> <path d="m17 8-5-5-5 5" /> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /></svg><span class="menu-btn-label">Importar Backup</span></button>
-        <button class="menu-btn advanced-only" onclick="openCustomExportModal()" title="Escolher conteúdo, campos e formato do arquivo"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12" /><path d="m7 10 5 5 5-5" /><path d="M5 21h14" /><path d="M4 4h4" /><path d="M16 4h4" /></svg><span class="menu-btn-label">Exportação Personalizada</span></button>
-        <div class="menu-danger-zone">
-          <button class="menu-btn menu-btn-danger" onclick="clearAll(event)" title="Limpar todos os dados • Alt+clique também remove a identidade local"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 11v6" /> <path d="M14 11v6" /> <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /> <path d="M3 6h18" /> <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg><span class="menu-btn-label">Limpar Tudo</span></button>
-        </div>
-      </div>
+    <div class="menu-group">
+      <button class="menu-btn" id="exportBtn" onclick="exportData()"
+        title="Exportar Backup — Ctrl + S | Criptografia: Alt + C"><svg class="menu-icon" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 15V3" />
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <path d="m7 10 5 5 5-5" />
+        </svg><span class="menu-btn-label">Exportar Backup</span><svg id="exportLockIcon" class="menu-icon export-lock-icon"
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round" aria-hidden="true" title="Criptografia ativada">
+          <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+        </svg><span class="menu-btn-dot" aria-hidden="true"></span></button>
+      <button class="menu-btn" onclick="openModal('importModal')" title="Importar Backup"><svg class="menu-icon"
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 3v12" />
+          <path d="m17 8-5-5-5 5" />
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+        </svg><span class="menu-btn-label">Importar Backup</span></button>
+      <button class="menu-btn" onclick="openCustomExportModal()" title="Escolher dados e formato da exportação"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg><span class="menu-btn-label">Exportação Personalizada</span></button>
     </div>
 
-    <div class="menu-submenu">
-      <button class="menu-submenu-toggle" type="button" data-submenu="aparencia" onclick="toggleSubmenu('aparencia')" aria-expanded="false" aria-controls="submenu-aparencia"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h7"/><path d="M14 6h7"/><circle cx="12" cy="6" r="2"/><path d="M3 12h3"/><path d="M10 12h11"/><circle cx="8" cy="12" r="2"/><path d="M3 18h11"/><path d="M18 18h3"/><circle cx="16" cy="18" r="2"/></svg><span class="menu-btn-label">Configurações</span><svg class="menu-icon chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg></button>
-      <div class="menu-submenu-body" id="submenu-aparencia">
-        <label class="menu-setting-row" title="Escolher tema — Ctrl + Shift + D alterna entre claro e escuro"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z" /><circle cx="13.5" cy="6.5" r=".5" fill="currentColor" /><circle cx="17.5" cy="10.5" r=".5" fill="currentColor" /></svg><span class="menu-btn-label">Tema</span><select id="themeSelect" onchange="setThemePreference(this.value)" aria-label="Tema"><option value="system">Sistema</option><option value="light">Claro</option><option value="dark">Escuro</option></select></label>
-        <button class="menu-btn" onclick="openModal('shortcutsModal')" title="Ver atalhos de teclado — ?"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 8h.01" /> <path d="M12 12h.01" /> <path d="M14 8h.01" /> <path d="M16 12h.01" /> <path d="M18 8h.01" /> <path d="M6 8h.01" /> <path d="M7 16h10" /> <path d="M8 12h.01" /> <rect width="20" height="16" x="2" y="4" rx="2" /></svg><span class="menu-btn-label">Atalhos</span></button>
-        <button class="menu-btn" id="hideVersionBtn" onclick="toggleVersionVisibility()" title="Mostrar ou ocultar a marca e a versão nesta sessão"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49" /> <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242" /> <path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143" /> <path d="m2 2 20 20" /></svg><span class="menu-btn-label">Marca e Versão: Visíveis</span></button>
-        <button class="menu-btn" id="textPreviewBtn" onclick="toggleTextPreview()" title="Mostra uma prévia flutuante. Clique para alterar." aria-label="Prévia dos textos: Flutuante"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" /><circle cx="12" cy="12" r="3" /></svg><span class="menu-btn-label">Prévia de Texto: Flutuante</span></button>
-        <button class="menu-btn" id="editAnimationBtn" onclick="toggleEditAnimationPreference()" title="Ativar ou desativar movimentos durante a edição" aria-pressed="true"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="4" r="2" /><path d="M5 8h14" /><path d="M12 6v7" /><path d="m8 22 4-9 4 9" /></svg><span class="menu-btn-label">Animação na Edição: ON</span></button>
-        <button class="menu-btn" id="advancedMenuBtn" onclick="toggleAdvancedMenuPreference()" title="Mostrar ou ocultar configurações menos utilizadas" aria-pressed="false"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21v-7"/><path d="M4 10V3"/><path d="M12 21v-9"/><path d="M12 8V3"/><path d="M20 21v-5"/><path d="M20 12V3"/><path d="M1 14h6"/><path d="M9 8h6"/><path d="M17 16h6"/></svg><span class="menu-btn-label">Opções Avançadas: OFF</span></button>
-        <button class="menu-btn" onclick="resetPreferences()" title="Restaurar preferências de aparência e comportamento"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v6h6" /></svg><span class="menu-btn-label">Redefinir Preferências</span></button>
-      </div>
-    </div>
-
-    <div class="menu-submenu">
-      <button class="menu-submenu-toggle" type="button" data-submenu="conteudo" onclick="toggleSubmenu('conteudo')" aria-expanded="false" aria-controls="submenu-conteudo"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.21 15.89A10 10 0 1 1 8.11 2.99" /><path d="M22 12A10 10 0 0 0 12 2v10z" /></svg><span class="menu-btn-label">Conteúdo</span><svg class="menu-icon chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg></button>
-      <div class="menu-submenu-body" id="submenu-conteudo">
-        <button class="menu-btn" id="halloweenVisualBtn" type="button" onclick="toggleHalloweenPreference()" aria-pressed="false" hidden><span class="menu-icon halloween-menu-icon" aria-hidden="true"></span><span class="menu-btn-label">Visual de Halloween: OFF</span></button>
-        <label class="menu-setting-row halloween-palette-row" id="halloweenPaletteRow" hidden><span class="menu-icon halloween-cauldron-icon" aria-hidden="true"></span><span class="menu-btn-label">Estilo de:</span><select id="halloweenPaletteSelect" onchange="setHalloweenPalette(this.value)" aria-label="Estilo de Halloween"><option value="pumpkin">Abóbora</option><option value="zombie">Zumbi</option><option value="vampire">Vampiro</option><option value="witch">Bruxa</option><option value="ghost">Fantasma</option></select></label>
-        <button class="menu-btn" id="buttonVisualBtn" onclick="toggleButtonVisualPreference()" title="Alternar indicadores dos botões entre emojis e SVG" aria-pressed="false"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><circle cx="8" cy="12" r="2"/><path d="M13 12h5"/></svg><span class="menu-btn-label">Visual dos Botões: Clássico</span></button>
-        <button class="menu-btn" id="sectionIconsVisualBtn" type="button" onclick="toggleSectionIconPreference()" title="Mostrar ou ocultar os ícones SVG das seções no visual Novo, sem perder as escolhas individuais" aria-pressed="true" hidden><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h.01M11 9h6M7 15h.01M11 15h6"/></svg><span class="menu-btn-label">Ícones das Seções: ON</span></button>
-        <button class="menu-btn" id="toggleSectionsBtn" onclick="toggleAllSections()" title="Expandir/minimizar seções — Ctrl + E"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22v-6" /> <path d="M12 8V2" /> <path d="M4 12H2" /> <path d="M10 12H8" /> <path d="M16 12h-2" /> <path d="M22 12h-2" /> <path d="m15 19-3 3-3-3" /> <path d="m15 5-3-3-3 3" /></svg><span class="menu-btn-label">Expandir Seções</span></button>
-        <button class="menu-btn" id="archiveViewBtn" onclick="openArchiveView()" title="Ver botões e seções arquivados" aria-pressed="false"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg><span class="menu-btn-label">Arquivados</span><span id="archiveMenuCount" class="section-count" hidden>0</span></button>
-        <button class="menu-btn" id="contentDashboardBtn" onclick="toggleContentDashboardPreference()" title="Habilitar a página secundária de estatísticas"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 20V10" /><path d="M12 20V4" /><path d="M18 20v-7" /></svg><span class="menu-btn-label">Estatísticas: OFF</span></button>
-        <button class="menu-btn active" id="archiveContextMenuBtn" onclick="toggleArchiveContextMenuPreference()" title="Mostrar ou ocultar a ação Arquivar nos menus de contexto" aria-pressed="true"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h.01"/><path d="M3 18h.01"/><path d="M3 6h.01"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M8 6h13"/></svg><span class="menu-btn-label">Arquivar pelo Menu: ON</span></button>
-        <button class="menu-btn" id="searchHistoryBtn" onclick="toggleSearchHistoryPreference()" title="Guardar neste dispositivo as pesquisas que encontrarem resultados — Alt + H" aria-pressed="false"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 3v6h6" /><path d="M12 7v5l3 2" /></svg><span class="menu-btn-label">Histórico de Pesquisas: OFF</span></button>
-      </div>
-    </div>
-
-    <div class="menu-submenu">
-      <button class="menu-submenu-toggle" type="button" data-submenu="organizacao" onclick="toggleSubmenu('organizacao')" aria-expanded="false" aria-controls="submenu-organizacao"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16" /><path d="M4 12h16" /><path d="M4 18h16" /><path d="M8 3v6" /><path d="M16 9v6" /><path d="M8 15v6" /></svg><span class="menu-btn-label">Organização</span><svg class="menu-icon chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg></button>
-      <div class="menu-submenu-body" id="submenu-organizacao">
-        <button class="menu-btn" id="dragPreviewBtn" onclick="toggleDragPreview()" title="Mostrar uma prévia de onde o item vai cair ao arrastar"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /> <circle cx="12" cy="12" r="6" /> <circle cx="12" cy="12" r="2" /></svg><span class="menu-btn-label">Destino ao Arrastar: OFF</span></button>
-        <button class="menu-btn menu-btn-experimental" id="advancedOrganizingBtn" onclick="window.toggleBluExperiment?.('advanced-drag-layout')" title="Recurso experimental — organiza os botões em uma lista durante o arraste" aria-pressed="false"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16" /><path d="M4 12h16" /><path d="M4 18h16" /><path d="M8 3v6" /><path d="M16 9v6" /><path d="M8 15v6" /></svg><span class="menu-btn-label">Estabilizar ao Arrastar: OFF</span><span class="menu-experiment-note" aria-hidden="true">Experimental</span></button>
-      </div>
-    </div>
-
-    <div class="menu-submenu">
-      <button class="menu-submenu-toggle" type="button" data-submenu="janela" onclick="toggleSubmenu('janela')" aria-expanded="false" aria-controls="submenu-janela"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2" /> <path d="M10 4v4" /> <path d="M2 8h20" /> <path d="M6 4v4" /></svg><span class="menu-btn-label">Janela</span><svg class="menu-icon chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg></button>
-      <div class="menu-submenu-body" id="submenu-janela">
-        <button class="menu-btn" onclick="openPopout()" title="Abrir em nova janela"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6" /> <path d="M10 14 21 3" /> <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /></svg><span class="menu-btn-label">Nova Janela</span></button>
-        <button class="menu-btn" onclick="openPopoutBlank()" title="Abrir em pop-out (about:blank)"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2" /> <path d="M10 4v4" /> <path d="M2 8h20" /> <path d="M6 4v4" /></svg><span class="menu-btn-label">Pop Out</span></button>
-      </div>
-    </div>
-
-    <div class="menu-submenu">
-      <button class="menu-submenu-toggle" type="button" data-submenu="ferramentas" onclick="toggleSubmenu('ferramentas')" aria-expanded="false" aria-controls="submenu-ferramentas"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z" /></svg><span class="menu-btn-label">Ferramentas</span><svg class="menu-icon chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg></button>
-      <div class="menu-submenu-body" id="submenu-ferramentas">
-        <button class="menu-btn" onclick="openJsonModal('diagnostic')" title="Checar IDs duplicados, nomes/textos vazios"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" /> <path d="M14 2v5a1 1 0 0 0 1 1h5" /> <path d="m9 15 2 2 4-4" /></svg><span class="menu-btn-label">Diagnóstico dos Dados</span></button>
-        <button class="menu-btn" onclick="openTagModal('diagnostic')" title="Checar tags órfãs ou parecidas entre si"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z" /> <circle cx="7.5" cy="7.5" r=".5" fill="currentColor" /></svg><span class="menu-btn-label">Diagnóstico de Tags</span></button>
-        <button class="menu-btn" id="debugModeBtn" onclick="toggleDebugMode()" title="Exibir eventos e erros desta sessão"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 2 1.88 1.88" /><path d="M14.12 3.88 16 2" /><path d="M9 7.13v-1a3 3 0 0 1 6 0v1" /><path d="M12 20c-3.3 0-6-2.7-6-6v-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v3c0 3.3-2.7 6-6 6" /><path d="M12 20v-9" /><path d="M6.53 9C4.6 8.8 3 7.2 3 5" /><path d="M6 13H2" /><path d="M3 21c0-2.1 1.7-3.9 3.8-4" /><path d="M17.47 9C19.4 8.8 21 7.2 21 5" /><path d="M18 13h4" /><path d="M21 21c0-2.1 1.7-3.9 3.8-4" /></svg><span class="menu-btn-label">Modo de Depuração: OFF</span></button>
-      </div>
-    </div>
+    <div class="menu-sep"></div>
 
     <div class="menu-group">
-      <button class="menu-btn" onclick="openAboutModal()" title="Conhecer o Blû e consultar informações da versão"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg><span class="menu-btn-label">Sobre o Blû</span></button>
+      <button class="menu-btn" id="toggleSectionsBtn" onclick="toggleAllSections()"
+        title="Expandir/minimizar categorias — Ctrl + E"><svg class="menu-icon" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 22v-6" />
+          <path d="M12 8V2" />
+          <path d="M4 12H2" />
+          <path d="M10 12H8" />
+          <path d="M16 12h-2" />
+          <path d="M22 12h-2" />
+          <path d="m15 19-3 3-3-3" />
+          <path d="m15 5-3-3-3 3" />
+        </svg><span class="menu-btn-label">Expandir Categorias</span></button>
+      <label class="menu-setting-row" id="themeSettingRow" title="Escolher tema — Ctrl + Shift + D alterna entre claro e escuro"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2" /><path d="M8 21h8" /><path d="M12 17v4" /></svg><span class="menu-btn-label">Tema</span><select id="themeSelect" onchange="setThemePreference(this.value)" aria-label="Tema"><option value="system">Sistema</option><option value="light">Claro</option><option value="dark">Escuro</option></select></label>
+      <button class="menu-btn" id="textPreviewBtn" onclick="toggleTextPreview()" title="Mostra uma prévia flutuante. Clique para alterar." aria-label="Prévia dos textos: Flutuante"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-19.876 0" /><circle cx="12" cy="12" r="3" /></svg><span class="menu-btn-label">Prévia de Texto: Flutuante</span></button>
+      <button class="menu-btn" id="editAnimationBtn" onclick="toggleEditAnimationPreference()" title="Ativar ou desativar o movimento dos botões durante a edição" aria-pressed="true"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="4" r="2" /><path d="M5 8h14" /><path d="M12 6v7" /><path d="m8 22 4-9 4 9" /></svg><span class="menu-btn-label">Animação na Edição: ON</span></button>
+      <button class="menu-btn" id="dragPreviewBtn" onclick="toggleDragPreview()" title="Mostrar onde o item será colocado durante o arraste" aria-pressed="false"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" /></svg><span class="menu-btn-label">Mostrar Destino: OFF</span></button>
+      <button class="menu-btn" onclick="openModal('shortcutsModal')" title="Ver atalhos de teclado — ?"><svg
+          class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M10 8h.01" />
+          <path d="M12 12h.01" />
+          <path d="M14 8h.01" />
+          <path d="M16 12h.01" />
+          <path d="M18 8h.01" />
+          <path d="M6 8h.01" />
+          <path d="M7 16h10" />
+          <path d="M8 12h.01" />
+          <rect width="20" height="16" x="2" y="4" rx="2" />
+        </svg><span class="menu-btn-label">Atalhos</span></button>
+      <button class="menu-btn" onclick="openJsonModal('diagnostic')" title="Checar a integridade dos dados"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" /><path d="M14 2v5a1 1 0 0 0 1 1h5" /><path d="m9 15 2 2 4-4" /></svg><span class="menu-btn-label">Verificar JSON</span></button>
+      <button class="menu-btn" onclick="openTagModal('diagnostic')" title="Checar tags órfãs ou conflitantes"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z" /><circle cx="7.5" cy="7.5" r=".5" fill="currentColor" /></svg><span class="menu-btn-label">Verificar Tags</span></button>
+      <button class="menu-btn" onclick="resetPreferences()" title="Restaurar preferências de aparência e comportamento"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7" /><path d="M3 4v6h6" /></svg><span class="menu-btn-label">Redefinir Preferências</span></button>
+      <button class="menu-btn" onclick="openAboutModal()" title="Conhecer esta edição do Blû"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg><span class="menu-btn-label">Sobre o Blû</span></button>
     </div>
 
+    <div class="menu-sep"></div>
+
+    <div class="menu-group">
+      <button class="menu-btn" onclick="openPopout()" title="Abrir em nova janela"><svg class="menu-icon"
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round" aria-hidden="true">
+          <path d="M15 3h6v6" />
+          <path d="M10 14 21 3" />
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+        </svg><span class="menu-btn-label">Nova Janela</span></button>
+      <button class="menu-btn" onclick="openPopoutBlank()" title="Abrir em pop-out (about:blank)"><svg class="menu-icon"
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round" aria-hidden="true">
+          <rect x="2" y="4" width="20" height="16" rx="2" />
+          <path d="M10 4v4" />
+          <path d="M2 8h20" />
+          <path d="M6 4v4" />
+        </svg><span class="menu-btn-label">Pop Out</span></button>
+    </div>
+
+    <div class="menu-sep"></div>
+
+    <div class="menu-group">
+      <button class="menu-btn menu-btn-danger" onclick="clearAll()" title="Limpar todos os dados"><svg class="menu-icon"
+          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+          stroke-linejoin="round" aria-hidden="true">
+          <path d="M10 11v6" />
+          <path d="M14 11v6" />
+          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+          <path d="M3 6h18" />
+          <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+        </svg><span class="menu-btn-label">Limpar Tudo</span></button>
+    </div>
   </div>
 
   <div id="main">
@@ -157,30 +180,24 @@
 
   <div class="modal-bg" id="btnModal">
     <div class="modal">
-      <div class="button-edit-header">
-        <h2 id="btnModalTitle">&#10133; Novo Botão</h2>
-        <div id="buttonAppearancePreviewGroup" class="button-appearance-preview" aria-label="Prévia da aparência do botão" hidden>
-          <span>Prévia:</span><span id="buttonAppearancePreview" class="copy-btn vis-other"><span class="button-preview-icon"></span><span class="btn-label">Botão</span></span>
-        </div>
-      </div>
+      <h2 id="btnModalTitle">&#10133; Novo Botão</h2>
       <div class="form-group"><label>Nome</label><input id="bName" placeholder="Ex: Bem-vindo"></div>
-      <div class="form-group"><label>Texto a copiar</label><textarea id="bText" placeholder="Texto que será copiado ao clicar"></textarea></div>
-      <div class="form-group"><label>Tag / Grupo</label><input id="bTag" list="tagOptions" placeholder="(opcional)"><datalist id="tagOptions"></datalist></div>
-      <div class="form-group"><label>Visibilidade</label><select id="bVis" onchange="updateButtonIconPickerVisibility()"><option value="other">Outro (padrão)</option><option value="public">&#127758; Público</option><option value="private">&#128274; Privado</option></select></div>
-      <div class="form-group" id="buttonIconOptions" hidden>
-        <input type="hidden" id="bCustomIcon" value="">
-        <input type="hidden" id="bCustomColor" value="">
-        <div class="button-appearance-controls">
-          <button type="button" id="buttonIconTrigger" class="button-appearance-trigger" aria-haspopup="dialog" aria-expanded="false" aria-controls="buttonIconModal" onclick="toggleButtonIconPicker()">
-            <span id="buttonIconTriggerPreview"></span><span id="buttonIconTriggerText">Sem ícone</span>
-          </button>
-          <button type="button" id="buttonColorTrigger" class="button-appearance-trigger" aria-haspopup="dialog" aria-expanded="false" aria-controls="buttonColorModal" onclick="openButtonColorPicker()">
-            <span id="buttonColorTriggerPreview" class="button-color-swatch"></span><span id="buttonColorTriggerText">Cor padrão</span>
-          </button>
-        </div>
-        <p class="button-icon-hint">O ícone aparece no visual Novo. A cor funciona nos dois visuais.</p>
+      <div class="form-group"><label>Texto a copiar</label><textarea id="bText"
+          placeholder="Texto que será copiado ao clicar"></textarea></div>
+      <div class="form-group"><label>Tag / Grupo</label><input id="bTag" list="tagOptions"
+          placeholder="(opcional)"><datalist id="tagOptions"></datalist></div>
+      <div class="form-group"><label>Visibilidade</label><select id="bVis" onchange="updateOnlineIconOption()">
+          <option value="other">Outro (padrão)</option>
+          <option value="public">&#127758; Público</option>
+          <option value="private">&#128274; Privado</option>
+        </select></div>
+      <div class="form-group" id="buttonIconOption" hidden>
+        <label for="bCustomIcon">Ícone (requer conexão)</label>
+        <select id="bCustomIcon" onchange="updateOnlineIconPreview()"></select>
+        <span id="buttonIconPreview" class="online-icon-preview" aria-hidden="true" hidden></span>
       </div>
-      <div class="modal-footer"><button class="mbtn secondary" onclick="closeModal('btnModal')">Cancelar</button><button class="mbtn primary" onclick="saveBtn()">Salvar</button></div>
+      <div class="modal-footer"><button class="mbtn cancel" onclick="requestModalDismiss('btnModal')">Cancelar</button><button
+          class="mbtn primary" onclick="saveBtn()">Salvar</button></div>
     </div>
   </div>
 
@@ -188,34 +205,39 @@
     <div class="modal">
       <h2>&#128193; Nova Seção</h2>
       <div class="form-group"><label>Nome da Seção</label><input id="sName" placeholder="Ex: Saudações"></div>
-      <div class="modal-footer"><button class="mbtn secondary" onclick="closeModal('sectionModal')">Cancelar</button><button class="mbtn primary" onclick="saveSection()">Criar</button></div>
+      <div class="modal-footer"><button class="mbtn cancel"
+          onclick="requestModalDismiss('sectionModal')">Cancelar</button><button class="mbtn primary"
+          onclick="saveSection()">Criar</button></div>
     </div>
   </div>
 
   <div class="modal-bg" id="tagModal">
     <div class="modal">
       <h2 id="tagModalTitle">&#127991;&#65039; Tags</h2>
-      <div class="tag-modal-tabs" role="tablist" aria-label="Ferramentas de tags">
-        <button id="tagManageTab" class="tag-modal-tab active" type="button" role="tab" aria-selected="true" aria-controls="tagManagePanel" onclick="setTagModalTab('manage')">Gerenciar</button>
-        <button id="tagDiagnosticTab" class="tag-modal-tab" type="button" role="tab" aria-selected="false" aria-controls="tagDiagnosticPanel" onclick="setTagModalTab('diagnostic')">Diagnóstico</button>
+      <div class="tool-tabs">
+        <button id="tagManageTab" class="tool-tab active" type="button" onclick="setTagModalTab('manage')">Gerenciar</button>
+        <button id="tagDiagnosticTab" class="tool-tab" type="button" onclick="setTagModalTab('diagnostic')">Diagnóstico</button>
       </div>
-      <div id="tagManagePanel" class="tag-modal-panel active" role="tabpanel" aria-labelledby="tagManageTab">
-        <div class="form-group tag-filter-row">
-          <input id="tagFilterInput" type="text" placeholder="Filtrar tags..." oninput="renderTagList()">
-          <button type="button" class="mbtn ghost tag-clear-empty-btn" onclick="clearEmptyTags()" title="Remover tags sem nenhum botão associado">🧹 Limpar vazias</button>
-        </div>
-        <div id="tagListWrap" class="tag-list-wrap" tabindex="0" role="region" aria-label="Lista de tags">
-          <div id="tagList"></div>
-          <div id="tagEmptyMsg" class="tag-empty-msg"></div>
-        </div>
-        <div class="tag-add-row">
-          <input id="newTagInput" placeholder="Nova tag..." onkeydown="if(event.key==='Enter'){event.preventDefault();addTag();}">
-          <button class="mbtn primary" onclick="addTag()">Adicionar</button>
-        </div>
+      <div id="tagManagePanel" class="tool-panel active">
+      <div class="form-group tag-filter-row">
+        <input id="tagFilterInput" type="text" placeholder="Filtrar tags..." oninput="renderTagList()">
+        <button type="button" class="mbtn ghost tag-clear-empty-btn" onclick="clearEmptyTags()"
+          title="Remover tags sem nenhum botão associado">🧹 Limpar vazias</button>
       </div>
-      <div id="tagDiagnosticPanel" class="tag-modal-panel" role="tabpanel" aria-labelledby="tagDiagnosticTab" hidden>
-        <div id="tagDiagnosticSummary" class="tag-diagnostic-summary"></div>
-        <div id="tagDiagnosticIssues" class="tag-diagnostic-issues"></div>
+      <div id="tagListWrap" class="tag-list-wrap" tabindex="0" role="region" aria-label="Lista de tags">
+        <div id="tagList"></div>
+        <div id="tagEmptyMsg" class="tag-empty-msg"></div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <input id="newTagInput" placeholder="Nova tag..."
+          style="flex:1;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:13px;outline:none;"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();addTag();}">
+        <button class="mbtn primary" onclick="addTag()">Adicionar</button>
+      </div>
+      </div>
+      <div id="tagDiagnosticPanel" class="tool-panel" hidden>
+        <div id="tagDiagnosticSummary" class="diagnostic-summary"></div>
+        <div id="tagDiagnosticIssues" class="diagnostic-issues"></div>
       </div>
       <div class="modal-footer"><button class="mbtn secondary" onclick="closeModal('tagModal')">Fechar</button></div>
     </div>
@@ -223,149 +245,70 @@
 
   <div class="modal-bg" id="importModal">
     <div class="modal">
-      <h2>&#128229; Importar Backup</h2>
-      <div class="import-helper">Cole o JSON abaixo ou carregue um arquivo <code>.json</code> / <code>.txt</code>. O Blû reconhece dados tradicionais, dados pessoais e backups completos.</div>
+      <h2>&#128229; Importar JSON</h2>
+      <div class="import-helper">Cole o JSON abaixo ou carregue um arquivo <code>.json</code> / <code>.txt</code>. O
+        conteúdo será exibido na caixa para revisão antes da importação.</div>
       <div class="import-actions">
         <button class="mbtn ghost" type="button" onclick="triggerImportFilePicker()">&#128194; Carregar arquivo</button>
-        <button class="mbtn secondary" type="button" onclick="clearImportSource()">Limpar conteúdo</button>
-        <input id="importFileInput" type="file" accept=".json,.txt,application/json,text/plain" onchange="handleImportFileSelected(event)" style="display:none">
+        <button class="mbtn secondary" id="clearImportBtn" type="button" onclick="clearImportSource()" disabled>Limpar conteúdo</button>
+        <input id="importFileInput" type="file" accept=".json,.txt,application/json,text/plain"
+          onchange="handleImportFileSelected(event)" style="display:none">
       </div>
       <div id="importFileMeta" class="import-file-meta">Nenhum arquivo carregado.</div>
-      <div class="form-group"><label>Cole o JSON aqui</label><textarea id="importJson" style="min-height:160px;" placeholder='{"sections":[],"tags":[]}'></textarea></div>
-      <div class="modal-footer"><button class="mbtn secondary" onclick="closeModal('importModal')">Cancelar</button><button class="mbtn primary" onclick="importData()">Importar</button></div>
-    </div>
-  </div>
-
-  <div class="modal-bg" id="customExportModal">
-    <div class="modal custom-export-modal">
-      <h2>🧰 Exportação Personalizada</h2>
-      <div class="custom-export-tabs" role="tablist" aria-label="Etapas da exportação">
-        <button id="customExportConfigTab" class="active" type="button" role="tab" aria-selected="true" onclick="setCustomExportTab('config')">Configurar</button>
-        <button id="customExportPreviewTab" type="button" role="tab" aria-selected="false" onclick="setCustomExportTab('preview')">Prévia</button>
-      </div>
-
-      <div id="customExportConfigPanel" class="custom-export-panel">
-        <div class="custom-export-top-grid">
-          <label>Preset<select id="customExportPreset" onchange="applyCustomExportPreset(this.value)"><option value="index">Índice de seções e botões</option><option value="full">Backup completo</option><option value="content">Somente conteúdo</option><option value="names">Somente nomes</option><option value="public">Somente públicos</option><option value="spreadsheet">Planilha de botões</option><option value="documentation">Documentação Markdown</option><option value="custom">Personalizado</option></select></label>
-          <label>Formato<select id="customExportFormat" onchange="updateCustomExportUI()"><option value="json">JSON</option><option value="csv">CSV</option><option value="markdown">Markdown</option><option value="text">Texto</option></select></label>
-          <label>Escopo<select id="customExportScope" onchange="updateCustomExportUI()"><option value="all">Tudo</option><option value="search">Resultados da pesquisa</option><option value="public">Somente públicos</option><option value="private">Somente privados</option><option value="other">Visibilidade “Outro”</option><option value="sections">Seções selecionadas</option><option value="tags">Tags selecionadas</option></select></label>
-          <label>Organização<select id="customExportStructure" onchange="markCustomExportCustomized()"><option value="hierarchy">Preservar hierarquia</option><option value="flat">Lista plana</option></select></label>
-        </div>
-
-        <div id="customExportOptionsScroll" class="custom-export-options-scroll">
-          <section class="custom-export-group scope-options" id="customExportScopeOptions" hidden><div class="custom-export-group-head"><strong id="customExportScopeTitle">Selecionar itens</strong><span><button type="button" onclick="toggleCustomExportScopeItems(true)">Todos</button><button type="button" onclick="toggleCustomExportScopeItems(false)">Nenhum</button></span></div><div id="customExportScopeList" class="custom-export-scope-list"></div></section>
-
-          <section class="custom-export-group"><div class="custom-export-group-head"><strong>Estrutura e seções</strong><span><button type="button" onclick="toggleCustomExportFields('section', true)">Todos</button><button type="button" onclick="toggleCustomExportFields('section', false)">Nenhum</button></span></div><div class="custom-export-check-grid">
-            <label><input type="checkbox" data-export-field="globalTags" data-field-group="section"> Lista global de tags</label>
-            <label><input type="checkbox" data-export-field="sections" data-field-group="section"> Incluir seções</label>
-            <label><input type="checkbox" data-export-field="sectionId" data-field-group="section"> IDs das seções</label>
-            <label><input type="checkbox" data-export-field="sectionName" data-field-group="section"> Nomes das seções</label>
-            <label><input type="checkbox" data-export-field="sectionCollapsed" data-field-group="section"> Estado das seções</label>
-            <label><input type="checkbox" data-export-field="sectionCount" data-field-group="section"> Quantidade de botões</label>
-            <label><input type="checkbox" data-export-field="includeEmpty" data-field-group="section"> Incluir seções vazias</label>
-            <label><input type="checkbox" data-export-field="metadata" data-field-group="section"> Metadados da exportação</label>
-          </div></section>
-
-          <section class="custom-export-group"><div class="custom-export-group-head"><strong>Botões</strong><span><button type="button" onclick="toggleCustomExportFields('button', true)">Todos</button><button type="button" onclick="toggleCustomExportFields('button', false)">Nenhum</button></span></div><div class="custom-export-check-grid">
-            <label><input type="checkbox" data-export-field="buttons" data-field-group="button"> Incluir botões</label>
-            <label><input type="checkbox" data-export-field="buttonId" data-field-group="button"> IDs dos botões</label>
-            <label><input type="checkbox" data-export-field="buttonName" data-field-group="button"> Nomes dos botões</label>
-            <label><input type="checkbox" data-export-field="buttonText" data-field-group="button"> Textos dos botões</label>
-            <label><input type="checkbox" data-export-field="buttonTag" data-field-group="button"> Tags dos botões</label>
-            <label><input type="checkbox" data-export-field="buttonVisibility" data-field-group="button"> Visibilidade</label>
-            <label><input type="checkbox" data-export-field="buttonSection" data-field-group="button"> Seção de origem</label>
-            <label><input type="checkbox" data-export-field="buttonStats" data-field-group="button"> Estatísticas de uso</label>
-          </div></section>
-
-          <section class="custom-export-group"><div class="custom-export-group-head"><strong>Transformações</strong></div><div class="custom-export-control-grid">
-            <label>Estado das seções<select id="customExportSectionState" onchange="markCustomExportCustomized()"><option value="current">Preservar atual</option><option value="expanded">Todas expandidas</option><option value="collapsed">Todas minimizadas</option><option value="omit">Não incluir</option></select></label>
-            <label>Ordenação<select id="customExportOrder" onchange="markCustomExportCustomized()"><option value="current">Ordem atual</option><option value="alphabetical">Ordem alfabética</option></select></label>
-            <label id="customExportDelimiterWrap" hidden>Separador CSV<select id="customExportDelimiter" onchange="markCustomExportCustomized()"><option value="semicolon">Ponto e vírgula</option><option value="comma">Vírgula</option></select></label>
-          </div><div class="custom-export-check-grid compact">
-            <label><input id="customExportIncludeArchived" type="checkbox" checked onchange="markCustomExportCustomized()"> Incluir itens arquivados?</label>
-            <label><input id="customExportRemoveEmpty" type="checkbox" onchange="markCustomExportCustomized()"> Remover campos vazios</label>
-            <label><input id="customExportNormalizeTags" type="checkbox" onchange="markCustomExportCustomized()"> Normalizar tags</label>
-            <label><input id="customExportStripEmoji" type="checkbox" onchange="markCustomExportCustomized()"> Remover emojis dos nomes</label>
-            <label><input id="customExportSimplifyBreaks" type="checkbox" onchange="markCustomExportCustomized()"> Simplificar quebras de linha</label>
-            <label><input id="customExportCompactJson" type="checkbox" onchange="markCustomExportCustomized()"> JSON compacto</label>
-            <label><input id="customExportCsvBom" type="checkbox" checked onchange="markCustomExportCustomized()"> CSV compatível com Excel</label>
-          </div></section>
-        </div>
-      </div>
-
-      <div id="customExportPreviewPanel" class="custom-export-panel" hidden><textarea id="customExportPreview" readonly spellcheck="false" wrap="soft" aria-label="Prévia do arquivo"></textarea></div>
-      <div id="customExportSummary" class="custom-export-summary"></div>
-      <div id="customExportWarnings" class="custom-export-warnings"></div>
-      <div class="modal-footer custom-export-footer"><button class="mbtn secondary" type="button" onclick="closeModal('customExportModal')">Cancelar</button><button class="mbtn ghost" type="button" onclick="setCustomExportTab('preview')">Visualizar</button><button id="customExportDownloadBtn" class="mbtn primary" type="button" onclick="downloadCustomExport()">Exportar</button></div>
-    </div>
-  </div>
-
-  <div class="modal-bg" id="shareModal">
-    <div class="modal">
-      <div class="share-modal-heading">
-        <h2 id="shareModalTitle">🔗 Compartilhar Dados</h2>
-        <span id="shareSelectionBadge"></span>
-      </div>
-      <div id="shareModalBody"></div>
-      <div class="share-modal-actions">
-        <div class="modal-footer" id="shareModalFooter"></div>
-        <button id="shareOptionsGear" class="share-options-gear" type="button" onclick="openShareOptions()" title="Opções de compartilhamento" aria-label="Opções de compartilhamento" aria-haspopup="dialog" aria-expanded="false">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.13 5.07 L10.19 4.72 L10.26 2.15 L13.74 2.15 L13.81 4.72 L14.87 5.07 L14.87 5.07 L15.86 5.57 L17.74 3.81 L20.19 6.26 L18.43 8.14 L18.93 9.13 L18.93 9.13 L19.28 10.19 L21.85 10.26 L21.85 13.74 L19.28 13.81 L18.93 14.87 L18.93 14.87 L18.43 15.86 L20.19 17.74 L17.74 20.19 L15.86 18.43 L14.87 18.93 L14.87 18.93 L13.81 19.28 L13.74 21.85 L10.26 21.85 L10.19 19.28 L9.13 18.93 L9.13 18.93 L8.14 18.43 L6.26 20.19 L3.81 17.74 L5.57 15.86 L5.07 14.87 L5.07 14.87 L4.72 13.81 L2.15 13.74 L2.15 10.26 L4.72 10.19 L5.07 9.13 L5.07 9.13 L5.57 8.14 L3.81 6.26 L6.26 3.81 L8.14 5.57 L9.13 5.07Z"/><circle cx="12" cy="12" r="3"/></svg>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal-bg" id="shareOptionsModal">
-    <div class="modal share-options-modal" role="dialog" aria-modal="true" aria-labelledby="shareOptionsTitle">
-      <h2 id="shareOptionsTitle">Opções de compartilhamento</h2>
-      <div class="share-options-modes" role="group" aria-label="Conteúdo a compartilhar">
-        <label><input type="radio" name="shareOptionsMode" value="all" onchange="setShareOptionsMode(this.value)"> Tudo</label>
-        <label><input type="radio" name="shareOptionsMode" value="custom" onchange="setShareOptionsMode(this.value)"> Personalizado</label>
-      </div>
-      <label id="shareOptionsArchiveLabel" class="share-options-archive"><input id="shareOptionsArchived" type="checkbox" onchange="setShareOptionsArchived(this.checked)"> Incluir itens arquivados?</label>
-      <div id="shareOptionsCustom">
-        <input id="shareOptionsSearch" type="search" placeholder="Pesquisar nome, tag ou @seção" aria-label="Pesquisar nome, tag ou seção" oninput="filterShareOptions()">
-        <div class="share-options-actions">
-          <button id="shareSelectAll" type="button" class="mbtn secondary" onclick="selectShareResults(true)">Selecionar tudo</button>
-          <button id="shareSelectNone" type="button" class="mbtn secondary" onclick="selectShareResults(false)">Desmarcar tudo</button>
-        </div>
-        <div id="shareOptionsTree" aria-label="Itens disponíveis para compartilhar"></div>
-        <p id="shareOptionsEmpty" hidden>Nenhum item encontrado.</p>
-      </div>
-      <p id="shareOptionsSummary" role="status" aria-live="polite"></p>
-      <p id="shareOptionsError" role="alert"></p>
-      <div class="modal-footer">
-        <button class="mbtn secondary" type="button" onclick="requestModalDismiss('shareOptionsModal')">Cancelar</button>
-        <button class="mbtn primary" type="button" onclick="confirmShareOptions()">Confirmar</button>
-      </div>
+      <div class="form-group"><label>Cole o JSON aqui</label><textarea id="importJson" style="min-height:160px;" oninput="updateImportClearButton()"
+          placeholder='{"sections":[],"tags":[]}'></textarea></div>
+      <div class="modal-footer"><button class="mbtn cancel"
+          onclick="closeModal('importModal')">Cancelar</button><button class="mbtn primary"
+          onclick="importData()">Importar</button></div>
     </div>
   </div>
 
   <div class="modal-bg" id="jsonModal">
     <div class="modal json-modal">
-      <h2 id="jsonModalTitle">📄 Diagnóstico dos Dados</h2>
+      <h2 id="jsonModalTitle">📄 Verificar JSON</h2>
       <div class="json-modal-tabs" role="tablist" aria-label="Ferramentas de JSON">
         <button id="jsonDiagnosticTab" class="json-modal-tab active" type="button" role="tab" aria-selected="true" aria-controls="jsonDiagnosticPanel" onclick="setJsonModalTab('diagnostic')">Diagnóstico</button>
         <button id="jsonViewTab" class="json-modal-tab" type="button" role="tab" aria-selected="false" aria-controls="jsonViewPanel" onclick="setJsonModalTab('view')">Visualizar</button>
       </div>
       <div id="jsonDiagnosticPanel" class="json-modal-panel active" role="tabpanel" aria-labelledby="jsonDiagnosticTab">
         <div id="jsonDiagnosticSummary" class="json-diagnostic-summary"></div>
+        <div id="jsonDiagnosticSize" class="json-size-meta"></div>
         <div id="jsonDiagnosticIssues" class="json-diagnostic-issues"></div>
       </div>
       <div id="jsonViewPanel" class="json-modal-panel" role="tabpanel" aria-labelledby="jsonViewTab" hidden>
-        <textarea id="jsonViewText" class="json-view-text" readonly spellcheck="false" aria-label="JSON atual do Blû"></textarea>
-        <div id="jsonViewMeta" class="json-view-meta"></div>
+        <textarea id="jsonViewText" class="json-view-text" readonly spellcheck="false" wrap="soft" aria-label="JSON atual do Blû Offline"></textarea>
+        <div id="jsonViewSize" class="json-size-meta"></div>
         <div class="json-view-actions">
-          <button class="mbtn ghost" type="button" onclick="refreshJsonView()" title="Atualizar visualização"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 4v5h5" /><path d="M4 13a8.1 8.1 0 0 0 15.5 2M20 20v-5h-5" /></svg><span>Atualizar</span></button>
-          <button class="mbtn ghost" type="button" onclick="copyJsonView()" title="Copiar JSON formatado"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></svg><span>Copiar JSON</span></button>
-          <button class="mbtn ghost json-compact-action" type="button" onclick="copyOptimizedJson()" title="Copiar versão compacta"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 3-5 5 5 5" /><path d="M3 8h9a4 4 0 0 1 4 4v1" /><path d="m16 21 5-5-5-5" /><path d="M21 16h-9a4 4 0 0 1-4-4v-1" /></svg><span>Copiar compacto</span></button>
-          <button class="mbtn primary" type="button" onclick="exportData()" title="Exportar backup"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3" /><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="m7 10 5 5 5-5" /></svg><span>Exportar Backup</span></button>
+          <button class="mbtn ghost" type="button" onclick="refreshJsonView()" title="Atualizar visualização" aria-label="Atualizar visualização"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8.1 8.1 0 0 0-15.5-2M4 4v5h5" /><path d="M4 13a8.1 8.1 0 0 0 15.5 2M20 20v-5h-5" /></svg><span>Atualizar</span></button>
+          <button class="mbtn ghost" type="button" onclick="copyJsonView()" title="Copiar JSON formatado" aria-label="Copiar JSON formatado"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></svg><span>Copiar JSON</span></button>
+          <button class="mbtn ghost json-compact-action" type="button" onclick="copyCompactJsonView()" title="Copiar versão compacta" aria-label="Copiar versão compacta"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 3-5 5 5 5" /><path d="M3 8h9a4 4 0 0 1 4 4v1" /><path d="m16 21 5-5-5-5" /><path d="M21 16h-9a4 4 0 0 1-4-4v-1" /></svg><span>Copiar compacto</span></button>
+          <button class="mbtn primary" type="button" onclick="exportData()" title="Exportar JSON" aria-label="Exportar JSON"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3" /><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="m7 10 5 5 5-5" /></svg><span>Exportar</span></button>
         </div>
       </div>
       <div class="modal-footer"><button class="mbtn secondary" onclick="closeModal('jsonModal')">Fechar</button></div>
     </div>
   </div>
+
+  <div class="modal-bg" id="buttonViewModal">
+    <div class="modal">
+      <h2 id="buttonViewTitle">👁️ Visualizar Botão</h2>
+      <div id="buttonViewMeta" class="button-view-meta"></div>
+      <pre id="buttonViewText" class="button-view-text"></pre>
+      <div class="modal-footer"><button class="mbtn secondary" onclick="closeModal('buttonViewModal')">Fechar</button><button class="mbtn primary" onclick="copyViewedButtonText()">Copiar texto</button></div>
+    </div>
+  </div>
+
+  <div class="modal-bg" id="aboutModal">
+    <div class="modal about-modal">
+      <div class="about-brand"><img src="./assets/blu.svg" alt="" width="64" height="64"><div><h2>Blû Offline</h2><span id="aboutVersion">Versão</span><a class="about-source-link" href="https://github.com/Raianwz/blu/tree/blu/offline" target="_blank" rel="noopener noreferrer">Ver código-fonte</a></div></div>
+      <p class="about-description">Versão offline do Blû, uma ferramenta para organizar textos reutilizáveis em botões e seções, encontrá-los rapidamente e copiá-los com um clique. Foi pensada para deixar informações frequentes sempre à mão, com funcionamento totalmente local.</p>
+      <div class="about-privacy"><strong>Funcionamento totalmente local.</strong><span>Botões, seções e preferências permanecem armazenados neste navegador. Use a exportação JSON para manter um backup fora dele.</span></div>
+      <dl class="about-details"><div><dt>Edição</dt><dd>Desktop local</dd></div><div><dt>Armazenamento</dt><dd>Neste navegador</dd></div></dl>
+      <div class="modal-footer"><button class="mbtn primary" type="button" onclick="closeModal('aboutModal')">Fechar</button></div>
+    </div>
+  </div>
+
+  <div id="contextMenu" class="context-menu" role="menu" hidden></div>
 
   <div class="modal-bg" id="dialogModal">
     <div class="modal">
@@ -375,7 +318,7 @@
         <input id="dialogInput" type="text">
       </div>
       <div class="modal-footer">
-        <button class="mbtn secondary" id="dialogCancelBtn">Cancelar</button>
+        <button class="mbtn cancel" id="dialogCancelBtn">Cancelar</button>
         <button class="mbtn primary" id="dialogConfirmBtn">Confirmar</button>
       </div>
     </div>
@@ -387,229 +330,91 @@
       <div class="shortcuts-scroll" tabindex="0" role="region" aria-label="Lista de atalhos de teclado">
         <table class="shortcuts-table">
         <tbody>
-          <tr><td><kbd>/</kbd></td><td>Foca a busca</td></tr>
+          <tr>
+            <td><kbd>/</kbd></td>
+            <td>Foca a busca</td>
+          </tr>
           <tr><td><kbd>&quot;texto&quot;</kbd></td><td>Busca diretamente no conteúdo dos botões</td></tr>
-          <tr><td><kbd>Alt</kbd> + <kbd>N</kbd></td><td>Nova Seção</td></tr>
-          <tr><td><kbd>Alt</kbd> + <kbd>G</kbd></td><td>Ativar/desativar modo de edição</td></tr>
-          <tr><td><kbd>Shift</kbd> <kbd>Shift</kbd></td><td>Ativar/desativar modo de organização (dois toques rápidos)</td></tr>
-          <tr><td><kbd>Alt</kbd> + <kbd>C</kbd></td><td>Ativar/desativar criptografia do backup</td></tr>
-          <tr><td><kbd>Alt</kbd> + <kbd>H</kbd></td><td>Ativar/desativar histórico de pesquisas</td></tr>
-          <tr><td><kbd>Ctrl</kbd> + <kbd>S</kbd></td><td>Exportar backup</td></tr>
-          <tr><td><kbd>Alt</kbd> + <kbd>J</kbd></td><td>Abrir uma nova janela do Blû</td></tr>
-          <tr><td><kbd>Alt</kbd> + <kbd>P</kbd></td><td>Abrir o Blû em um pop-out</td></tr>
-          <tr><td><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>D</kbd></td><td>Alternar tema</td></tr>
-          <tr><td><kbd>Ctrl</kbd> + <kbd>E</kbd></td><td>Expandir/minimizar seções</td></tr>
-          <tr><td><kbd>Ctrl</kbd> + <kbd>Z</kbd></td><td>Desfazer</td></tr>
-          <tr><td><kbd>Ctrl</kbd> + <kbd>Y</kbd></td><td>Refazer</td></tr>
-          <tr><td><kbd>Esc</kbd></td><td>Fechar modais</td></tr>
-          <tr><td><kbd>Ctrl</kbd> + <kbd>Enter</kbd></td><td>Salvar (dentro de um modal aberto)</td></tr>
-          <tr><td><kbd>?</kbd></td><td>Este painel de atalhos</td></tr>
+          <tr>
+            <td><kbd>Alt</kbd> + <kbd>N</kbd></td>
+            <td>Nova Seção</td>
+          </tr>
+          <tr>
+            <td><kbd>Alt</kbd> + <kbd>G</kbd></td>
+            <td>Ativar/desativar modo edição</td>
+          </tr>
+          <tr>
+            <td><kbd>Shift</kbd> <kbd>Shift</kbd></td>
+            <td>Ativar/desativar Modo Organização (dois toques rápidos)</td>
+          </tr>
+          <tr>
+            <td><kbd>Alt</kbd> + <kbd>C</kbd></td>
+            <td>Ativar/desativar criptografia do export</td>
+          </tr>
+          <tr>
+            <td><kbd>Ctrl</kbd> + <kbd>S</kbd></td>
+            <td>Exportar</td>
+          </tr>
+          <tr>
+            <td><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>D</kbd></td>
+            <td>Alternar tema</td>
+          </tr>
+          <tr>
+            <td><kbd>Ctrl</kbd> + <kbd>E</kbd></td>
+            <td>Expandir/minimizar categorias</td>
+          </tr>
+          <tr>
+            <td><kbd>Ctrl</kbd> + <kbd>Z</kbd></td>
+            <td>Desfazer</td>
+          </tr>
+          <tr>
+            <td><kbd>Ctrl</kbd> + <kbd>Y</kbd></td>
+            <td>Refazer</td>
+          </tr>
+          <tr>
+            <td><kbd>Esc</kbd></td>
+            <td>Fechar modais</td>
+          </tr>
+          <tr>
+            <td><kbd>Ctrl</kbd> + <kbd>Enter</kbd></td>
+            <td>Salvar (dentro de um modal aberto)</td>
+          </tr>
+          <tr>
+            <td><kbd>?</kbd></td>
+            <td>Este painel de atalhos</td>
+          </tr>
           <tr><td>Botão direito</td><td>Abre ações do botão ou da seção</td></tr>
         </tbody>
         </table>
       </div>
-      <div class="modal-footer"><button class="mbtn primary" onclick="closeModal('shortcutsModal')">Fechar</button></div>
+      <div class="modal-footer"><button class="mbtn primary" onclick="closeModal('shortcutsModal')">Fechar</button>
+      </div>
     </div>
   </div>
 
-
-  <main id="contentDashboard" class="content-dashboard" hidden>
-    <header class="content-dashboard-header">
-      <div><span class="content-dashboard-kicker">Dados locais</span><h1>Métricas do Blû</h1></div>
-      <button class="mbtn ghost" type="button" onclick="showContentView('home')">Voltar ao início</button>
-    </header>
-    <section class="dashboard-period-panel" aria-label="Período das estatísticas">
-      <label class="dashboard-period-selector" for="dashboardPeriodSelect">
-        <span>Período</span>
-        <select id="dashboardPeriodSelect" onchange="setDashboardPeriod(this.value)">
-          <option value="total">Total (todo o período)</option>
-          <option value="year">Ano</option>
-          <option value="month">Mês</option>
-          <option value="week">Semana</option>
-          <option value="day">Dia</option>
-        </select>
-      </label>
-      <div id="dashboardPeriodNavigator" class="dashboard-period-navigator" hidden>
-        <button type="button" onclick="moveDashboardPeriod(-1)" title="Período anterior" aria-label="Período anterior">‹</button>
-        <strong id="dashboardPeriodLabel"></strong>
-        <button id="dashboardNextPeriodBtn" type="button" onclick="moveDashboardPeriod(1)" title="Próximo período" aria-label="Próximo período">›</button>
-        <button id="dashboardCurrentPeriodBtn" class="dashboard-period-current" type="button" onclick="resetDashboardPeriod()">Hoje</button>
-      </div>
-      <p id="dashboardPeriodHint" class="dashboard-period-hint">Todo o período registrado, incluindo os totais anteriores ao histórico diário.</p>
-    </section>
-    <div id="dashboardMetricCards" class="dashboard-metric-cards"></div>
-    <section class="dashboard-card dashboard-activity-card">
-      <div class="activity-card-head"><div><h2>Atividade recente</h2><p>Alterações em botões e seções</p></div><button class="mbtn ghost" type="button" onclick="openActivityHistory()">Ver histórico</button></div>
-      <div id="dashboardActivityEmpty" class="userdata-empty">Nenhuma alteração registrada ainda.</div>
-      <div id="dashboardActivityList" class="activity-list activity-list-compact"></div>
-    </section>
-    <div class="content-dashboard-grid">
-      <section class="dashboard-card">
-        <h2>📈 Mais usados</h2>
-        <div id="dashboardMostUsed" class="userdata-list"></div>
-      </section>
-      <section class="dashboard-card">
-        <h2>📉 Menos usados</h2>
-        <div id="dashboardLeastUsed" class="userdata-list"></div>
-      </section>
-      <section class="dashboard-card dashboard-backup-card">
-        <h2>📄 Backup e portabilidade</h2>
-        <p>As estatísticas permanecem locais e não entram nos links compartilhados.</p>
-        <div class="dashboard-backup-actions">
-          <button class="mbtn ghost" type="button" onclick="exportUserDataBackup()">Exportar estatísticas</button>
-          <button class="mbtn primary" type="button" onclick="exportAppDataBackup()">Exportar dados + estatísticas</button>
-          <button class="mbtn ghost" type="button" onclick="openUserDataImport()">Importar backup</button>
+  <div class="modal-bg" id="customExportModal">
+    <div class="modal custom-export-modal">
+      <h2>🧰 Exportação Personalizada</h2>
+      <div class="custom-export-tabs" role="tablist" aria-label="Etapas da exportação"><button id="customExportConfigTab" class="active" type="button" role="tab" aria-selected="true" onclick="setCustomExportTab('config')">Configurar</button><button id="customExportPreviewTab" type="button" role="tab" aria-selected="false" onclick="setCustomExportTab('preview')">Prévia</button></div>
+      <div id="customExportConfigPanel" class="custom-export-panel">
+        <div class="custom-export-top-grid">
+          <label>Preset<select id="customExportPreset" onchange="applyCustomExportPreset(this.value)"><option value="index">Índice de seções e botões</option><option value="full">Backup completo</option><option value="content">Somente conteúdo</option><option value="names">Somente nomes</option><option value="spreadsheet">Planilha de botões</option><option value="documentation">Documentação Markdown</option><option value="custom">Personalizado</option></select></label>
+          <label>Formato<select id="customExportFormat" onchange="updateCustomExportUI()"><option value="json">JSON</option><option value="text">Texto</option><option value="markdown">Markdown</option><option value="csv">CSV</option></select></label>
+          <label>Escopo<select id="customExportScope" onchange="updateCustomExportUI()"><option value="all">Tudo</option><option value="search">Resultados da pesquisa</option><option value="public">Somente públicos</option><option value="private">Somente privados</option><option value="other">Visibilidade “Outro”</option><option value="sections">Seções selecionadas</option><option value="tags">Tags selecionadas</option></select></label>
+          <label>Organização<select id="customExportStructure" onchange="markCustomExportCustomized()"><option value="hierarchy">Preservar hierarquia</option><option value="flat">Lista plana</option></select></label>
         </div>
-      </section>
-    </div>
-  </main>
-
-  <main id="archiveView" class="archive-view" hidden>
-    <header class="archive-view-header">
-      <div><span class="content-dashboard-kicker">Conteúdo guardado</span><h1>🗃️ Arquivados</h1><p>Itens arquivados não aparecem na tela inicial.</p></div>
-      <button class="mbtn secondary" type="button" onclick="showContentView('home')">Voltar ao início</button>
-    </header>
-    <div class="archive-toolbar">
-      <input id="archiveSearchInput" type="search" placeholder="Pesquisar nos arquivados..." autocomplete="off" oninput="renderArchiveView()">
-      <div class="archive-tabs" role="tablist" aria-label="Tipo de item arquivado">
-        <button id="archiveButtonsTab" class="active" type="button" role="tab" aria-selected="true" onclick="setArchiveTab('buttons')">Botões <span id="archiveButtonsCount">0</span></button>
-        <button id="archiveSectionsTab" type="button" role="tab" aria-selected="false" onclick="setArchiveTab('sections')">Seções <span id="archiveSectionsCount">0</span></button>
+        <div class="custom-export-options-scroll">
+          <section id="customExportScopeOptions" class="custom-export-group" hidden><div class="custom-export-group-head"><strong id="customExportScopeTitle">Selecionar itens</strong><span><button type="button" onclick="toggleCustomExportScopeItems(true)">Todos</button><button type="button" onclick="toggleCustomExportScopeItems(false)">Nenhum</button></span></div><div id="customExportScopeList" class="custom-export-scope-list"></div></section>
+          <section class="custom-export-group"><div class="custom-export-group-head"><strong>Estrutura e seções</strong><span><button type="button" onclick="toggleCustomExportFields('section',true)">Todos</button><button type="button" onclick="toggleCustomExportFields('section',false)">Nenhum</button></span></div><div class="custom-export-check-grid"><label><input type="checkbox" data-export-field="globalTags" data-field-group="section"> Lista global de tags</label><label><input type="checkbox" data-export-field="sections" data-field-group="section"> Incluir seções</label><label><input type="checkbox" data-export-field="sectionId" data-field-group="section"> IDs das seções</label><label><input type="checkbox" data-export-field="sectionName" data-field-group="section"> Nomes das seções</label><label><input type="checkbox" data-export-field="sectionCollapsed" data-field-group="section"> Estado das seções</label><label><input type="checkbox" data-export-field="sectionCount" data-field-group="section"> Quantidade de botões</label><label><input type="checkbox" data-export-field="includeEmpty" data-field-group="section"> Incluir seções vazias</label><label><input type="checkbox" data-export-field="metadata" data-field-group="section"> Metadados</label></div></section>
+          <section class="custom-export-group"><div class="custom-export-group-head"><strong>Botões</strong><span><button type="button" onclick="toggleCustomExportFields('button',true)">Todos</button><button type="button" onclick="toggleCustomExportFields('button',false)">Nenhum</button></span></div><div class="custom-export-check-grid"><label><input type="checkbox" data-export-field="buttons" data-field-group="button"> Incluir botões</label><label><input type="checkbox" data-export-field="buttonId" data-field-group="button"> IDs dos botões</label><label><input type="checkbox" data-export-field="buttonName" data-field-group="button"> Nomes dos botões</label><label><input type="checkbox" data-export-field="buttonText" data-field-group="button"> Textos dos botões</label><label><input type="checkbox" data-export-field="buttonTag" data-field-group="button"> Tags dos botões</label><label><input type="checkbox" data-export-field="buttonVisibility" data-field-group="button"> Visibilidade</label><label><input type="checkbox" data-export-field="buttonSection" data-field-group="button"> Seção de origem</label></div></section>
+          <section class="custom-export-group"><div class="custom-export-group-head"><strong>Transformações</strong></div><div class="custom-export-control-grid"><label>Estado das seções<select id="customExportSectionState" onchange="markCustomExportCustomized()"><option value="current">Preservar atual</option><option value="expanded">Todas expandidas</option><option value="collapsed">Todas minimizadas</option><option value="omit">Não incluir</option></select></label><label>Ordenação<select id="customExportOrder" onchange="markCustomExportCustomized()"><option value="current">Ordem atual</option><option value="alphabetical">Ordem alfabética</option></select></label><label id="customExportDelimiterWrap" hidden>Separador CSV<select id="customExportDelimiter" onchange="markCustomExportCustomized()"><option value="semicolon">Ponto e vírgula</option><option value="comma">Vírgula</option></select></label></div><div class="custom-export-check-grid compact"><label><input id="customExportRemoveEmpty" type="checkbox" onchange="markCustomExportCustomized()"> Remover campos vazios</label><label><input id="customExportNormalizeTags" type="checkbox" onchange="markCustomExportCustomized()"> Normalizar tags</label><label><input id="customExportStripEmoji" type="checkbox" onchange="markCustomExportCustomized()"> Remover emojis dos nomes</label><label><input id="customExportSimplifyBreaks" type="checkbox" onchange="markCustomExportCustomized()"> Simplificar quebras de linha</label><label><input id="customExportCompactJson" type="checkbox" onchange="markCustomExportCustomized()"> JSON compacto</label><label><input id="customExportCsvBom" type="checkbox" checked onchange="markCustomExportCustomized()"> CSV compatível com Excel</label></div></section>
+        </div>
       </div>
-    </div>
-    <div id="archiveEmpty" class="archive-empty"></div>
-    <div id="archiveList" class="archive-list"></div>
-  </main>
-
-  <div class="modal-bg" id="activityModal">
-    <div class="modal activity-modal">
-      <div class="activity-modal-head"><div><h2>Atividade do Blû</h2><p>Histórico local das alterações estruturais</p></div><label>Mostrar<select id="activityFilter" onchange="renderActivityHistory()"><option value="all">Tudo</option><option value="button">Botões</option><option value="section">Seções</option><option value="created">Criações</option><option value="updated">Edições</option><option value="deleted">Remoções</option><option value="restored">Restaurações</option><option value="duplicated">Duplicações</option><option value="movement">Movimentações</option></select></label></div>
-      <div id="activityHistoryEmpty" class="userdata-empty">Nenhuma atividade para este filtro.</div>
-      <div id="activityHistoryList" class="activity-list activity-history-list"></div>
-      <div class="modal-footer activity-modal-footer"><button class="mbtn danger" type="button" onclick="confirmClearActivityLog()">Limpar histórico</button><button class="mbtn secondary" type="button" onclick="closeModal('activityModal')">Fechar</button></div>
+      <div id="customExportPreviewPanel" class="custom-export-panel" hidden><textarea id="customExportPreview" readonly spellcheck="false" wrap="soft" aria-label="Prévia do arquivo"></textarea></div>
+      <div id="customExportSummary" class="custom-export-summary"></div><div id="customExportWarnings" class="custom-export-warnings"></div>
+      <div class="modal-footer custom-export-footer"><button class="mbtn cancel" type="button" onclick="closeModal('customExportModal')">Cancelar</button><button class="mbtn ghost" type="button" onclick="setCustomExportTab('preview')">Visualizar</button><button id="customExportDownloadBtn" class="mbtn primary" type="button" onclick="downloadCustomExport()">Exportar</button></div>
     </div>
   </div>
-
-  <div class="modal-bg" id="statisticsModal">
-    <div class="modal userdata-modal">
-      <h2>📊 Estatísticas</h2>
-      <div id="statisticsSummary" class="userdata-summary"></div>
-      <div id="statisticsEmpty" class="userdata-empty">As estatísticas aparecem depois que algum botão for copiado.</div>
-      <div id="statisticsList" class="userdata-list statistics-list"></div>
-      <div class="userdata-backup">
-        <h3>Backup e portabilidade</h3>
-        <button class="mbtn ghost" type="button" onclick="exportUserDataBackup()">Exportar estatísticas</button>
-        <button class="mbtn primary" type="button" onclick="exportAppDataBackup()">Exportar dados + estatísticas</button>
-        <button class="mbtn ghost" type="button" onclick="openUserDataImport()">Importar backup</button>
-      </div>
-      <div class="modal-footer"><button class="mbtn secondary" onclick="closeModal('statisticsModal')">Fechar</button></div>
-    </div>
-  </div>
-
-  <div class="modal-bg" id="aboutModal">
-    <div class="modal about-modal">
-      <div class="about-brand">
-        <img id="aboutBluLogo" src="assets/icons/icon-192.png" alt="" width="64" height="64">
-        <div><h2>Blû</h2><span id="aboutVersion">Versão</span><a class="about-source-link" href="https://github.com/Raianwz/blu" target="_blank" rel="noopener noreferrer">Ver código-fonte</a></div>
-        <button class="about-whats-new" id="aboutWhatsNewBtn" type="button" onclick="openWhatsNew()" hidden><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.27 21a2 2 0 0 0 3.46 0"/><path d="M3.26 15.33A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.67C19.41 13.86 18 12.38 18 8A6 6 0 0 0 6 8c0 4.38-1.41 5.86-2.74 7.33"/></svg>Ver novidades</button>
-      </div>
-      <p class="about-description">O Blû é uma ferramenta para organizar textos reutilizáveis em botões e seções, encontrá-los rapidamente e copiá-los com um clique. Foi pensado para deixar informações frequentes sempre à mão, sem exigir conta e com funcionamento local.</p>
-      <div class="about-privacy"><strong>Seus dados ficam com você.</strong><span>Botões, seções e preferências são armazenados localmente neste navegador. Links compartilhados são criptografados e expiram automaticamente.</span></div>
-      <dl class="about-details">
-        <div><dt>Execução</dt><dd id="aboutDisplayMode">Navegador</dd></div>
-        <div><dt>Conexão</dt><dd id="aboutConnection">Online</dd></div>
-        <div><dt>Armazenamento</dt><dd>Local neste dispositivo</dd></div>
-      </dl>
-      <div class="modal-footer"><button class="mbtn primary" type="button" onclick="closeModal('aboutModal')">Fechar</button></div>
-    </div>
-  </div>
-
-  <div class="modal-bg" id="renameSectionModal">
-    <form class="modal" role="dialog" aria-modal="true" aria-labelledby="renameSectionLabel" onsubmit="event.preventDefault(); saveRenamedSection()">
-      <h2 id="renameSectionLabel">Renomear seção</h2>
-      <div class="form-group">
-      <label for="renameSectionName">Novo nome da seção:</label>
-      <div class="section-name-editor">
-        <input id="renameSectionName" type="text" required autocomplete="off">
-        <button id="sectionIconTrigger" class="button-appearance-trigger" type="button" aria-label="Escolher ícone da seção" aria-haspopup="dialog" aria-expanded="false" aria-controls="sectionIconModal" onclick="openSectionIconPicker()"></button>
-      </div>
-      </div>
-      <input id="renameSectionIcon" type="hidden">
-      <div class="modal-footer"><button type="button" class="mbtn secondary" onclick="requestModalDismiss('renameSectionModal')">Cancelar</button><button type="submit" class="mbtn primary">Salvar</button></div>
-    </form>
-  </div>
-  <div class="modal-bg" id="sectionIconModal">
-    <div class="modal button-appearance-modal" role="dialog" aria-modal="true" aria-labelledby="sectionIconLabel">
-      <h2 id="sectionIconLabel">Ícone da seção</h2>
-      <div class="button-icon-search-wrap">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.34-4.34"/></svg>
-        <input id="sectionIconSearch" type="search" placeholder="Buscar ícone" aria-label="Buscar ícone da seção" oninput="filterSectionIcons()">
-      </div>
-      <div id="sectionIconPicker" class="button-picker-scroll"></div>
-      <p id="sectionIconEmpty" class="button-icon-hint" hidden>Nenhum ícone encontrado.</p>
-      <div class="modal-footer"><button type="button" class="mbtn secondary" onclick="closeModal('sectionIconModal')">Voltar à edição</button></div>
-    </div>
-  </div>
-  <div class="modal-bg" id="buttonIconModal">
-    <div class="modal button-appearance-modal" role="dialog" aria-modal="true" aria-labelledby="buttonIconLabel">
-      <h2 id="buttonIconLabel">Escolher ícone</h2>
-      <div class="button-icon-search-wrap">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.34-4.34"/></svg>
-        <input id="buttonIconSearch" type="search" placeholder="Buscar ícone" aria-label="Buscar ícone" oninput="filterButtonIconPicker()">
-      </div>
-      <div id="buttonIconPicker" class="button-picker-scroll" role="group" aria-labelledby="buttonIconLabel"></div>
-      <div class="modal-footer"><button type="button" class="mbtn secondary" onclick="closeModal('buttonIconModal')">Fechar</button></div>
-    </div>
-  </div>
-
-  <div class="modal-bg" id="buttonColorModal">
-    <div class="modal button-appearance-modal" role="dialog" aria-modal="true" aria-labelledby="buttonColorLabel">
-      <h2 id="buttonColorLabel">Escolher cor</h2>
-      <p class="button-color-hint">Escolha uma cor sólida ou um gradiente.</p>
-      <div id="buttonColorPicker" class="button-picker-scroll" role="group" aria-labelledby="buttonColorLabel"></div>
-      <div class="modal-footer"><button type="button" class="mbtn secondary" onclick="closeModal('buttonColorModal')">Fechar</button></div>
-    </div>
-  </div>
-
-  <div class="modal-bg" id="buttonViewModal">
-    <div class="modal button-view-modal">
-      <h2 id="buttonViewTitle">Visualizar Botão</h2>
-      <div id="buttonViewMeta" class="button-view-meta"></div>
-      <pre id="buttonViewText" class="button-view-text"></pre>
-      <div id="archiveSectionPreview" class="archive-section-preview" hidden></div>
-      <div class="modal-footer">
-        <button class="mbtn secondary" onclick="closeModal('buttonViewModal')">Fechar</button>
-        <button id="buttonViewCopyBtn" class="mbtn primary" onclick="copyViewedButtonText()">Copiar texto</button>
-        <button id="archiveViewRestoreBtn" class="mbtn primary" type="button" hidden>Restaurar</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="contextMenu" class="context-menu" role="menu" aria-label="Menu de contexto" hidden></div>
-
-  <section id="debugPanel" aria-label="Modo de Depuração" hidden>
-    <div class="debug-panel-header">
-      <div>
-        <strong>Modo de Depuração</strong>
-        <span id="debugEntryCount">0 eventos nesta sessão</span>
-      </div>
-      <div class="debug-panel-actions">
-        <select id="debugLevelFilter" class="debug-session-action" onchange="setDebugLevelFilter(this.value)" title="Filtrar eventos por nível" aria-label="Filtrar eventos por nível">
-          <option value="all">Todos</option>
-          <option value="error">Erros</option>
-          <option value="warn">Avisos</option>
-          <option value="info">Informações</option>
-          <option value="log">Logs</option>
-          <option value="debug">Debug</option>
-        </select>
-        <button type="button" class="debug-session-action" onclick="copyDebugEntries()">Copiar</button>
-        <button type="button" class="debug-session-action" onclick="saveDebugReport()">Salvar</button>
-        <button type="button" class="debug-session-action" onclick="clearDebugEntries()">Limpar</button>
-        <button type="button" id="debugMinimizeBtn" class="debug-window-control" onclick="toggleDebugMinimized()" title="Minimizar" aria-label="Minimizar modo de depuração">−</button>
-        <button type="button" class="debug-window-control debug-close-btn" onclick="setDebugMode(false)" title="Fechar" aria-label="Fechar modo de depuração">×</button>
-      </div>
-    </div>
-    <div id="debugLog" role="log" aria-live="polite" aria-relevant="additions"></div>
-  </section>
 
   <div id="backupBanner">
     <span class="backup-banner-icon">💾</span>
@@ -620,58 +425,9 @@
     </div>
   </div>
 
-  <div id="halloweenPaletteBanner" role="status" aria-live="polite" hidden>
-    <span class="halloween-palette-banner-icon" aria-hidden="true"></span>
-    <div class="halloween-palette-banner-copy">
-      <strong>Novas cores de Dia das Bruxas!</strong>
-      <span>Escolha entre Abóbora, Zumbi, Vampiro, Bruxa e Fantasma.</span>
-      <span class="halloween-palette-banner-swatches" aria-hidden="true"><i class="pumpkin"></i><i class="zombie"></i><i class="vampire"></i><i class="witch"></i><i class="ghost"></i></span>
-    </div>
-    <div class="halloween-palette-banner-actions">
-      <button type="button" onclick="openHalloweenPaletteFromBanner(event)">Escolher estilo</button>
-      <button type="button" onclick="dismissHalloweenPaletteBanner()">Agora não</button>
-    </div>
-  </div>
-
-  <div id="updateBanner" role="status" aria-live="polite" hidden>
-    <span class="update-banner-icon" aria-hidden="true">↻</span>
-    <span class="update-banner-text">Atualização disponível</span>
-    <div class="update-banner-actions">
-      <button type="button" id="updateNowBtn">Atualizar</button>
-      <button type="button" id="updateLaterBtn">Depois</button>
-    </div>
-  </div>
-
   <div id="notifArea"></div>
   <button id="appVersion" type="button" onclick="openAboutModal()">Blû</button>
-  <!-- A ordem é intencional: os scripts ainda compartilham o escopo global. -->
-  <script src="js/core/feature-release.js"></script>
-  <script src="js/core/debug.js"></script>
-  <script src="libs/bootstrap-icons/button-icons.js"></script>
-  <script src="libs/material-icons/button-icons.js"></script>
-  <script src="libs/blu/blu-icons.js"></script>
-  <script src="js/ui/button-icon-picker.js"></script>
-  <script src="js/core/utils.js"></script>
-  <script src="js/ui/dialogs.js"></script>
-  <script src="js/core/storage.js"></script>
-  <script src="js/data/user-data.js"></script>
-  <script src="js/features/content-dashboard.js"></script>
-  <script src="js/features/archive.js"></script>
-  <script src="libs/lucide/lucide-icons.js"></script>
-  <script src="js/ui/render.js"></script>
-  <script src="js/features/search.js"></script>
-  <script src="js/core/crypto.js"></script>
-  <script src="js/data/crud.js"></script>
-  <script src="js/data/share-options.js"></script>
-  <script src="js/experiments/runtime.js"></script>
-  <script src="js/features/dnd.js"></script>
-  <script src="js/data/json-tools.js"></script>
-  <script src="js/data/custom-export.js"></script>
-  <script src="js/ui/context-menu.js"></script>
-  <script src="js/ui/quick-actions.js"></script>
-  <script src="js/features/whats-new.js"></script>
-  <script src="js/ui/section-icon-picker.js"></script>
-  <script src="js/features/halloween.js"></script>
-  <script src="js/app.js"></script>
+  <script src="./js/bundle.js?sprinklr-version=1.6.5"></script>
 </body>
+
 </html>

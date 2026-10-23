@@ -1,50 +1,35 @@
-# Blû
+# Blû Offline
 
-Blû é um painel para guardar textos reutilizáveis em seções e botões. Serve para copiar rapidamente respostas, comandos, prompts, links e outros conteúdos frequentes.
+Versão independente do [Blû](https://github.com/Raianwz/blu), feita para organizar e copiar textos sem depender de conta, servidor ou PWA. Seções, botões e tags ficam salvos no navegador em `blu:offline`.
 
-**Acesse:** [blu.rwz.app](https://blu.rwz.app)
+## Rodar
 
-## O que oferece
-
-- Criação e organização de seções, botões e tags, com busca e ações rápidas.
-- Cópia com um clique, histórico para desfazer/refazer e importação/exportação em JSON.
-- Temas, visualização compacta e instalação como PWA na versão principal.
-- Compartilhamento temporário por link na versão hospedada.
-
-## Versões e dados
-
-O **Blû principal** salva os dados no `localStorage` do navegador e pode funcionar offline após o carregamento dos arquivos pelo PWA. Links compartilhados ficam disponíveis por até três dias.
-
-O **Blû Offline**, em [`sprinklr/`](sprinklr/), é uma versão independente pensada para distribuição em um HTML único ou com arquivos locais. Usa a chave `blu:offline`, não depende de funções de compartilhamento, e pode importar e exportar JSON. Os ícones opcionais são carregados de uma CDN quando há conexão.
-
-As duas versões não sincronizam dados automaticamente. Exporte um JSON para manter um backup ou transferir conteúdo entre navegadores e dispositivos. Limpar os dados do site também apaga o conteúdo salvo localmente.
-
-O backup padrão dos botões pode ser transferido entre as duas versões. Ao importar no Offline, ícones de seção, itens arquivados e campos não reconhecidos são preservados para a próxima exportação padrão, mesmo sem uma interface para usá-los. Editar textos mantém esses campos; trocar um ícone de botão atualiza o ícone escolhido. O Offline informa na importação quais recursos do arquivo têm suporte limitado, incluindo ícones de botão que dependem de conexão. Exportações personalizadas podem omitir campos e não substituem esse backup para transferências entre versões.
-
-## Rodar localmente
-
-Não há etapa de build para o projeto principal. Na raiz do repositório, inicie um servidor HTTP, por exemplo com Python 3:
+Abra `index.html` mantendo as pastas `js/` e `assets/` na mesma estrutura, ou sirva a pasta por HTTP:
 
 ```bash
 python -m http.server 5500
 ```
 
-Abra [http://localhost:5500](http://localhost:5500) para o Blû principal ou [http://localhost:5500/sprinklr/](http://localhost:5500/sprinklr/) para o Blû Offline. Nesta árvore, o HTML do Offline usa caminhos absolutos `/sprinklr/`, então também deve ser aberto pelo servidor local.
+Depois acesse [http://localhost:5500](http://localhost:5500). O servidor local oferece uma origem estável para o armazenamento do navegador; em `file://`, a persistência pode variar entre navegadores.
 
-O servidor estático não executa as rotas `api/`. Criar e abrir links compartilhados exige o ambiente de funções da Vercel com Upstash configurado; as demais funções do painel podem ser usadas localmente.
+O núcleo funciona sem conexão. O seletor de ícones é opcional: tenta carregar catálogos pelo jsDelivr e fica oculto se eles não estiverem disponíveis. Ícones já presentes em um JSON continuam preservados no backup padrão.
 
-## Organização
+## Dados e compatibilidade
 
-- `index.html` e `share.html`: aplicação principal e página de links compartilhados.
-- `js/` e `assets/`: código, estilos e recursos da aplicação principal.
-- `libs/`: catálogos de ícones e dados de demonstração.
-- `sprinklr/`: Blû Offline, mantido de forma independente.
-- `api/`: funções de compartilhamento; `docs/roadmap.md`: planejamento.
+Use **Exportar Backup** para guardar ou transferir seus dados em JSON. A exportação personalizada serve para consulta e pode omitir campos. Ao importar dados do Blû principal, o Offline preserva no backup padrão recursos sem interface local, como itens arquivados e ícones de seção, e avisa sobre as limitações na importação.
 
-O front-end usa HTML, CSS e JavaScript sem framework. A [ordem de carregamento dos scripts](js/README.md) é intencional.
+Os dados não sincronizam automaticamente. Limpar os dados do navegador remove a cópia local; mantenha um backup externo.
 
-## Privacidade e licença
+## Arquivos
 
-A criptografia atual usa uma chave fixa incluída no código. Ela dificulta a leitura casual dos arquivos e compartilhamentos, mas não é adequada para guardar senhas ou outros segredos. A marcação **Privado** é visual e não impede que um botão seja incluído em backups ou compartilhamentos.
+```text
+index.html          Interface
+js/bundle.js        Aplicação
+assets/style.css    Estilos
+assets/blu.svg      Ícone
+libs/               Catálogos e SVGs de ícones
+```
 
-Distribuído sob a licença MIT. Consulte [LICENSE](LICENSE).
+Para consumir arquivos desta branch pelo jsDelivr, prefira uma tag ou um commit fixo no lugar de uma referência mutável: `https://cdn.jsdelivr.net/gh/Raianwz/blu@<commit>/js/bundle.js`.
+
+Distribuído sob a licença MIT. Consulte [LICENSE](LICENSE). As bibliotecas em `libs/` mantêm suas próprias licenças.

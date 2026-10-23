@@ -1783,7 +1783,8 @@ function updateTagDatalist() {
 
 async function exportData() {
   const state = collectState();
-  if (!state.tags.length && !state.sections.length) {
+  const hasArchivedItems = Boolean(state.archived?.buttons?.length || state.archived?.sections?.length);
+  if (!state.tags.length && !state.sections.length && !hasArchivedItems) {
     notify('Adicione ao menos uma seção, botão ou tag antes de exportar', 'err');
     return;
   }
@@ -3156,6 +3157,9 @@ function openPopoutBlank() {
   const clone = document.documentElement.cloneNode(true);
   clone.querySelector('#backupBanner')?.classList.remove('show');
   clone.querySelector('#menuOverlay')?.classList.remove('open');
+  const base = document.createElement('base');
+  base.href = new URL('.', location.href).href;
+  clone.querySelector('head')?.prepend(base);
 
   win.document.write(clone.outerHTML);
   win.document.close();
@@ -3167,7 +3171,7 @@ function openPopoutBlank() {
     const link = doc.createElement('link');
     link.rel = 'icon';
     link.type = 'image/svg+xml';
-    link.href = '/sprinklr/blu.svg';
+    link.href = new URL('./assets/blu.svg', location.href).href;
     doc.head.appendChild(link);
   }, 50);
 }
