@@ -578,6 +578,8 @@ let buttonVisual = null;
 let buttonVisualLoading = false;
 let sectionIcons = null;
 let sectionIconsLoading = false;
+let searchHistoryExtra = null;
+let searchHistoryExtraLoading = false;
 
 function onlineIconEntries() {
   return onlineIconsReady ? availableIconEntries : [];
@@ -764,6 +766,39 @@ async function loadSectionIcons() {
   }
 }
 
+async function loadSearchHistoryExtra() {
+  if (!window.BluExtras?.loadExtra || searchHistoryExtra || searchHistoryExtraLoading) return;
+  searchHistoryExtraLoading = true;
+  try {
+    searchHistoryExtra = await window.BluExtras.loadExtra('search-history', {
+      getSetting, setSetting, normalizeSearchText, doSearch, updateSearchGuidance, notify
+    });
+    updateAboutExtras();
+  } catch (_) {
+    searchHistoryExtra = null;
+  } finally {
+    searchHistoryExtraLoading = false;
+  }
+}
+
+let customExportExtra = null;
+let customExportExtraLoading = false;
+
+async function loadCustomExportExtra() {
+  if (!window.BluExtras?.loadExtra || customExportExtra || customExportExtraLoading) return;
+  customExportExtraLoading = true;
+  try {
+    customExportExtra = await window.BluExtras.loadExtra('custom-export', {
+      collectState, normalizeTag, escapeHtml, openModal, requestModalDismiss, notify
+    });
+    updateAboutExtras();
+  } catch (_) {
+    customExportExtra = null;
+  } finally {
+    customExportExtraLoading = false;
+  }
+}
+
 let extrasLoaderLoading = false;
 
 function loadExtras() {
@@ -771,6 +806,8 @@ function loadExtras() {
     loadOnlineIcons();
     loadButtonColors();
     loadButtonVisual();
+    loadSearchHistoryExtra();
+    loadCustomExportExtra();
     return;
   }
   if (extrasLoaderLoading) return;
@@ -2191,6 +2228,7 @@ async function clearAll() {
   notify('Tudo limpo!');
   markCurrentStateAsExported();
   clearBluLocalStorage();
+  searchHistoryExtra?.refresh();
   applyTheme(!!systemThemeQuery?.matches);
   dragPreviewEnabled = false;
   applyDragPreviewState();
@@ -3164,6 +3202,7 @@ async function resetPreferences() {
   applyDragPreviewState();
   applyEditAnimationPreference();
   buttonVisual?.apply();
+  searchHistoryExtra?.refresh();
   updateSearchGuidance();
   advancedOptionsVisible = false;
   applyAdvancedOptionsPreference();
@@ -3171,16 +3210,23 @@ async function resetPreferences() {
   notify('Preferências redefinidas');
 }
 
+function getActiveExtras() {
+  return [
+    buttonVisual && 'Visual Novo/Clássico',
+    buttonColors && 'Cores dos botões',
+    onlineIconsReady && 'Ícones dos botões',
+    onlineIconsReady && sectionIcons?.isAvailable() && 'Ícones das seções',
+    searchHistoryExtra && 'Histórico de pesquisas',
+    customExportExtra && 'Exportação personalizada'
+  ].filter(Boolean);
+}
+
 function updateAboutExtras() {
   const details = document.querySelector('#aboutModal .about-details');
   const privacyTitle = document.querySelector('#aboutModal .about-privacy strong');
   if (!details || !privacyTitle) return;
   const description = document.querySelector('#aboutModal .about-description');
-  const active = [
-    buttonVisual && 'Visuais',
-    buttonColors && 'Cores de Botões',
-    onlineIconsReady && (sectionIcons?.isAvailable() ? 'Ícones (Seções/Botões)' : 'Ícones de botões')
-  ].filter(Boolean);
+  const active = getActiveExtras();
   let row = document.getElementById('aboutExtras');
   privacyTitle.textContent = active.length
     ? 'Seus dados permanecem locais.'
@@ -3192,6 +3238,12 @@ function updateAboutExtras() {
       ? original.replace('com funcionamento totalmente local.', 'com seus dados armazenados localmente.')
       : original;
   }
+  const list = document.getElementById('aboutExtrasList');
+  list.replaceChildren(...(active.length ? active : ['Nenhum extra disponível nesta sessão.']).map(name => {
+    const item = document.createElement('li');
+    item.textContent = name;
+    return item;
+  }));
   if (!active.length) {
     row?.remove();
     return;
@@ -3200,11 +3252,26 @@ function updateAboutExtras() {
     row = document.createElement('div');
     row.id = 'aboutExtras';
     const label = document.createElement('dt');
-    label.textContent = 'Extras ativos';
+    label.textContent = 'Extras carregados';
     row.append(label, document.createElement('dd'));
     details.appendChild(row);
   }
-  row.querySelector('dd').textContent = active.join(', ');
+  const value = row.querySelector('dd');
+  value.replaceChildren();
+  const count = document.createElement('span');
+  count.textContent = `${active.length} carregado${active.length === 1 ? '' : 's'}`;
+  const viewAll = document.createElement('button');
+  viewAll.type = 'button';
+  viewAll.className = 'about-extras-link';
+  viewAll.textContent = 'Ver todos';
+  viewAll.onclick = openAboutExtrasModal;
+  value.append(count, viewAll);
+}
+
+function openAboutExtrasModal() {
+  updateAboutExtras();
+  closeModal('aboutModal');
+  openModal('aboutExtrasModal');
 }
 
 function openAboutModal() {
@@ -3318,7 +3385,6 @@ function upgradeSprinklrMenu() {
     createSprinklrSubmenu('dados', 'Dados', 'download', [
       document.getElementById('exportBtn'),
       findByOnclick("openModal('importModal')"),
-      findByOnclick('openCustomExportModal()'),
       dataSeparator,
       findByOnclick('clearAll()')
     ]),
@@ -3579,123 +3645,5 @@ window.addEventListener('offline', () => {
   refreshOnlineButtonIcons();
   updateOnlineIconOption();
 });
-
-/* ------------------ custom-export.js ------------------ */
-// Exportação personalizada local do Blû Offline.
-(function () {
-  const presets = {
-    index: { format: 'json', scope: 'all', structure: 'hierarchy', fields: ['sections', 'sectionName', 'buttons', 'buttonName', 'includeEmpty'] },
-    full: { format: 'json', scope: 'all', structure: 'hierarchy', fields: ['globalTags', 'sections', 'sectionId', 'sectionName', 'sectionCollapsed', 'buttons', 'buttonId', 'buttonName', 'buttonText', 'buttonTag', 'buttonVisibility', 'includeEmpty'] },
-    content: { format: 'json', scope: 'all', structure: 'hierarchy', fields: ['sections', 'sectionName', 'buttons', 'buttonName', 'buttonText', 'buttonTag', 'buttonVisibility'] },
-    names: { format: 'text', scope: 'all', structure: 'hierarchy', fields: ['sections', 'sectionName', 'buttons', 'buttonName'] },
-    spreadsheet: { format: 'csv', scope: 'all', structure: 'flat', fields: ['sections', 'sectionName', 'buttons', 'buttonName', 'buttonText', 'buttonTag', 'buttonVisibility', 'buttonSection'] },
-    documentation: { format: 'markdown', scope: 'all', structure: 'hierarchy', fields: ['sections', 'sectionName', 'buttons', 'buttonName', 'buttonText', 'buttonTag', 'buttonVisibility'] }
-  };
-  const selections = { sections: new Set(), tags: new Set() };
-  const el = id => document.getElementById(id);
-  const fields = () => new Set([...document.querySelectorAll('[data-export-field]:checked')].map(input => input.dataset.exportField));
-  const byteLength = value => new TextEncoder().encode(String(value)).length;
-  const fileSize = bytes => bytes < 1024 ? `${bytes} B` : `${(bytes / 1024).toFixed(1)} KB`;
-
-  window.openCustomExportModal = function () {
-    populateScope(true); applyCustomExportPreset('index'); setCustomExportTab('config'); openModal('customExportModal');
-    document.getElementById('menuOverlay')?.classList.remove('open');
-  };
-  window.setCustomExportTab = function (tab) {
-    const preview = tab === 'preview';
-    el('customExportConfigPanel').hidden = preview; el('customExportPreviewPanel').hidden = !preview;
-    el('customExportConfigTab').classList.toggle('active', !preview); el('customExportPreviewTab').classList.toggle('active', preview);
-    el('customExportConfigTab').setAttribute('aria-selected', String(!preview)); el('customExportPreviewTab').setAttribute('aria-selected', String(preview));
-    if (preview) updatePreview();
-  };
-  window.applyCustomExportPreset = function (name) {
-    const preset = presets[name]; if (!preset) return;
-    el('customExportPreset').value = name; el('customExportFormat').value = preset.format; el('customExportScope').value = preset.scope; el('customExportStructure').value = preset.structure;
-    document.querySelectorAll('[data-export-field]').forEach(input => { input.checked = preset.fields.includes(input.dataset.exportField); });
-    el('customExportSectionState').value = 'current'; el('customExportOrder').value = 'current';
-    ['customExportRemoveEmpty', 'customExportNormalizeTags', 'customExportStripEmoji', 'customExportSimplifyBreaks', 'customExportCompactJson'].forEach(id => { el(id).checked = false; });
-    el('customExportCsvBom').checked = true; updateCustomExportUI(false);
-  };
-  window.markCustomExportCustomized = function () { el('customExportPreset').value = 'custom'; updateCustomExportUI(false); };
-  window.updateCustomExportUI = function (custom = true) {
-    if (custom) el('customExportPreset').value = 'custom';
-    const format = el('customExportFormat').value; const search = el('customExportScope').querySelector('[value="search"]');
-    search.disabled = !el('searchInput')?.value.trim(); if (search.disabled && el('customExportScope').value === 'search') el('customExportScope').value = 'all';
-    el('customExportDelimiterWrap').hidden = format !== 'csv'; el('customExportCompactJson').closest('label').hidden = format !== 'json'; el('customExportCsvBom').closest('label').hidden = format !== 'csv';
-    el('customExportStructure').disabled = format === 'csv'; if (el('customExportStructure').disabled) el('customExportStructure').value = 'flat';
-    populateScope(); dependencies(); updatePreview();
-  };
-  function dependencies() {
-    const selected = fields(); const sectionChildren = ['sectionId', 'sectionName', 'sectionCollapsed', 'sectionCount']; const buttonChildren = ['buttonId', 'buttonName', 'buttonText', 'buttonTag', 'buttonVisibility', 'buttonSection'];
-    document.querySelectorAll('[data-export-field]').forEach(input => {
-      input.disabled = (sectionChildren.includes(input.dataset.exportField) && !selected.has('sections')) || (buttonChildren.includes(input.dataset.exportField) && !selected.has('buttons'));
-      input.closest('label').classList.toggle('disabled', input.disabled);
-    });
-  }
-  window.toggleCustomExportFields = function (group, checked) { document.querySelectorAll(`[data-field-group="${group}"]`).forEach(input => { input.checked = checked; }); markCustomExportCustomized(); };
-  function populateScope(reset = false) {
-    const scope = el('customExportScope')?.value; if (!scope) return;
-    const panel = el('customExportScopeOptions'); const list = el('customExportScopeList'); const active = ['sections', 'tags'].includes(scope); panel.hidden = !active; if (!active) return;
-    const state = collectState(); const items = scope === 'sections' ? state.sections.map(section => [section.id, section.name]) : [...new Set(state.tags.concat(state.sections.flatMap(section => section.buttons.map(button => button.tag))).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR')).map(tag => [tag, tag]);
-    if (reset || !selections[scope].size) selections[scope] = new Set(items.map(item => item[0]));
-    el('customExportScopeTitle').textContent = scope === 'sections' ? 'Selecionar seções' : 'Selecionar tags';
-    list.innerHTML = items.length ? items.map(([value, label]) => `<label><input type="checkbox" value="${escapeHtml(value)}" ${selections[scope].has(value) ? 'checked' : ''}> ${escapeHtml(label)}</label>`).join('') : '<span>Nenhum item disponível.</span>';
-    list.querySelectorAll('input').forEach(input => input.onchange = () => { input.checked ? selections[scope].add(input.value) : selections[scope].delete(input.value); el('customExportPreset').value = 'custom'; updatePreview(); });
-  }
-  window.toggleCustomExportScopeItems = function (checked) { const scope = el('customExportScope').value; el('customExportScopeList').querySelectorAll('input').forEach(input => { input.checked = checked; checked ? selections[scope].add(input.value) : selections[scope].delete(input.value); }); el('customExportPreset').value = 'custom'; updatePreview(); };
-  function config() { return { format: el('customExportFormat').value, scope: el('customExportScope').value, structure: el('customExportStructure').value, fields: fields(), state: el('customExportSectionState').value, order: el('customExportOrder').value, delimiter: el('customExportDelimiter').value === 'comma' ? ',' : ';', removeEmpty: el('customExportRemoveEmpty').checked, normalizeTags: el('customExportNormalizeTags').checked, stripEmoji: el('customExportStripEmoji').checked, simplifyBreaks: el('customExportSimplifyBreaks').checked, compactJson: el('customExportCompactJson').checked, csvBom: el('customExportCsvBom').checked }; }
-  function clean(value, options, name = false) { let result = String(value ?? ''); if (options.simplifyBreaks) result = result.replace(/\r\n?/g, '\n').replace(/\n{3,}/g, '\n\n').trim(); if (name && options.stripEmoji) result = result.replace(/[\p{Extended_Pictographic}\uFE0F]/gu, '').replace(/\s{2,}/g, ' ').trim(); return result; }
-  function prepare(options) {
-    const state = collectState(); const selected = selections[options.scope] || new Set(); const visibleSections = new Set([...document.querySelectorAll('.section-wrap:not(.search-hidden)')].map(node => node.dataset.id)); const visibleButtons = new Set([...document.querySelectorAll('.btn-wrap:not(.search-hidden)')].map(node => node.dataset.id));
-    let sections = state.sections.map(section => ({ ...section, buttons: section.buttons.map(button => ({ ...button })) }));
-    if (options.scope === 'sections') sections = sections.filter(section => selected.has(section.id));
-    if (options.scope === 'search') sections = sections.filter(section => visibleSections.has(section.id)).map(section => ({ ...section, buttons: section.buttons.filter(button => visibleButtons.has(button.id)) }));
-    sections = sections.map(section => ({ ...section, buttons: section.buttons.filter(button => !['public', 'private', 'other'].includes(options.scope) || button.vis === options.scope).filter(button => options.scope !== 'tags' || selected.has(button.tag) || selected.has(normalizeTag(button.tag))) }));
-    if (!options.fields.has('includeEmpty')) sections = sections.filter(section => section.buttons.length);
-    sections.forEach(section => { section.name = clean(section.name, options, true); if (options.state === 'expanded') section.collapsed = false; if (options.state === 'collapsed') section.collapsed = true; section.buttons.forEach(button => { button.name = clean(button.name, options, true); button.text = clean(button.text, options); if (options.normalizeTags) button.tag = normalizeTag(button.tag); }); if (options.order === 'alphabetical') section.buttons.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR')); });
-    if (options.order === 'alphabetical') sections.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
-    return { tags: [...new Set(state.tags.map(tag => options.normalizeTags ? normalizeTag(tag) : tag).filter(Boolean))], sections };
-  }
-  function assign(target, key, value, options) { if (!options.removeEmpty || !(value === '' || value == null || (Array.isArray(value) && !value.length))) target[key] = value; }
-  function buttonObject(button, section, options) {
-    const out = {}; const f = options.fields;
-    if (f.has('buttonId')) assign(out, 'id', button.id, options); if (f.has('buttonName')) assign(out, 'name', button.name, options); if (f.has('buttonText')) assign(out, 'text', button.text, options); if (f.has('buttonTag')) assign(out, 'tag', button.tag, options); if (f.has('buttonVisibility')) assign(out, 'vis', button.vis, options);
-    if (f.has('buttonSection')) { assign(out, 'section', section.name, options); assign(out, 'sectionId', section.id, options); }
-    return out;
-  }
-  function objectData(data, options) {
-    const root = {}; const f = options.fields;
-    if (f.has('metadata')) root.metadata = { app: 'Blû Offline', exportedAt: new Date().toISOString(), format: options.format, scope: options.scope };
-    if (f.has('globalTags')) root.tags = data.tags;
-    if (!f.has('sections')) { if (f.has('buttons')) root.buttons = data.sections.flatMap(section => section.buttons.map(button => buttonObject(button, section, options))); return root; }
-    if (options.structure === 'flat') { root.buttons = f.has('buttons') ? data.sections.flatMap(section => section.buttons.map(button => buttonObject(button, section, options))) : []; return root; }
-    root.sections = data.sections.map(section => { const out = {}; if (f.has('sectionId')) assign(out, 'id', section.id, options); if (f.has('sectionName')) assign(out, 'name', section.name, options); if (f.has('sectionCollapsed') && options.state !== 'omit') out.collapsed = section.collapsed; if (f.has('sectionCount')) out.buttonCount = section.buttons.length; if (f.has('buttons')) out.buttons = section.buttons.map(button => buttonObject(button, section, options)); return out; }); return root;
-  }
-  function rows(data, options) { return data.sections.flatMap(section => {
-    if (!options.fields.has('buttons')) { const out = {}; if (options.fields.has('sectionId')) out.sectionId = section.id; if (options.fields.has('sectionName')) out.section = section.name; if (options.fields.has('sectionCollapsed') && options.state !== 'omit') out.collapsed = section.collapsed; if (options.fields.has('sectionCount')) out.buttonCount = section.buttons.length; return Object.keys(out).length ? [out] : []; }
-    return section.buttons.map(button => { const out = buttonObject(button, section, options); if (options.fields.has('sectionId') && !out.sectionId) out.sectionId = section.id; if (options.fields.has('sectionName') && !out.section) out.section = section.name; return out; });
-  }); }
-  function delimited(records, separator) { const headers = [...new Set(records.flatMap(Object.keys))]; if (!headers.length) return ''; const cell = value => `"${String(typeof value === 'object' ? JSON.stringify(value) : value ?? '').replace(/"/g, '""')}"`; return [headers.map(cell).join(separator), ...records.map(row => headers.map(key => cell(row[key])).join(separator))].join('\r\n'); }
-  function readable(data, options, markdown) { const f = options.fields; const lines = []; if (f.has('metadata')) lines.push(markdown ? '# Exportação do Blû Offline' : 'Exportação do Blû Offline', `Gerado em: ${new Date().toLocaleString('pt-BR')}`, ''); if (f.has('globalTags')) lines.push(`Tags: ${data.tags.join(', ') || 'Nenhuma'}`, ''); data.sections.forEach(section => { if (f.has('sectionName')) lines.push(markdown ? `## ${section.name}` : section.name); if (f.has('sectionId')) lines.push(`ID da seção: ${section.id}`); if (f.has('sectionCount')) lines.push(`Botões: ${section.buttons.length}`); if (f.has('buttons')) section.buttons.forEach(button => { lines.push(`${markdown ? '- ' : '• '}${f.has('buttonName') ? button.name : 'Botão'}`); if (f.has('buttonId')) lines.push(`  ID: ${button.id}`); if (f.has('buttonText')) lines.push(`  Texto: ${button.text}`); if (f.has('buttonTag')) lines.push(`  Tag: ${button.tag}`); if (f.has('buttonVisibility')) lines.push(`  Visibilidade: ${button.vis}`); if (f.has('buttonSection')) lines.push(`  Seção: ${section.name}`); }); lines.push(''); }); return lines.join('\n').trim(); }
-  function hasUsefulContent(data, options) {
-    const f = options.fields;
-    if (f.has('globalTags') && data.tags.length) return true;
-
-    const sectionFields = ['sectionId', 'sectionName', 'sectionCollapsed', 'sectionCount'];
-    if (f.has('sections') && data.sections.length && sectionFields.some(field => f.has(field))) return true;
-
-    const buttonFields = ['buttonId', 'buttonName', 'buttonText', 'buttonTag', 'buttonVisibility', 'buttonSection'];
-    return f.has('buttons')
-      && buttonFields.some(field => f.has(field))
-      && data.sections.some(section => section.buttons.length);
-  }
-  function generate() { const options = config(); const data = prepare(options); const records = rows(data, options); let content; if (options.format === 'json') content = JSON.stringify(objectData(data, options), null, options.compactJson ? 0 : 2); else if (options.format === 'csv') content = delimited(records, options.delimiter); else content = readable(data, options, options.format === 'markdown'); return { options, data, content, preview: content, useful: hasUsefulContent(data, options) }; }
-  function label(format) { return { text: 'TXT', markdown: 'MARKDOWN', csv: 'CSV', json: 'JSON' }[format]; }
-  function updatePreview() { if (!el('customExportPreview')) return; dependencies(); const result = generate(); const count = result.data.sections.reduce((sum, section) => sum + section.buttons.length, 0); el('customExportPreview').value = result.useful ? result.preview : '(O arquivo não possui conteúdo útil com as opções atuais.)'; el('customExportSummary').textContent = `${result.data.sections.length} seção(ões) • ${count} botão(ões) • ${fileSize(byteLength(result.content))} • ${label(result.options.format)}`; el('customExportWarnings').innerHTML = result.useful ? '<div class="custom-export-warning">⚠️ Este arquivo é para consulta/uso externo e não representa necessariamente um backup reimportável completo.</div>' : '<div class="custom-export-warning">⚠️ Selecione ao menos um campo com conteúdo antes de exportar.</div>'; const button = el('customExportDownloadBtn'); button.disabled = !result.useful; button.textContent = `Exportar ${label(result.options.format)}`; }
-  function download(content, type, extension) { const blob = new Blob([content], { type }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = `blu-offline-${new Date().toISOString().slice(0, 10)}.${extension}`; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); }
-  window.downloadCustomExport = function () { const result = generate(); if (!result.useful) { notify('Selecione ao menos um campo com conteúdo antes de exportar', 'err'); return; } const map = { json: ['application/json', 'json'], text: ['text/plain', 'txt'], markdown: ['text/markdown', 'md'], csv: ['text/csv', 'csv'] }; const [mime, extension] = map[result.options.format]; const content = result.options.format === 'csv' && result.options.csvBom ? `\uFEFF${result.content}` : result.content; download(content, mime, extension); notify(`Exportação ${label(result.options.format)} concluída!`); };
-  document.addEventListener('change', event => { if (event.target.matches('#customExportModal [data-export-field]')) markCustomExportCustomized(); });
-})();
-
 
 /* End of bundle.js */

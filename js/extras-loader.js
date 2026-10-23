@@ -42,7 +42,9 @@
     icons: { script: 'js/extra/icons.js', style: 'assets/extra/icons.css' },
     'button-colors': { script: 'js/extra/button-colors.js', style: 'assets/extra/button-colors.css' },
     'button-visual': { script: 'js/extra/button-visual.js', style: 'assets/extra/button-visual.css' },
-    'section-icons': { script: 'js/extra/section-icons.js', style: 'assets/extra/section-icons.css' }
+    'section-icons': { script: 'js/extra/section-icons.js', style: 'assets/extra/section-icons.css' },
+    'search-history': { script: 'js/extra/search-history.js', style: 'assets/extra/search-history.css' },
+    'custom-export': { script: 'js/extra/custom-export.js', style: 'assets/extra/custom-export.css' }
   });
   const modules = new Map();
 

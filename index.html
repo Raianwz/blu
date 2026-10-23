@@ -96,7 +96,6 @@
           <path d="m17 8-5-5-5 5" />
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
         </svg><span class="menu-btn-label">Importar Backup</span></button>
-      <button class="menu-btn" onclick="openCustomExportModal()" title="Escolher dados e formato da exportação"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg><span class="menu-btn-label">Exportação Personalizada</span></button>
     </div>
 
     <div class="menu-sep"></div>
@@ -314,6 +313,15 @@
     </div>
   </div>
 
+  <div class="modal-bg" id="aboutExtrasModal">
+    <div class="modal about-extras-modal">
+      <h2>Extras carregados</h2>
+      <p>Recursos disponíveis nesta sessão:</p>
+      <ul id="aboutExtrasList" class="about-extras-list"></ul>
+      <div class="modal-footer"><button class="mbtn primary" type="button" onclick="closeModal('aboutExtrasModal')">Fechar</button></div>
+    </div>
+  </div>
+
   <div id="contextMenu" class="context-menu" role="menu" hidden></div>
 
   <div class="modal-bg" id="dialogModal">
@@ -403,30 +411,6 @@
       </div>
       <div class="modal-footer"><button class="mbtn primary" onclick="closeModal('shortcutsModal')">Fechar</button>
       </div>
-    </div>
-  </div>
-
-  <div class="modal-bg" id="customExportModal">
-    <div class="modal custom-export-modal">
-      <h2>🧰 Exportação Personalizada</h2>
-      <div class="custom-export-tabs" role="tablist" aria-label="Etapas da exportação"><button id="customExportConfigTab" class="active" type="button" role="tab" aria-selected="true" onclick="setCustomExportTab('config')">Configurar</button><button id="customExportPreviewTab" type="button" role="tab" aria-selected="false" onclick="setCustomExportTab('preview')">Prévia</button></div>
-      <div id="customExportConfigPanel" class="custom-export-panel">
-        <div class="custom-export-top-grid">
-          <label>Preset<select id="customExportPreset" onchange="applyCustomExportPreset(this.value)"><option value="index">Índice de seções e botões</option><option value="full">Backup completo</option><option value="content">Somente conteúdo</option><option value="names">Somente nomes</option><option value="spreadsheet">Planilha de botões</option><option value="documentation">Documentação Markdown</option><option value="custom">Personalizado</option></select></label>
-          <label>Formato<select id="customExportFormat" onchange="updateCustomExportUI()"><option value="json">JSON</option><option value="text">Texto</option><option value="markdown">Markdown</option><option value="csv">CSV</option></select></label>
-          <label>Escopo<select id="customExportScope" onchange="updateCustomExportUI()"><option value="all">Tudo</option><option value="search">Resultados da pesquisa</option><option value="public">Somente públicos</option><option value="private">Somente privados</option><option value="other">Visibilidade “Outro”</option><option value="sections">Seções selecionadas</option><option value="tags">Tags selecionadas</option></select></label>
-          <label>Organização<select id="customExportStructure" onchange="markCustomExportCustomized()"><option value="hierarchy">Preservar hierarquia</option><option value="flat">Lista plana</option></select></label>
-        </div>
-        <div class="custom-export-options-scroll">
-          <section id="customExportScopeOptions" class="custom-export-group" hidden><div class="custom-export-group-head"><strong id="customExportScopeTitle">Selecionar itens</strong><span><button type="button" onclick="toggleCustomExportScopeItems(true)">Todos</button><button type="button" onclick="toggleCustomExportScopeItems(false)">Nenhum</button></span></div><div id="customExportScopeList" class="custom-export-scope-list"></div></section>
-          <section class="custom-export-group"><div class="custom-export-group-head"><strong>Estrutura e seções</strong><span><button type="button" onclick="toggleCustomExportFields('section',true)">Todos</button><button type="button" onclick="toggleCustomExportFields('section',false)">Nenhum</button></span></div><div class="custom-export-check-grid"><label><input type="checkbox" data-export-field="globalTags" data-field-group="section"> Lista global de tags</label><label><input type="checkbox" data-export-field="sections" data-field-group="section"> Incluir seções</label><label><input type="checkbox" data-export-field="sectionId" data-field-group="section"> IDs das seções</label><label><input type="checkbox" data-export-field="sectionName" data-field-group="section"> Nomes das seções</label><label><input type="checkbox" data-export-field="sectionCollapsed" data-field-group="section"> Estado das seções</label><label><input type="checkbox" data-export-field="sectionCount" data-field-group="section"> Quantidade de botões</label><label><input type="checkbox" data-export-field="includeEmpty" data-field-group="section"> Incluir seções vazias</label><label><input type="checkbox" data-export-field="metadata" data-field-group="section"> Metadados</label></div></section>
-          <section class="custom-export-group"><div class="custom-export-group-head"><strong>Botões</strong><span><button type="button" onclick="toggleCustomExportFields('button',true)">Todos</button><button type="button" onclick="toggleCustomExportFields('button',false)">Nenhum</button></span></div><div class="custom-export-check-grid"><label><input type="checkbox" data-export-field="buttons" data-field-group="button"> Incluir botões</label><label><input type="checkbox" data-export-field="buttonId" data-field-group="button"> IDs dos botões</label><label><input type="checkbox" data-export-field="buttonName" data-field-group="button"> Nomes dos botões</label><label><input type="checkbox" data-export-field="buttonText" data-field-group="button"> Textos dos botões</label><label><input type="checkbox" data-export-field="buttonTag" data-field-group="button"> Tags dos botões</label><label><input type="checkbox" data-export-field="buttonVisibility" data-field-group="button"> Visibilidade</label><label><input type="checkbox" data-export-field="buttonSection" data-field-group="button"> Seção de origem</label></div></section>
-          <section class="custom-export-group"><div class="custom-export-group-head"><strong>Transformações</strong></div><div class="custom-export-control-grid"><label>Estado das seções<select id="customExportSectionState" onchange="markCustomExportCustomized()"><option value="current">Preservar atual</option><option value="expanded">Todas expandidas</option><option value="collapsed">Todas minimizadas</option><option value="omit">Não incluir</option></select></label><label>Ordenação<select id="customExportOrder" onchange="markCustomExportCustomized()"><option value="current">Ordem atual</option><option value="alphabetical">Ordem alfabética</option></select></label><label id="customExportDelimiterWrap" hidden>Separador CSV<select id="customExportDelimiter" onchange="markCustomExportCustomized()"><option value="semicolon">Ponto e vírgula</option><option value="comma">Vírgula</option></select></label></div><div class="custom-export-check-grid compact"><label><input id="customExportRemoveEmpty" type="checkbox" onchange="markCustomExportCustomized()"> Remover campos vazios</label><label><input id="customExportNormalizeTags" type="checkbox" onchange="markCustomExportCustomized()"> Normalizar tags</label><label><input id="customExportStripEmoji" type="checkbox" onchange="markCustomExportCustomized()"> Remover emojis dos nomes</label><label><input id="customExportSimplifyBreaks" type="checkbox" onchange="markCustomExportCustomized()"> Simplificar quebras de linha</label><label><input id="customExportCompactJson" type="checkbox" onchange="markCustomExportCustomized()"> JSON compacto</label><label><input id="customExportCsvBom" type="checkbox" checked onchange="markCustomExportCustomized()"> CSV compatível com Excel</label></div></section>
-        </div>
-      </div>
-      <div id="customExportPreviewPanel" class="custom-export-panel" hidden><textarea id="customExportPreview" readonly spellcheck="false" wrap="soft" aria-label="Prévia do arquivo"></textarea></div>
-      <div id="customExportSummary" class="custom-export-summary"></div><div id="customExportWarnings" class="custom-export-warnings"></div>
-      <div class="modal-footer custom-export-footer"><button class="mbtn cancel" type="button" onclick="closeModal('customExportModal')">Cancelar</button><button class="mbtn ghost" type="button" onclick="setCustomExportTab('preview')">Visualizar</button><button id="customExportDownloadBtn" class="mbtn primary" type="button" onclick="downloadCustomExport()">Exportar</button></div>
     </div>
   </div>
 
