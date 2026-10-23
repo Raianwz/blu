@@ -625,6 +625,10 @@ body.edit-mode .btn-wrap.dragging {
   white-space: nowrap;
 }
 
+.copy-btn .online-button-icon { display: none; }
+
+body.button-visual-new .copy-btn:not(.copied) .online-button-icon { display: inline-block; }
+
 #buttonPreviewTooltip {
   position: fixed;
   background: var(--surface);
