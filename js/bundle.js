@@ -732,6 +732,47 @@ async function loadButtonVisual() {
   }
 }
 
+let extrasLoaderLoading = false;
+
+function loadExtras() {
+  if (window.BluExtras?.loadExtra) {
+    loadOnlineIcons();
+    loadButtonColors();
+    loadButtonVisual();
+    return;
+  }
+  if (extrasLoaderLoading) return;
+  extrasLoaderLoading = true;
+  const local = new URLSearchParams(location.search).get('extras') === 'local';
+  const script = document.createElement('script');
+  script.src = local
+    ? new URL('./js/extras-loader.js', document.baseURI).href
+    : `https://cdn.jsdelivr.net/gh/Raianwz/blu@blu%2Foffline/js/extras-loader.js?v=${VERSION.split(' ')[0]}`;
+  if (!local) script.crossOrigin = 'anonymous';
+  let settled = false;
+  const finish = () => {
+    if (settled) return false;
+    settled = true;
+    clearTimeout(timeout);
+    extrasLoaderLoading = false;
+    return true;
+  };
+  const timeout = setTimeout(() => {
+    if (!finish()) return;
+    script.onload = script.onerror = null;
+    script.remove();
+  }, 8000);
+  script.onload = () => {
+    if (!finish()) return;
+    if (window.BluExtras?.loadExtra) loadExtras();
+  };
+  script.onerror = () => {
+    if (!finish()) return;
+    script.remove();
+  };
+  document.head.appendChild(script);
+}
+
 let textPreviewMode = 'floating';
 let textPreviewEnabled = true;
 let textPreviewEl = null;
@@ -3468,14 +3509,8 @@ initDragPreviewPreference();
 initSearchGuidance();
 upgradeSprinklrMenu();
 init();
-loadOnlineIcons();
-loadButtonColors();
-loadButtonVisual();
-window.addEventListener('online', () => {
-  loadOnlineIcons();
-  loadButtonColors();
-  loadButtonVisual();
-});
+loadExtras();
+window.addEventListener('online', loadExtras);
 window.addEventListener('offline', () => {
   onlineIconsReady = false;
   updateAboutExtras();

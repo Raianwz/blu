@@ -17,11 +17,11 @@
       }, 8000);
       if (type === 'script') {
         asset.src = new URL(file, base).href;
-        asset.crossOrigin = 'anonymous';
+        if (!local) asset.crossOrigin = 'anonymous';
       } else {
         asset.rel = 'stylesheet';
         asset.href = new URL(file, base).href;
-        asset.crossOrigin = 'anonymous';
+        if (!local) asset.crossOrigin = 'anonymous';
       }
       asset.onload = () => { clearTimeout(timeout); resolve(asset); };
       asset.onerror = () => {
