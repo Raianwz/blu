@@ -1,0 +1,20 @@
+/* Section names keep their leading emoji in storage and in the classic visual. */
+.section-custom-icon { display: none; }
+body.button-visual-new.section-icons-ready .section-custom-icon:not(:empty) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 20px;
+  color: var(--text);
+}
+.section-custom-icon svg { display: block; width: 18px; height: 18px; }
+body.button-visual-new.section-icons-ready .section-leading-emoji { display: none; }
+.section-custom-icon .external-icon-image, .section-icon-preview .external-icon-image { filter: brightness(0); }
+body.dark .section-custom-icon .external-icon-image, body.dark .section-icon-preview .external-icon-image { filter: brightness(0) invert(1); }
+
+.section-icon-modal { max-height: calc(100vh - 32px); box-sizing: border-box; }
+.section-icon-field { position: relative; }
+.section-icon-preview { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 18px; width: 18px; height: 18px; }
+.section-icon-preview svg { width: 18px; height: 18px; fill: currentColor; }
+.section-icon-name { flex: 1; }
+.section-icon-field .online-icon-list { bottom: 42px; }

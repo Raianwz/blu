@@ -799,7 +799,7 @@ body.button-visual-new .copy-btn:not(.copied) .online-button-icon { display: inl
 .context-menu-item .menu-icon { width: 16px; height: 16px; }
 .context-menu-separator { height: 1px; margin: 5px 4px; background: var(--border); }
 .button-view-meta { margin-bottom: 10px; color: var(--text2); font-size: 12px; }
-.button-view-text { max-height: 50vh; overflow: auto; padding: 12px; border-radius: 8px; background: var(--surface2); color: var(--text); white-space: pre-wrap; overflow-wrap: anywhere; }
+.button-view-text { max-height: 50vh; overflow: auto; padding: 12px; border-radius: 8px; background: var(--surface2); color: var(--text); font-family: inherit; font-size: 13px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
 
 #buttonViewModal .mbtn {
   border: 1px solid transparent;

@@ -14,13 +14,13 @@ python -m http.server 5500
 
 Depois acesse [http://localhost:5500](http://localhost:5500). O servidor local oferece uma origem estável para o armazenamento do navegador; em `file://`, a persistência pode variar entre navegadores.
 
-O núcleo funciona sem conexão. Os **Extras** são opcionais: o aplicativo busca `js/extras-loader.js` pelo jsDelivr, e ele carrega o JS e o CSS de cada módulo. O extra de ícones busca os catálogos de `libs/` pelo jsDelivr a partir da branch `blu/offline`, com fallback para os pacotes oficiais de Bootstrap e Material. O extra de cores oferece a paleta de botões do Blû principal. O extra de visual alterna os botões entre Clássico (gradientes e emojis) e Novo (cores sólidas e indicadores SVG). Os ícones SVG personalizados aparecem somente no Novo. Se o carregador ou um extra não abrir, o núcleo continua funcionando. Cores já salvas continuam aparecendo nos botões, e os dados dos extras permanecem no backup padrão.
+O núcleo funciona sem conexão. Os **Extras** são opcionais: o aplicativo busca `js/extras-loader.js` pelo jsDelivr, e ele carrega o JS e o CSS de cada módulo. O extra de ícones busca os catálogos de `libs/` pelo jsDelivr a partir da branch `blu/offline`, com fallback para os pacotes oficiais de Bootstrap e Material. O extra de cores oferece a paleta de botões do Blû principal: o padrão é o gradiente no Clássico e o roxo no Novo; a outra opção fica disponível no seletor. O extra de visual alterna os botões entre Clássico (gradientes e emojis) e Novo (cores sólidas e indicadores SVG). No Clássico, as seções mostram os emojis escritos no começo do nome. No Novo, o extra de ícones das seções permite escolher SVGs ao editar uma seção e oculta o emoji inicial na tela, sem removê-lo do nome salvo. Se o carregador ou um extra não abrir, o núcleo continua funcionando. Cores já salvas continuam aparecendo nos botões, e os dados dos extras permanecem no backup padrão.
 
 Para testar o carregador, os módulos e os catálogos desta pasta sem publicar no CDN, abra `index.html?extras=local` (ou `http://localhost:5500/?extras=local`). Sem esse parâmetro, todos os Extras são buscados pelo jsDelivr.
 
 ## Dados e compatibilidade
 
-Use **Exportar Backup** para guardar ou transferir seus dados em JSON. A exportação personalizada serve para consulta e pode omitir campos. Ao importar dados do Blû principal, o Offline preserva no backup padrão recursos sem interface local, como itens arquivados e ícones de seção, e avisa sobre as limitações na importação.
+Use **Exportar Backup** para guardar ou transferir seus dados em JSON. A exportação personalizada serve para consulta e pode omitir campos. Ao importar dados do Blû principal, o Offline preserva no backup padrão recursos sem interface local, como itens arquivados, e avisa sobre as limitações na importação. Os ícones de seção importados aparecem no visual Novo quando o extra e o catálogo correspondente carregam.
 
 Os dados não sincronizam automaticamente. Limpar os dados do navegador remove a cópia local; mantenha um backup externo.
 
@@ -33,10 +33,12 @@ js/extras-loader.js Carregador opcional de Extras
 js/extra/icons.js  Módulo opcional de ícones
 js/extra/button-colors.js Módulo opcional de cores
 js/extra/button-visual.js Módulo opcional dos visuais dos botões
+js/extra/section-icons.js Módulo opcional de ícones das seções
 assets/style.css    Estilos
 assets/extra/icons.css Estilos opcionais dos ícones
 assets/extra/button-colors.css Estilos opcionais das cores
 assets/extra/button-visual.css Estilos opcionais dos visuais
+assets/extra/section-icons.css Estilos opcionais dos ícones das seções
 assets/blu.svg      Ícone
 libs/               Catálogos e SVGs de ícones
 ```

@@ -30,6 +30,9 @@
   ];
   const palette = [...solids, ...gradients];
   const defaultBackground = gradients[0].background;
+  const isNewVisual = () => document.body.classList.contains('button-visual-new');
+  const defaultChoice = () => isNewVisual() ? solids[0].color : gradients[0].color;
+  const displayedValue = value => value === defaultChoice() ? '' : value;
   let mounted = false;
   let initialValue = '';
 
@@ -37,7 +40,7 @@
     const entry = palette.find(item => item.color.toLowerCase() === String(color).toLowerCase());
     if (entry) return entry.background || entry.color;
     return /^#[0-9a-f]{6}$/i.test(color) ? color
-      : document.body.classList.contains('button-visual-new') ? solids[0].color : defaultBackground;
+      : isNewVisual() ? solids[0].color : defaultBackground;
   }
 
   function close(focusTrigger = false) {
@@ -55,9 +58,10 @@
 
   function updateTrigger() {
     const select = document.getElementById('bCustomColor');
-    const selected = select.selectedOptions[0];
+    const visibleValue = displayedValue(select.value);
+    const selected = [...select.options].find(option => option.value === visibleValue);
     document.getElementById('buttonColorName').textContent = selected?.textContent || 'Cor padrão';
-    document.getElementById('buttonColorPreview').style.background = backgroundFor(select.value);
+    document.getElementById('buttonColorPreview').style.background = backgroundFor(visibleValue);
   }
 
   function setValue(customVis) {
@@ -65,12 +69,12 @@
     if (!select) return;
     const raw = String(customVis?.color || '');
     const requested = raw.toLowerCase() === '#806700' ? '#856B00' : raw;
-    const selected = requested && requested !== 'legacy-gradient'
+    const selected = requested
       && (customVis?.colorSelected === true || requested.toLowerCase() !== '#7c3aed')
       ? palette.find(entry => entry.color.toLowerCase() === requested.toLowerCase())?.color || requested
       : '';
     select.replaceChildren(new Option('Cor padrão', ''));
-    palette.filter(entry => entry.color !== 'legacy-gradient').forEach(entry => {
+    palette.forEach(entry => {
       select.add(new Option(entry.label, entry.color));
     });
     if (selected && ![...select.options].some(option => option.value === selected)) {
@@ -92,12 +96,12 @@
     const select = document.getElementById('bCustomColor');
     const list = document.getElementById('buttonColorList');
     list.replaceChildren();
-    [...select.options].forEach(option => {
+    [...select.options].filter(option => option.value !== defaultChoice()).forEach(option => {
       const choice = document.createElement('button');
       choice.type = 'button';
       choice.className = 'button-color-choice';
       choice.setAttribute('role', 'option');
-      choice.setAttribute('aria-selected', String(option.value === select.value));
+      choice.setAttribute('aria-selected', String(option.value === displayedValue(select.value)));
       const swatch = document.createElement('span');
       swatch.className = 'button-color-swatch';
       swatch.setAttribute('aria-hidden', 'true');

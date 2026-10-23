@@ -284,6 +284,7 @@ function collectState() {
   document.querySelectorAll('.section-wrap').forEach(section => {
     const buttons = [];
     const previousSection = previousSections.get(section.dataset.id);
+    const { icon: _previousIcon, ...previousSectionFields } = previousSection || {};
 
     section.querySelectorAll('.btn-wrap').forEach(button => {
       const label = button.querySelector('.btn-label');
@@ -300,10 +301,11 @@ function collectState() {
     });
 
     sections.push({
-      ...previousSection,
+      ...previousSectionFields,
       id: section.dataset.id,
       name: section.querySelector('.section-title').textContent,
       collapsed: section.classList.contains('collapsed'),
+      ...(section.dataset.icon ? { icon: section.dataset.icon } : {}),
       buttons
     });
   });
@@ -318,6 +320,7 @@ function getComparableStateString() {
     sections: state.sections.map(section => ({
       id: section.id,
       name: section.name,
+      icon: section.icon || '',
       buttons: section.buttons.map(button => ({
         id: button.id,
         name: button.name,
@@ -573,6 +576,8 @@ let buttonColors = null;
 let buttonColorsLoading = false;
 let buttonVisual = null;
 let buttonVisualLoading = false;
+let sectionIcons = null;
+let sectionIconsLoading = false;
 
 function onlineIconEntries() {
   return onlineIconsReady ? availableIconEntries : [];
@@ -602,8 +607,9 @@ function populateOnlineIconSelect(icon = '') {
   closeOnlineIconPicker();
   select.replaceChildren(new Option('Sem ícone', ''));
   if (onlineIconsReady) {
-    onlineIconEntries().forEach(entry => select.add(new Option(entry.label, entry.id)));
-    if (icon && !onlineIconEntries().some(entry => entry.id === icon)) {
+    const buttonEntries = onlineIconEntries().filter(entry => !entry.sectionOnly);
+    buttonEntries.forEach(entry => select.add(new Option(entry.label, entry.id)));
+    if (icon && !buttonEntries.some(entry => entry.id === icon)) {
       select.add(new Option(`Ícone importado (${icon})`, icon));
     }
   }
@@ -677,6 +683,8 @@ async function loadOnlineIcons() {
   try {
     availableIconEntries = await window.BluExtras.loadExtra('icons');
     onlineIconsReady = availableIconEntries.length > 0;
+    sectionIcons?.setAvailable(onlineIconsReady);
+    if (onlineIconsReady) loadSectionIcons();
     updateAboutExtras();
     refreshOnlineButtonIcons();
     if (document.getElementById('btnModal').classList.contains('open')) {
@@ -686,6 +694,7 @@ async function loadOnlineIcons() {
   } catch (_) {
     availableIconEntries = [];
     onlineIconsReady = false;
+    sectionIcons?.setAvailable(false);
     updateAboutExtras();
     updateOnlineIconOption();
   } finally {
@@ -723,12 +732,35 @@ async function loadButtonVisual() {
   buttonVisualLoading = true;
   try {
     buttonVisual = await window.BluExtras.loadExtra('button-visual', { getSetting, setSetting });
+    loadSectionIcons();
     updateAboutExtras();
   } catch (_) {
     buttonVisual = null;
     updateAboutExtras();
   } finally {
     buttonVisualLoading = false;
+  }
+}
+
+async function loadSectionIcons() {
+  if (!onlineIconsReady || !buttonVisual || sectionIcons || sectionIconsLoading) return;
+  sectionIconsLoading = true;
+  try {
+    sectionIcons = await window.BluExtras.loadExtra('section-icons', {
+      entries: () => availableIconEntries,
+      markup: onlineIconMarkup,
+      save: saveSectionIconChoice,
+      openModal,
+      closeModal,
+      requestModalDismiss,
+      notify
+    });
+    sectionIcons.setAvailable(onlineIconsReady);
+    updateAboutExtras();
+  } catch (_) {
+    sectionIcons = null;
+  } finally {
+    sectionIconsLoading = false;
   }
 }
 
@@ -891,6 +923,7 @@ function renderSection(section, container) {
   const wrap = document.createElement('div');
   wrap.className = 'section-wrap' + (section.collapsed ? ' collapsed' : '');
   wrap.dataset.id = String(section.id);
+  wrap.dataset.icon = typeof section.icon === 'string' ? section.icon : '';
 
   const count = Array.isArray(section.buttons) ? section.buttons.length : 0;
 
@@ -913,6 +946,7 @@ function renderSection(section, container) {
   wrap.querySelector('.section-add-btn').addEventListener('click', () => openAddBtn(wrap.dataset.id));
   wrap.querySelector('.section-rename-btn').addEventListener('click', () => renameSection(wrap.dataset.id));
   wrap.querySelector('.section-del-btn').addEventListener('click', () => deleteSection(wrap.dataset.id));
+  sectionIcons?.decorate(wrap);
   const body = wrap.querySelector('.section-body');
   (section.buttons || []).forEach(button => body.appendChild(createBtnEl(button, String(section.id))));
   setupDrop(body);
@@ -1448,7 +1482,7 @@ function toggleExportEncryption() {
   notify(encryptExportEnabled ? '🔒 Criptografia ativada para o próximo export' : 'Criptografia desativada');
 }
 
-const protectedEditModals = new Set(['btnModal', 'sectionModal']);
+const protectedEditModals = new Set(['btnModal', 'sectionModal', 'sectionIconEditModal']);
 const modalInitialValues = new Map();
 let modalDismissPending = false;
 
@@ -1537,6 +1571,7 @@ function saveSection() {
 async function renameSection(sectionId) {
   const wrap = document.querySelector(`.section-wrap[data-id="${cssEscape(sectionId)}"]`);
   if (!wrap) return;
+  if (sectionIcons?.openEditor(wrap)) return;
 
   const titleEl = wrap.querySelector('.section-title');
   const current = titleEl.textContent;
@@ -1545,10 +1580,24 @@ async function renameSection(sectionId) {
 
   pushHistory();
   titleEl.textContent = newName.trim();
+  sectionIcons?.decorate(wrap);
   wrap.querySelector('.section-add-btn').title = `Adicionar botão em ${newName.trim()}`;
   notify('Seção renomeada!');
   doSearch();
   updateUnsavedChangesUI();
+}
+
+function saveSectionIconChoice(wrap, name, icon) {
+  const title = wrap.querySelector('.section-title');
+  if (name === title.textContent && icon === (wrap.dataset.icon || '')) return;
+  pushHistory();
+  title.textContent = name;
+  wrap.dataset.icon = icon;
+  sectionIcons?.decorate(wrap);
+  wrap.querySelector('.section-add-btn').title = `Adicionar botão em ${name}`;
+  doSearch();
+  updateUnsavedChangesUI();
+  notify('Seção atualizada!');
 }
 
 async function deleteSection(sectionId) {
@@ -2003,13 +2052,12 @@ function getUnsupportedJsonFields(data) {
 
 function getOfflineCompatibilityNotice(data) {
   const limitations = [];
-  // These fields are carried through preservedState/collectState even though
-  // this edition does not provide their corresponding interface.
+  // Fields without a local interface remain in the standard backup.
   if (data.archived && (data.archived.buttons?.length || data.archived.sections?.length)) {
     limitations.push('Itens arquivados: não podem ser consultados, editados ou restaurados no Offline.');
   }
   if (Array.isArray(data.sections) && data.sections.some(section => section?.icon)) {
-    limitations.push('Ícones de seção: não são exibidos nem editados no Offline.');
+    limitations.push('Ícones de seção: a exibição e a edição dependem do extra de ícones e do visual Novo.');
   }
   const sections = Array.isArray(data.sections) ? data.sections : (data.categories || []);
   if (sections.some(section => Array.isArray(section?.buttons) && section.buttons.some(button => button?.customVis?.icon))) {
@@ -2020,7 +2068,7 @@ function getOfflineCompatibilityNotice(data) {
     limitations.push(`Outros campos não reconhecidos: ${unknown.slice(0, 3).join(', ')}${unknown.length > 3 ? ', ...' : ''}.`);
   }
   if (!limitations.length) return '';
-  return `\n\nRecursos com suporte limitado no Blû Offline:\n${limitations.map(item => `• ${item}`).join('\n')}\n\nOs campos importados são mantidos no backup padrão, mesmo quando não aparecem na interface. Editar o texto mantém esses campos; alterar um ícone de botão atualiza o ícone escolhido. Para voltar ao Blû principal, use o backup padrão; exportações personalizadas podem omitir campos.`;
+  return `\n\nRecursos com suporte limitado no Blû Offline:\n${limitations.map(item => `• ${item}`).join('\n')}\n\nOs campos importados são mantidos no backup padrão, mesmo quando não aparecem na interface. Editar o texto mantém esses campos; alterar um ícone atualiza o ícone escolhido. Para voltar ao Blû principal, use o backup padrão; exportações personalizadas podem omitir campos.`;
 }
 
 function triggerImportFilePicker() {
@@ -2891,6 +2939,7 @@ function duplicateContextSection(section) {
     id: makeContextId('s'),
     name: `${section.querySelector('.section-title')?.textContent || 'Seção'} — Cópia`,
     collapsed: section.classList.contains('collapsed'),
+    ...(section.dataset.icon ? { icon: section.dataset.icon } : {}),
     buttons: [...section.querySelectorAll('.btn-wrap')].map(wrap => ({ ...getContextButtonData(wrap), id: makeContextId('b') }))
   };
   pushHistory();
@@ -3130,7 +3179,8 @@ function updateAboutExtras() {
   const active = [
     onlineIconsReady && 'Ícones',
     buttonColors && 'Cores dos botões',
-    buttonVisual && 'Visual Novo/Clássico'
+    buttonVisual && 'Visual Novo/Clássico',
+    sectionIcons?.isAvailable() && 'Ícones das seções'
   ].filter(Boolean);
   let row = document.getElementById('aboutExtras');
   privacyTitle.textContent = active.length
@@ -3513,6 +3563,7 @@ loadExtras();
 window.addEventListener('online', loadExtras);
 window.addEventListener('offline', () => {
   onlineIconsReady = false;
+  sectionIcons?.setAvailable(false);
   updateAboutExtras();
   refreshOnlineButtonIcons();
   updateOnlineIconOption();

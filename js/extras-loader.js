@@ -41,7 +41,8 @@
   const extraPaths = Object.freeze({
     icons: { script: 'js/extra/icons.js', style: 'assets/extra/icons.css' },
     'button-colors': { script: 'js/extra/button-colors.js', style: 'assets/extra/button-colors.css' },
-    'button-visual': { script: 'js/extra/button-visual.js', style: 'assets/extra/button-visual.css' }
+    'button-visual': { script: 'js/extra/button-visual.js', style: 'assets/extra/button-visual.css' },
+    'section-icons': { script: 'js/extra/section-icons.js', style: 'assets/extra/section-icons.css' }
   });
   const modules = new Map();
 

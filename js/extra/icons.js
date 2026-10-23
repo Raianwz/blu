@@ -52,6 +52,8 @@
     const fallback = await officialIconFallback(!hasBootstrap, !hasMaterial);
     return [
       ...(typeof BLU_BRAND_ICONS !== 'undefined' ? BLU_BRAND_ICONS : []),
+      ...(typeof BLU_DEMO_SECTION_ICONS !== 'undefined'
+        ? BLU_DEMO_SECTION_ICONS.map(icon => ({ ...icon, sectionOnly: true })) : []),
       ...(hasBootstrap ? BLU_BOOTSTRAP_ICONS : []),
       ...(hasMaterial ? [...BLU_MATERIAL_ICONS, ...BLU_APP_ICONS] : []),
       ...fallback
