@@ -565,7 +565,7 @@ function customVisFromWrap(wrap) {
 }
 
 // Icon catalogs are optional so a single-file build still works without them.
-const ICON_CDN_BASE = 'https://cdn.jsdelivr.net/gh/Raianwz/blu@main/libs/';
+const ICON_CDN_BASE = 'https://cdn.jsdelivr.net/gh/Raianwz/blu@blu%2Foffline/libs/';
 const ICON_CDN_FILES = ['blu/blu-icons.js', 'bootstrap-icons/button-icons.js', 'material-icons/button-icons.js'];
 const BOOTSTRAP_ICON_CDN = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.2/icons/';
 const MATERIAL_ICON_CDN = 'https://cdn.jsdelivr.net/npm/@material-symbols/svg-400@0.46.0/outlined/';
@@ -601,6 +601,7 @@ function refreshOnlineButtonIcons() {
 
 function populateOnlineIconSelect(icon = '') {
   const select = document.getElementById('bCustomIcon');
+  closeOnlineIconPicker();
   select.replaceChildren(new Option('Sem ícone', ''));
   if (onlineIconsReady) {
     onlineIconEntries().forEach(entry => select.add(new Option(entry.label, entry.id)));
@@ -613,15 +614,56 @@ function populateOnlineIconSelect(icon = '') {
 }
 
 function updateOnlineIconPreview() {
+  const select = document.getElementById('bCustomIcon');
   const preview = document.getElementById('buttonIconPreview');
-  const markup = onlineIconMarkup(document.getElementById('bCustomIcon').value);
+  const markup = onlineIconMarkup(select.value);
   preview.innerHTML = markup;
   preview.hidden = !markup;
+  document.getElementById('buttonIconName').textContent = select.selectedOptions[0]?.textContent || 'Sem ícone';
+}
+
+function closeOnlineIconPicker(focusTrigger = false) {
+  const list = document.getElementById('buttonIconList');
+  list.hidden = true;
+  document.getElementById('buttonIconTrigger').setAttribute('aria-expanded', 'false');
+  if (focusTrigger) document.getElementById('buttonIconTrigger').focus();
+}
+
+function toggleOnlineIconPicker() {
+  const list = document.getElementById('buttonIconList');
+  if (!list.hidden) return closeOnlineIconPicker();
+
+  const select = document.getElementById('bCustomIcon');
+  list.replaceChildren();
+  [...select.options].forEach(option => {
+    const row = document.createElement('button');
+    row.type = 'button';
+    row.className = 'online-icon-choice';
+    row.setAttribute('role', 'option');
+    row.setAttribute('aria-selected', String(option.value === select.value));
+    const preview = document.createElement('span');
+    preview.className = 'online-icon-choice-preview';
+    preview.setAttribute('aria-hidden', 'true');
+    preview.innerHTML = onlineIconMarkup(option.value);
+    const name = document.createElement('span');
+    name.textContent = option.textContent;
+    row.append(preview, name);
+    row.addEventListener('click', () => {
+      select.value = option.value;
+      updateOnlineIconPreview();
+      closeOnlineIconPicker(true);
+    });
+    list.append(row);
+  });
+  list.hidden = false;
+  document.getElementById('buttonIconTrigger').setAttribute('aria-expanded', 'true');
+  list.querySelector('[aria-selected="true"]')?.scrollIntoView({ block: 'nearest' });
 }
 
 function updateOnlineIconOption() {
   const visible = onlineIconsReady && document.getElementById('bVis').value === 'other';
   document.getElementById('buttonIconOption').hidden = !visible;
+  if (!visible) closeOnlineIconPicker();
   updateOnlineIconPreview();
 }
 
@@ -1402,6 +1444,7 @@ function openModal(id) {
 }
 
 function closeModal(id) {
+  if (id === 'btnModal') closeOnlineIconPicker();
   document.getElementById(id).classList.remove('open');
   modalInitialValues.delete(id);
 }
@@ -3262,6 +3305,12 @@ document.addEventListener('keydown', event => {
       return;
     }
 
+    if (!document.getElementById('buttonIconList').hidden) {
+      event.preventDefault();
+      closeOnlineIconPicker(true);
+      return;
+    }
+
     const openModals = [...document.querySelectorAll('.modal-bg.open')];
     const topModal = openModals[openModals.length - 1];
     if (topModal) {
@@ -3278,6 +3327,30 @@ document.addEventListener('keydown', event => {
     if (document.getElementById('btnModal').classList.contains('open')) saveBtn();
     if (document.getElementById('sectionModal').classList.contains('open')) saveSection();
   }
+});
+
+document.getElementById('buttonIconTrigger').addEventListener('keydown', event => {
+  if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+  event.preventDefault();
+  if (document.getElementById('buttonIconList').hidden) toggleOnlineIconPicker();
+  const choices = [...document.querySelectorAll('#buttonIconList .online-icon-choice')];
+  const selected = choices.findIndex(choice => choice.getAttribute('aria-selected') === 'true');
+  choices[event.key === 'ArrowUp' ? Math.max(selected - 1, 0) : Math.min(selected + 1, choices.length - 1)]?.focus();
+});
+
+document.getElementById('buttonIconList').addEventListener('keydown', event => {
+  const choices = [...document.querySelectorAll('#buttonIconList .online-icon-choice')];
+  const index = choices.indexOf(document.activeElement);
+  if (event.key === 'Tab') return closeOnlineIconPicker();
+  if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
+  event.preventDefault();
+  const next = event.key === 'Home' ? 0 : event.key === 'End' ? choices.length - 1
+    : event.key === 'ArrowDown' ? Math.min(index + 1, choices.length - 1) : Math.max(index - 1, 0);
+  choices[next]?.focus();
+});
+
+document.addEventListener('click', event => {
+  if (!document.getElementById('buttonIconOption').contains(event.target)) closeOnlineIconPicker();
 });
 
 document.querySelectorAll('.modal-bg').forEach(background => {

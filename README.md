@@ -12,7 +12,7 @@ python -m http.server 5500
 
 Depois acesse [http://localhost:5500](http://localhost:5500). O servidor local oferece uma origem estável para o armazenamento do navegador; em `file://`, a persistência pode variar entre navegadores.
 
-O núcleo funciona sem conexão. O seletor de ícones é opcional: tenta carregar catálogos pelo jsDelivr e fica oculto se eles não estiverem disponíveis. Ícones já presentes em um JSON continuam preservados no backup padrão.
+O núcleo funciona sem conexão. O seletor de ícones é opcional: carrega os catálogos de `libs/` pelo jsDelivr a partir da branch `blu/offline`, com fallback para os pacotes oficiais de Bootstrap e Material. Se nenhuma fonte estiver disponível, o seletor fica oculto. Ícones já presentes em um JSON continuam preservados no backup padrão.
 
 ## Dados e compatibilidade
 
@@ -30,6 +30,6 @@ assets/blu.svg      Ícone
 libs/               Catálogos e SVGs de ícones
 ```
 
-Para consumir arquivos desta branch pelo jsDelivr, prefira uma tag ou um commit fixo no lugar de uma referência mutável: `https://cdn.jsdelivr.net/gh/Raianwz/blu@<commit>/js/bundle.js`.
+Os arquivos publicados nesta branch podem ser consumidos pelo jsDelivr com `@blu%2Foffline`, por exemplo: `https://cdn.jsdelivr.net/gh/Raianwz/blu@blu%2Foffline/js/bundle.js`. Para uma versão imutável, use uma tag ou um commit no lugar do nome da branch.
 
 Distribuído sob a licença MIT. Consulte [LICENSE](LICENSE). As bibliotecas em `libs/` mantêm suas próprias licenças.
