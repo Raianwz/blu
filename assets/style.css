@@ -1045,6 +1045,9 @@ body.edit-mode .btn-del {
 .about-details > div:last-child { border-bottom: 0; }
 .about-details dt { color: var(--text2); }
 .about-details dd { margin: 0; color: var(--text); text-align: right; font-weight: 600; }
+#aboutExtras { gap: 10px; }
+#aboutExtras dt { flex: 0 0 auto; white-space: nowrap; }
+#aboutExtras dd { font-size: 11px; }
 
 #appVersion.unsaved {
   opacity: 1;

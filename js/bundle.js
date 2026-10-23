@@ -3177,10 +3177,9 @@ function updateAboutExtras() {
   if (!details || !privacyTitle) return;
   const description = document.querySelector('#aboutModal .about-description');
   const active = [
-    onlineIconsReady && 'Ícones',
-    buttonColors && 'Cores dos botões',
-    buttonVisual && 'Visual Novo/Clássico',
-    sectionIcons?.isAvailable() && 'Ícones das seções'
+    buttonVisual && 'Visuais',
+    buttonColors && 'Cores de Botões',
+    onlineIconsReady && (sectionIcons?.isAvailable() ? 'Ícones (Seções/Botões)' : 'Ícones de botões')
   ].filter(Boolean);
   let row = document.getElementById('aboutExtras');
   privacyTitle.textContent = active.length
@@ -3466,6 +3465,18 @@ document.addEventListener('keydown', event => {
   if (event.altKey && key === 'c' && !typing) {
     event.preventDefault();
     toggleExportEncryption();
+    return;
+  }
+
+  if (event.altKey && key === 'j' && !typing) {
+    event.preventDefault();
+    openPopout();
+    return;
+  }
+
+  if (event.altKey && key === 'p' && !typing) {
+    event.preventDefault();
+    openPopoutBlank();
     return;
   }
 
