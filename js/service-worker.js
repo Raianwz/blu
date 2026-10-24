@@ -13,7 +13,7 @@
 // subir a versão abaixo (CACHE_VERSION). Isso cria um cache
 // novo e descarta o antigo na ativação.
 
-const CACHE_VERSION = 'v37';
+const CACHE_VERSION = 'v38';
 const CACHE_NAME = `blu-cache-${CACHE_VERSION}`;
 
 const APP_SHELL = [
@@ -104,7 +104,9 @@ self.addEventListener('fetch', event => {
   const networkOnly = requestUrl.pathname === '/share.html'
     || requestUrl.pathname.startsWith('/share/')
     || requestUrl.pathname.startsWith('/s/')
-    || requestUrl.pathname.startsWith('/api/');
+    || requestUrl.pathname.startsWith('/api/')
+    || requestUrl.pathname === '/sprinklr'
+    || requestUrl.pathname.startsWith('/sprinklr/');
   if (networkOnly) {
     event.respondWith(fetch(request, { cache: 'no-store' }));
     return;

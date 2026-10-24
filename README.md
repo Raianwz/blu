@@ -2,7 +2,7 @@
 
 Blû é um painel para guardar textos reutilizáveis em seções e botões. Serve para copiar rapidamente respostas, comandos, prompts, links e outros conteúdos frequentes.
 
-**Acesse:** [blu.rwz.app](https://blu.rwz.app)
+**Acesse:** [Blû principal](https://blu.rwz.app) · [Blû Offline em /sprinklr/](https://blu.rwz.app/sprinklr/) · [Blû Offline direto](https://offline.blu.rwz.app)
 
 ## O que oferece
 
@@ -15,7 +15,7 @@ Blû é um painel para guardar textos reutilizáveis em seções e botões. Serv
 
 O **Blû principal** salva os dados no `localStorage` do navegador e pode funcionar offline após o carregamento dos arquivos pelo PWA. Links compartilhados ficam disponíveis por até três dias.
 
-O **Blû Offline** é desenvolvido na branch [`blu/offline`](https://github.com/Raianwz/blu/tree/blu/offline), com arquivos próprios para uso local. A página [`sprinklr/`](sprinklr/) na `main` usa um carregador pequeno para buscar o HTML, os estilos, o código e os Extras dessa branch pelo jsDelivr. Ela precisa de conexão e mostra uma opção de tentar novamente se o CDN falhar. O carregador renova os URLs a cada hora para evitar o cache prolongado do navegador, mas novos commits ainda podem demorar a aparecer por causa do cache da branch no CDN. A página mantém a URL e a origem anteriores, preservando os dados já salvos em `blu:offline` no mesmo navegador e domínio. O Offline não depende de funções de compartilhamento e pode importar e exportar JSON.
+O **Blû Offline** é desenvolvido na branch [`blu/offline`](https://github.com/Raianwz/blu/tree/blu/offline), com arquivos próprios para uso local. Ele é publicado separadamente em [offline.blu.rwz.app](https://offline.blu.rwz.app). Na Vercel, a rota [blu.rwz.app/sprinklr/](https://blu.rwz.app/sprinklr/) encaminha as requisições para essa publicação sem mudar o endereço no navegador. Isso mantém a origem `blu.rwz.app` e o acesso aos dados já salvos em `blu:offline` nessa origem. O Offline não depende das funções de compartilhamento e pode importar e exportar JSON. Seus recursos extras dependem de conexão quando carregados pela CDN.
 
 As duas versões não sincronizam dados automaticamente. Exporte um JSON para manter um backup ou transferir conteúdo entre navegadores e dispositivos. Limpar os dados do site também apaga o conteúdo salvo localmente.
 
@@ -29,7 +29,7 @@ Não há etapa de build para o projeto principal. Na raiz do repositório, inici
 python -m http.server 5500
 ```
 
-Abra [http://localhost:5500](http://localhost:5500) para o Blû principal ou [http://localhost:5500/sprinklr/](http://localhost:5500/sprinklr/) para a página do Offline. Essa página precisa alcançar o jsDelivr. Para usar o Offline sem conexão, abra os arquivos da branch `blu/offline`.
+Abra [http://localhost:5500](http://localhost:5500) para o Blû principal. A rota `/sprinklr/` depende dos rewrites da Vercel e não funciona nesse servidor estático. Para rodar o Offline localmente, use os arquivos da branch `blu/offline`; os recursos essenciais funcionam sem conexão.
 
 O servidor estático não executa as rotas `api/`. Criar e abrir links compartilhados exige o ambiente de funções da Vercel com Upstash configurado; as demais funções do painel podem ser usadas localmente.
 
@@ -38,7 +38,7 @@ O servidor estático não executa as rotas `api/`. Criar e abrir links compartil
 - `index.html` e `share.html`: aplicação principal e página de links compartilhados.
 - `js/` e `assets/`: código, estilos e recursos da aplicação principal.
 - `libs/`: catálogos de ícones e dados de demonstração.
-- `sprinklr/`: página de entrada e carregador do Offline na `main`, com a interface carregada da branch `blu/offline` pelo CDN.
+- `vercel.json`: encaminha `/sprinklr/` para a publicação separada do Offline.
 - `api/`: funções de compartilhamento; `docs/roadmap.md`: planejamento.
 
 O front-end usa HTML, CSS e JavaScript sem framework. A [ordem de carregamento dos scripts](js/README.md) é intencional.

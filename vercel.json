@@ -7,8 +7,13 @@
       ]
     }
   ],
+  "redirects": [
+    { "source": "/sprinklr", "destination": "/sprinklr/", "permanent": false }
+  ],
   "rewrites": [
     { "source": "/share/:code", "destination": "/share.html" },
-    { "source": "/s/:code", "destination": "/share.html" }
+    { "source": "/s/:code", "destination": "/share.html" },
+    { "source": "/sprinklr/", "destination": "https://offline.blu.rwz.app/" },
+    { "source": "/sprinklr/:path*", "destination": "https://offline.blu.rwz.app/:path*" }
   ]
 }
