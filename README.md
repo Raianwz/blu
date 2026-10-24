@@ -15,7 +15,7 @@ Blû é um painel para guardar textos reutilizáveis em seções e botões. Serv
 
 O **Blû principal** salva os dados no `localStorage` do navegador e pode funcionar offline após o carregamento dos arquivos pelo PWA. Links compartilhados ficam disponíveis por até três dias.
 
-O **Blû Offline** é desenvolvido na branch [`blu/offline`](https://github.com/Raianwz/blu/tree/blu/offline), com arquivos próprios para uso local. A página [`sprinklr/`](sprinklr/) na `main` carrega uma revisão publicada dessa branch pelo jsDelivr e precisa de conexão. O HTML fixa a mesma revisão para código, estilos e Extras; ao atualizar o Offline hospedado, atualize essas referências juntas. A página mantém a URL e a origem anteriores, preservando os dados já salvos em `blu:offline` no mesmo navegador e domínio. O Offline não depende de funções de compartilhamento e pode importar e exportar JSON.
+O **Blû Offline** é desenvolvido na branch [`blu/offline`](https://github.com/Raianwz/blu/tree/blu/offline), com arquivos próprios para uso local. A página [`sprinklr/`](sprinklr/) na `main` usa um carregador pequeno para buscar o HTML, os estilos, o código e os Extras dessa branch pelo jsDelivr. Ela precisa de conexão e mostra uma opção de tentar novamente se o CDN falhar. O carregador renova os URLs a cada hora para evitar o cache prolongado do navegador, mas novos commits ainda podem demorar a aparecer por causa do cache da branch no CDN. A página mantém a URL e a origem anteriores, preservando os dados já salvos em `blu:offline` no mesmo navegador e domínio. O Offline não depende de funções de compartilhamento e pode importar e exportar JSON.
 
 As duas versões não sincronizam dados automaticamente. Exporte um JSON para manter um backup ou transferir conteúdo entre navegadores e dispositivos. Limpar os dados do site também apaga o conteúdo salvo localmente.
 
@@ -38,7 +38,7 @@ O servidor estático não executa as rotas `api/`. Criar e abrir links compartil
 - `index.html` e `share.html`: aplicação principal e página de links compartilhados.
 - `js/` e `assets/`: código, estilos e recursos da aplicação principal.
 - `libs/`: catálogos de ícones e dados de demonstração.
-- `sprinklr/`: página de entrada do Offline na `main`, com código e estilos carregados de uma revisão da branch `blu/offline` pelo CDN.
+- `sprinklr/`: página de entrada e carregador do Offline na `main`, com a interface carregada da branch `blu/offline` pelo CDN.
 - `api/`: funções de compartilhamento; `docs/roadmap.md`: planejamento.
 
 O front-end usa HTML, CSS e JavaScript sem framework. A [ordem de carregamento dos scripts](js/README.md) é intencional.
