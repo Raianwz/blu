@@ -2,7 +2,8 @@
 
 Blû é um painel para guardar textos reutilizáveis em seções e botões. Serve para copiar rapidamente respostas, comandos, prompts, links e outros conteúdos frequentes.
 
-**Acesse:** [Blû principal](https://blu.rwz.app) · [Blû Offline em /sprinklr/](https://blu.rwz.app/sprinklr/) · [Blû Offline direto](https://offline.blu.rwz.app)
+**Acesse:** [Blû principal](https://blu.rwz.app)  
+  <sup> <sub> [Blû Offline](https://blu.rwz.app/sprinklr/) </sub> </sup>
 
 ## O que oferece
 
