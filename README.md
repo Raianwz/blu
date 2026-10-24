@@ -15,7 +15,7 @@ Blû é um painel para guardar textos reutilizáveis em seções e botões. Serv
 
 O **Blû principal** salva os dados no `localStorage` do navegador e pode funcionar offline após o carregamento dos arquivos pelo PWA. Links compartilhados ficam disponíveis por até três dias.
 
-O **Blû Offline**, em [`sprinklr/`](sprinklr/), é uma versão independente pensada para distribuição em um HTML único ou com arquivos locais. Usa a chave `blu:offline`, não depende de funções de compartilhamento, e pode importar e exportar JSON. Os ícones opcionais são carregados de uma CDN quando há conexão.
+O **Blû Offline** é desenvolvido na branch [`blu/offline`](https://github.com/Raianwz/blu/tree/blu/offline), com arquivos próprios para uso local. A página [`sprinklr/`](sprinklr/) na `main` carrega uma revisão publicada dessa branch pelo jsDelivr e precisa de conexão. O HTML fixa a mesma revisão para código, estilos e Extras; ao atualizar o Offline hospedado, atualize essas referências juntas. A página mantém a URL e a origem anteriores, preservando os dados já salvos em `blu:offline` no mesmo navegador e domínio. O Offline não depende de funções de compartilhamento e pode importar e exportar JSON.
 
 As duas versões não sincronizam dados automaticamente. Exporte um JSON para manter um backup ou transferir conteúdo entre navegadores e dispositivos. Limpar os dados do site também apaga o conteúdo salvo localmente.
 
@@ -29,7 +29,7 @@ Não há etapa de build para o projeto principal. Na raiz do repositório, inici
 python -m http.server 5500
 ```
 
-Abra [http://localhost:5500](http://localhost:5500) para o Blû principal ou [http://localhost:5500/sprinklr/](http://localhost:5500/sprinklr/) para o Blû Offline. Nesta árvore, o HTML do Offline usa caminhos absolutos `/sprinklr/`, então também deve ser aberto pelo servidor local.
+Abra [http://localhost:5500](http://localhost:5500) para o Blû principal ou [http://localhost:5500/sprinklr/](http://localhost:5500/sprinklr/) para a página do Offline. Essa página precisa alcançar o jsDelivr. Para usar o Offline sem conexão, abra os arquivos da branch `blu/offline`.
 
 O servidor estático não executa as rotas `api/`. Criar e abrir links compartilhados exige o ambiente de funções da Vercel com Upstash configurado; as demais funções do painel podem ser usadas localmente.
 
@@ -38,7 +38,7 @@ O servidor estático não executa as rotas `api/`. Criar e abrir links compartil
 - `index.html` e `share.html`: aplicação principal e página de links compartilhados.
 - `js/` e `assets/`: código, estilos e recursos da aplicação principal.
 - `libs/`: catálogos de ícones e dados de demonstração.
-- `sprinklr/`: Blû Offline, mantido de forma independente.
+- `sprinklr/`: página de entrada do Offline na `main`, com código e estilos carregados de uma revisão da branch `blu/offline` pelo CDN.
 - `api/`: funções de compartilhamento; `docs/roadmap.md`: planejamento.
 
 O front-end usa HTML, CSS e JavaScript sem framework. A [ordem de carregamento dos scripts](js/README.md) é intencional.

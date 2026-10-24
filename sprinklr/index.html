@@ -4,9 +4,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="shortcut icon" href="/sprinklr/blu.svg?sprinklr-version=1.6.5" type="image/svg+xml">
+  <link rel="shortcut icon" href="/sprinklr/assets/blu.svg?sprinklr-version=1.7.0" type="image/svg+xml">
   <title>Blû Offline</title>
-  <link rel="stylesheet" href="/sprinklr/style.css?sprinklr-version=1.6.5">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Raianwz/blu@8e511ef2c783d546ce3c0dbccb094e3717e299d2/assets/style.css">
 </head>
 
 <body>
@@ -96,7 +96,6 @@
           <path d="m17 8-5-5-5 5" />
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
         </svg><span class="menu-btn-label">Importar Backup</span></button>
-      <button class="menu-btn" onclick="openCustomExportModal()" title="Escolher dados e formato da exportação"><svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg><span class="menu-btn-label">Exportação Personalizada</span></button>
     </div>
 
     <div class="menu-sep"></div>
@@ -140,14 +139,14 @@
     <div class="menu-sep"></div>
 
     <div class="menu-group">
-      <button class="menu-btn" onclick="openPopout()" title="Abrir em nova janela"><svg class="menu-icon"
+      <button class="menu-btn" onclick="openPopout()" title="Abrir em nova janela — Alt + J"><svg class="menu-icon"
           viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
           stroke-linejoin="round" aria-hidden="true">
           <path d="M15 3h6v6" />
           <path d="M10 14 21 3" />
           <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
         </svg><span class="menu-btn-label">Nova Janela</span></button>
-      <button class="menu-btn" onclick="openPopoutBlank()" title="Abrir em pop-out (about:blank)"><svg class="menu-icon"
+      <button class="menu-btn" onclick="openPopoutBlank()" title="Abrir em pop-out (about:blank) — Alt + P"><svg class="menu-icon"
           viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
           stroke-linejoin="round" aria-hidden="true">
           <rect x="2" y="4" width="20" height="16" rx="2" />
@@ -186,16 +185,22 @@
           placeholder="Texto que será copiado ao clicar"></textarea></div>
       <div class="form-group"><label>Tag / Grupo</label><input id="bTag" list="tagOptions"
           placeholder="(opcional)"><datalist id="tagOptions"></datalist></div>
-      <div class="form-group"><label>Visibilidade</label><select id="bVis" onchange="updateOnlineIconOption()">
+      <div class="form-group"><label>Visibilidade</label><select id="bVis" onchange="updateButtonExtraOptions()">
           <option value="other">Outro (padrão)</option>
           <option value="public">&#127758; Público</option>
           <option value="private">&#128274; Privado</option>
         </select></div>
       <div class="form-group" id="buttonIconOption" hidden>
-        <label for="bCustomIcon">Ícone (requer conexão)</label>
-        <select id="bCustomIcon" onchange="updateOnlineIconPreview()"></select>
-        <span id="buttonIconPreview" class="online-icon-preview" aria-hidden="true" hidden></span>
+        <label id="buttonIconLabel" for="buttonIconTrigger">Ícone (visível no visual Novo)</label>
+        <select id="bCustomIcon" hidden tabindex="-1" aria-hidden="true"></select>
+        <button type="button" id="buttonIconTrigger" class="online-icon-trigger" aria-haspopup="listbox"
+          aria-expanded="false" aria-controls="buttonIconList" onclick="toggleOnlineIconPicker()">
+          <span id="buttonIconPreview" class="online-icon-preview" aria-hidden="true" hidden></span>
+          <span id="buttonIconName">Sem ícone</span><span class="online-icon-chevron" aria-hidden="true">⌄</span>
+        </button>
+        <div id="buttonIconList" class="online-icon-list" role="listbox" aria-labelledby="buttonIconLabel" hidden></div>
       </div>
+      <div id="buttonColorMount" class="form-group" hidden></div>
       <div class="modal-footer"><button class="mbtn cancel" onclick="requestModalDismiss('btnModal')">Cancelar</button><button
           class="mbtn primary" onclick="saveBtn()">Salvar</button></div>
     </div>
@@ -300,11 +305,20 @@
 
   <div class="modal-bg" id="aboutModal">
     <div class="modal about-modal">
-      <div class="about-brand"><img src="/sprinklr/blu.svg" alt="" width="64" height="64"><div><h2>Blû Offline</h2><span id="aboutVersion">Versão</span><a class="about-source-link" href="https://github.com/Raianwz/blu" target="_blank" rel="noopener noreferrer">Ver código-fonte</a></div></div>
+      <div class="about-brand"><img src="/sprinklr/assets/blu.svg" alt="" width="64" height="64"><div><h2>Blû Offline</h2><span id="aboutVersion">Versão</span><a class="about-source-link" href="https://github.com/Raianwz/blu/tree/blu/offline" target="_blank" rel="noopener noreferrer">Ver código-fonte</a></div></div>
       <p class="about-description">Versão offline do Blû, uma ferramenta para organizar textos reutilizáveis em botões e seções, encontrá-los rapidamente e copiá-los com um clique. Foi pensada para deixar informações frequentes sempre à mão, com funcionamento totalmente local.</p>
       <div class="about-privacy"><strong>Funcionamento totalmente local.</strong><span>Botões, seções e preferências permanecem armazenados neste navegador. Use a exportação JSON para manter um backup fora dele.</span></div>
       <dl class="about-details"><div><dt>Edição</dt><dd>Desktop local</dd></div><div><dt>Armazenamento</dt><dd>Neste navegador</dd></div></dl>
       <div class="modal-footer"><button class="mbtn primary" type="button" onclick="closeModal('aboutModal')">Fechar</button></div>
+    </div>
+  </div>
+
+  <div class="modal-bg" id="aboutExtrasModal">
+    <div class="modal about-extras-modal">
+      <h2>Extras carregados</h2>
+      <p>Recursos disponíveis nesta sessão:</p>
+      <ul id="aboutExtrasList" class="about-extras-list"></ul>
+      <div class="modal-footer"><button class="mbtn primary" type="button" onclick="closeModal('aboutExtrasModal')">Fechar</button></div>
     </div>
   </div>
 
@@ -352,6 +366,14 @@
             <td>Ativar/desativar criptografia do export</td>
           </tr>
           <tr>
+            <td><kbd>Alt</kbd> + <kbd>J</kbd></td>
+            <td>Abrir uma nova janela do Blû</td>
+          </tr>
+          <tr>
+            <td><kbd>Alt</kbd> + <kbd>P</kbd></td>
+            <td>Abrir o Blû em um pop-out</td>
+          </tr>
+          <tr>
             <td><kbd>Ctrl</kbd> + <kbd>S</kbd></td>
             <td>Exportar</td>
           </tr>
@@ -392,30 +414,6 @@
     </div>
   </div>
 
-  <div class="modal-bg" id="customExportModal">
-    <div class="modal custom-export-modal">
-      <h2>🧰 Exportação Personalizada</h2>
-      <div class="custom-export-tabs" role="tablist" aria-label="Etapas da exportação"><button id="customExportConfigTab" class="active" type="button" role="tab" aria-selected="true" onclick="setCustomExportTab('config')">Configurar</button><button id="customExportPreviewTab" type="button" role="tab" aria-selected="false" onclick="setCustomExportTab('preview')">Prévia</button></div>
-      <div id="customExportConfigPanel" class="custom-export-panel">
-        <div class="custom-export-top-grid">
-          <label>Preset<select id="customExportPreset" onchange="applyCustomExportPreset(this.value)"><option value="index">Índice de seções e botões</option><option value="full">Backup completo</option><option value="content">Somente conteúdo</option><option value="names">Somente nomes</option><option value="spreadsheet">Planilha de botões</option><option value="documentation">Documentação Markdown</option><option value="custom">Personalizado</option></select></label>
-          <label>Formato<select id="customExportFormat" onchange="updateCustomExportUI()"><option value="json">JSON</option><option value="text">Texto</option><option value="markdown">Markdown</option><option value="csv">CSV</option></select></label>
-          <label>Escopo<select id="customExportScope" onchange="updateCustomExportUI()"><option value="all">Tudo</option><option value="search">Resultados da pesquisa</option><option value="public">Somente públicos</option><option value="private">Somente privados</option><option value="other">Visibilidade “Outro”</option><option value="sections">Seções selecionadas</option><option value="tags">Tags selecionadas</option></select></label>
-          <label>Organização<select id="customExportStructure" onchange="markCustomExportCustomized()"><option value="hierarchy">Preservar hierarquia</option><option value="flat">Lista plana</option></select></label>
-        </div>
-        <div class="custom-export-options-scroll">
-          <section id="customExportScopeOptions" class="custom-export-group" hidden><div class="custom-export-group-head"><strong id="customExportScopeTitle">Selecionar itens</strong><span><button type="button" onclick="toggleCustomExportScopeItems(true)">Todos</button><button type="button" onclick="toggleCustomExportScopeItems(false)">Nenhum</button></span></div><div id="customExportScopeList" class="custom-export-scope-list"></div></section>
-          <section class="custom-export-group"><div class="custom-export-group-head"><strong>Estrutura e seções</strong><span><button type="button" onclick="toggleCustomExportFields('section',true)">Todos</button><button type="button" onclick="toggleCustomExportFields('section',false)">Nenhum</button></span></div><div class="custom-export-check-grid"><label><input type="checkbox" data-export-field="globalTags" data-field-group="section"> Lista global de tags</label><label><input type="checkbox" data-export-field="sections" data-field-group="section"> Incluir seções</label><label><input type="checkbox" data-export-field="sectionId" data-field-group="section"> IDs das seções</label><label><input type="checkbox" data-export-field="sectionName" data-field-group="section"> Nomes das seções</label><label><input type="checkbox" data-export-field="sectionCollapsed" data-field-group="section"> Estado das seções</label><label><input type="checkbox" data-export-field="sectionCount" data-field-group="section"> Quantidade de botões</label><label><input type="checkbox" data-export-field="includeEmpty" data-field-group="section"> Incluir seções vazias</label><label><input type="checkbox" data-export-field="metadata" data-field-group="section"> Metadados</label></div></section>
-          <section class="custom-export-group"><div class="custom-export-group-head"><strong>Botões</strong><span><button type="button" onclick="toggleCustomExportFields('button',true)">Todos</button><button type="button" onclick="toggleCustomExportFields('button',false)">Nenhum</button></span></div><div class="custom-export-check-grid"><label><input type="checkbox" data-export-field="buttons" data-field-group="button"> Incluir botões</label><label><input type="checkbox" data-export-field="buttonId" data-field-group="button"> IDs dos botões</label><label><input type="checkbox" data-export-field="buttonName" data-field-group="button"> Nomes dos botões</label><label><input type="checkbox" data-export-field="buttonText" data-field-group="button"> Textos dos botões</label><label><input type="checkbox" data-export-field="buttonTag" data-field-group="button"> Tags dos botões</label><label><input type="checkbox" data-export-field="buttonVisibility" data-field-group="button"> Visibilidade</label><label><input type="checkbox" data-export-field="buttonSection" data-field-group="button"> Seção de origem</label></div></section>
-          <section class="custom-export-group"><div class="custom-export-group-head"><strong>Transformações</strong></div><div class="custom-export-control-grid"><label>Estado das seções<select id="customExportSectionState" onchange="markCustomExportCustomized()"><option value="current">Preservar atual</option><option value="expanded">Todas expandidas</option><option value="collapsed">Todas minimizadas</option><option value="omit">Não incluir</option></select></label><label>Ordenação<select id="customExportOrder" onchange="markCustomExportCustomized()"><option value="current">Ordem atual</option><option value="alphabetical">Ordem alfabética</option></select></label><label id="customExportDelimiterWrap" hidden>Separador CSV<select id="customExportDelimiter" onchange="markCustomExportCustomized()"><option value="semicolon">Ponto e vírgula</option><option value="comma">Vírgula</option></select></label></div><div class="custom-export-check-grid compact"><label><input id="customExportRemoveEmpty" type="checkbox" onchange="markCustomExportCustomized()"> Remover campos vazios</label><label><input id="customExportNormalizeTags" type="checkbox" onchange="markCustomExportCustomized()"> Normalizar tags</label><label><input id="customExportStripEmoji" type="checkbox" onchange="markCustomExportCustomized()"> Remover emojis dos nomes</label><label><input id="customExportSimplifyBreaks" type="checkbox" onchange="markCustomExportCustomized()"> Simplificar quebras de linha</label><label><input id="customExportCompactJson" type="checkbox" onchange="markCustomExportCustomized()"> JSON compacto</label><label><input id="customExportCsvBom" type="checkbox" checked onchange="markCustomExportCustomized()"> CSV compatível com Excel</label></div></section>
-        </div>
-      </div>
-      <div id="customExportPreviewPanel" class="custom-export-panel" hidden><textarea id="customExportPreview" readonly spellcheck="false" wrap="soft" aria-label="Prévia do arquivo"></textarea></div>
-      <div id="customExportSummary" class="custom-export-summary"></div><div id="customExportWarnings" class="custom-export-warnings"></div>
-      <div class="modal-footer custom-export-footer"><button class="mbtn cancel" type="button" onclick="closeModal('customExportModal')">Cancelar</button><button class="mbtn ghost" type="button" onclick="setCustomExportTab('preview')">Visualizar</button><button id="customExportDownloadBtn" class="mbtn primary" type="button" onclick="downloadCustomExport()">Exportar</button></div>
-    </div>
-  </div>
-
   <div id="backupBanner">
     <span class="backup-banner-icon">💾</span>
     <span class="backup-banner-text">Opa, você deseja fazer um backup das últimas alterações?</span>
@@ -427,7 +425,62 @@
 
   <div id="notifArea"></div>
   <button id="appVersion" type="button" onclick="openAboutModal()">Blû</button>
-  <script src="/sprinklr/bundle.js?sprinklr-version=1.6.5"></script>
+  <script>
+    // Keep the hosted entry point on one published Offline revision.
+    (function () {
+      const base = 'https://cdn.jsdelivr.net/gh/Raianwz/blu@8e511ef2c783d546ce3c0dbccb094e3717e299d2/';
+      const paths = {
+        icons: ['js/extra/icons.js', 'assets/extra/icons.css'],
+        'button-colors': ['js/extra/button-colors.js', 'assets/extra/button-colors.css'],
+        'button-visual': ['js/extra/button-visual.js', 'assets/extra/button-visual.css'],
+        'section-icons': ['js/extra/section-icons.js', 'assets/extra/section-icons.css'],
+        'search-history': ['js/extra/search-history.js', 'assets/extra/search-history.css'],
+        'custom-export': ['js/extra/custom-export.js', 'assets/extra/custom-export.css']
+      };
+      const assets = new Map();
+      const modules = new Map();
+
+      function loadAsset(file, type) {
+        const key = `${type}:${file}`;
+        if (assets.has(key)) return assets.get(key);
+        const promise = new Promise((resolve, reject) => {
+          const element = document.createElement(type === 'script' ? 'script' : 'link');
+          const timeout = setTimeout(() => {
+            element.remove();
+            reject(new Error(`Extra indisponível: ${file}`));
+          }, 8000);
+          if (type === 'script') element.src = base + file;
+          else { element.rel = 'stylesheet'; element.href = base + file; }
+          element.crossOrigin = 'anonymous';
+          element.onload = () => { clearTimeout(timeout); resolve(element); };
+          element.onerror = () => {
+            clearTimeout(timeout);
+            element.remove();
+            reject(new Error(`Extra indisponível: ${file}`));
+          };
+          document.head.appendChild(element);
+        });
+        assets.set(key, promise);
+        promise.catch(() => assets.delete(key));
+        return promise;
+      }
+
+      window.BluExtras = Object.freeze({
+        register(name, module) { if (paths[name]) modules.set(name, module); },
+        loadScript: file => loadAsset(file, 'script'),
+        loadStyle: file => loadAsset(file, 'style'),
+        async loadExtra(name, context) {
+          const files = paths[name];
+          if (!files) throw new Error(`Extra desconhecido: ${name}`);
+          await Promise.all([loadAsset(files[0], 'script'), loadAsset(files[1], 'style')]);
+          const module = modules.get(name);
+          if (!module) throw new Error(`Extra não registrado: ${name}`);
+          return module.load(context);
+        }
+      });
+    })();
+  </script>
+  <script src="https://cdn.jsdelivr.net/gh/Raianwz/blu@8e511ef2c783d546ce3c0dbccb094e3717e299d2/js/bundle.js"></script>
 </body>
 
 </html>
