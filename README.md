@@ -1,52 +1,29 @@
 # Blû Offline
 
-Versão atual: **1.7.0 LTS**.
+Uma versão independente do [Blû](https://github.com/Raianwz/blu) para guardar textos em seções e copiá-los com um clique. Funciona localmente, sem conta, servidor ou PWA. Os dados ficam neste navegador.
 
-Versão independente do [Blû](https://github.com/Raianwz/blu), feita para organizar e copiar textos sem depender de conta, servidor ou PWA. Seções, botões e tags ficam salvos no navegador em `blu:offline`.
+**Versão:** 1.7.0 LTS · **Acesse:** [offline.blu.rwz.app](https://offline.blu.rwz.app) ou [blu.rwz.app/sprinklr/](https://blu.rwz.app/sprinklr/)
 
-## Rodar
+## Usar no computador
 
-Abra `index.html` mantendo as pastas `js/` e `assets/` na mesma estrutura, ou sirva a pasta por HTTP:
+Baixe os arquivos desta branch, mantendo as pastas `js/` e `assets/` ao lado de `index.html`, e abra o HTML. Se preferir uma origem local estável para os dados, rode na pasta:
 
 ```bash
 python -m http.server 5500
 ```
 
-Depois acesse [http://localhost:5500](http://localhost:5500). O servidor local oferece uma origem estável para o armazenamento do navegador; em `file://`, a persistência pode variar entre navegadores.
+Depois abra [localhost:5500](http://localhost:5500). O núcleo funciona sem internet. Em `file://`, a persistência dos dados pode variar conforme o navegador.
 
-O núcleo funciona sem conexão. Os **Extras** são opcionais: o aplicativo busca `js/extras-loader.js` pelo jsDelivr, e ele carrega o JS e o CSS de cada módulo. O extra de ícones busca os catálogos de `libs/` pelo jsDelivr a partir da branch `blu/offline`, com fallback para os pacotes oficiais de Bootstrap e Material. O extra de cores oferece a paleta de botões do Blû principal: o padrão é o gradiente no Clássico e o roxo no Novo; a outra opção fica disponível no seletor. O extra de visual alterna os botões entre Clássico (gradientes e emojis) e Novo (cores sólidas e indicadores SVG). No Clássico, as seções mostram os emojis escritos no começo do nome. No Novo, o extra de ícones das seções permite escolher SVGs ao editar uma seção e oculta o emoji inicial na tela, sem removê-lo do nome salvo. O extra de histórico de pesquisas fica em **Conteúdo**, começa desligado e guarda neste navegador até seis buscas com resultados quando ativado. A **Exportação Personalizada** aparece em **Dados** quando seu Extra carrega. Se o carregador ou um extra não abrir, o núcleo continua funcionando. Cores já salvas continuam aparecendo nos botões, e os dados dos extras permanecem no backup padrão.
+## Extras
 
-Para testar o carregador, os módulos e os catálogos desta pasta sem publicar no CDN, abra `index.html?extras=local` (ou `http://localhost:5500/?extras=local`). Sem esse parâmetro, todos os Extras são buscados pelo jsDelivr.
+Com conexão, o Blû tenta carregar pelo jsDelivr recursos opcionais: ícones, cores, visuais Clássico/Novo, ícones de seções, histórico de pesquisas e exportação personalizada. Se algum Extra falhar, as funções básicas continuam disponíveis.
 
-## Dados e compatibilidade
+Para testar os Extras desta cópia local, use `?extras=local` no endereço, por exemplo `http://localhost:5500/?extras=local`.
 
-Use **Exportar Backup** para guardar ou transferir seus dados em JSON. O Extra de exportação personalizada serve para consulta e pode omitir campos. Ao importar dados do Blû principal, o Offline preserva no backup padrão recursos sem interface local, como itens arquivados, e avisa sobre as limitações na importação. Os ícones de seção importados aparecem no visual Novo quando o extra e o catálogo correspondente carregam.
+## Seus dados
 
-Os dados não sincronizam automaticamente. Limpar os dados do navegador remove a cópia local; mantenha um backup externo.
+Seções, botões e preferências são salvos no navegador. Use **Exportar Backup** para guardar um JSON ou transferir os dados; não há sincronização automática. Limpar os dados do site apaga a cópia local.
 
-## Arquivos
+O backup padrão pode ser transferido entre o Blû principal e o Offline. Na importação, o Offline avisa quando encontra recursos com suporte limitado e preserva esses campos para o próximo backup padrão. A exportação personalizada pode omitir campos e não substitui esse backup.
 
-```text
-index.html          Interface
-js/bundle.js        Aplicação
-js/extras-loader.js Carregador opcional de Extras
-js/extra/icons.js  Módulo opcional de ícones
-js/extra/button-colors.js Módulo opcional de cores
-js/extra/button-visual.js Módulo opcional dos visuais dos botões
-js/extra/section-icons.js Módulo opcional de ícones das seções
-js/extra/search-history.js Módulo opcional do histórico de pesquisas
-js/extra/custom-export.js Módulo opcional de exportação personalizada
-assets/style.css    Estilos
-assets/extra/icons.css Estilos opcionais dos ícones
-assets/extra/button-colors.css Estilos opcionais das cores
-assets/extra/button-visual.css Estilos opcionais dos visuais
-assets/extra/section-icons.css Estilos opcionais dos ícones das seções
-assets/extra/search-history.css Estilos opcionais do histórico de pesquisas
-assets/extra/custom-export.css Estilos opcionais de exportação personalizada
-assets/blu.svg      Ícone
-libs/               Catálogos e SVGs de ícones
-```
-
-Os arquivos publicados nesta branch podem ser consumidos pelo jsDelivr com `@blu%2Foffline`, por exemplo: `https://cdn.jsdelivr.net/gh/Raianwz/blu@blu%2Foffline/js/bundle.js`. Para uma versão imutável, use uma tag ou um commit no lugar do nome da branch.
-
-Distribuído sob a licença MIT. Consulte [LICENSE](LICENSE). As bibliotecas em `libs/` mantêm suas próprias licenças.
+Distribuído sob a licença [MIT](LICENSE). As bibliotecas em `libs/` mantêm suas próprias licenças.
