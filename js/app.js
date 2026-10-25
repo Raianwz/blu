@@ -476,6 +476,7 @@ function openPopoutBlank() {
   // backup aberto) antes de escrever — assim a nova janela nunca nasce com
   // ele visível, independente do timing de reexecução dos scripts.
   const clone = document.documentElement.cloneNode(true);
+  clone.querySelectorAll('script[data-blu-loaded-by-loader]').forEach(script => script.remove());
   clone.querySelector('#backupBanner')?.classList.remove('show');
   clone.querySelector('#updateBanner')?.setAttribute('hidden', '');
   clone.querySelector('#halloweenPaletteBanner')?.setAttribute('hidden', '');
@@ -523,7 +524,7 @@ function registerServiceWorker() {
     return;
   }
 
-  window.addEventListener('load', () => {
+  const startServiceWorker = () => {
     const updateBanner = document.getElementById('updateBanner');
     const hadController = !!navigator.serviceWorker.controller;
     let lastUpdateCheck = 0;
@@ -557,7 +558,9 @@ function registerServiceWorker() {
       })
       .catch(error => console.warn('Não foi possível registrar o service worker:', error))
       .finally(() => document.dispatchEvent(new Event('blu:update-check-complete')));
-  });
+  };
+  if (document.readyState === 'complete') startServiceWorker();
+  else window.addEventListener('load', startServiceWorker, { once: true });
 }
 
 // --- Atalhos globais e wiring de eventos --------------------

@@ -1,8 +1,9 @@
 # JavaScript
 
-Os scripts do Blû ainda são carregados como scripts clássicos e compartilham o
-escopo global. Por isso, a ordem declarada em `index.html` é intencional e deve
-ser preservada até uma futura migração para módulos.
+Os scripts do Blû ainda são clássicos e compartilham o escopo global. O
+`index.html` carrega `js/loader.js`, que mantém a ordem necessária e inicia
+`js/app.js` depois dos demais. Preserve essa ordem até uma futura migração
+para módulos.
 
 ## Estrutura
 
@@ -12,6 +13,7 @@ ser preservada até uma futura migração para módulos.
 - `features/`: comportamentos completos disponibilizados ao usuário.
 - `ui/`: renderização e componentes de interação reutilizáveis.
 - `app.js`: inicialização e coordenação geral da aplicação.
+- `loader.js`: lista e carrega os scripts na ordem necessária.
 - `service-worker.js`: cache offline e ciclo de vida do PWA.
 
 Ao adicionar ou mover um script carregado pela página principal, atualize também
