@@ -106,6 +106,8 @@ Etapas seguintes:
 
 Antes de implementar, definir o comportamento quando duas publicações ocorrerem quase ao mesmo tempo e como apresentar versões publicadas que diferem da cópia local.
 
+Base da API iniciada: `POST /api/sync` cria um espaço; `GET` e `PATCH /api/sync/:name` leem e publicam versões. Os registros usam o prefixo `blu:sync-space:` no Redis, separado de `blu:share:`. O nome é normalizado e reservado com `SET NX`; a publicação exige senha e `expectedVersion`, com gravação atômica para recusar concorrência. Ainda faltam a interface, a seleção/prévia, a cópia local em `blu:data-sync` e a apresentação das diferenças antes de atualizar. Não marcar os itens acima como concluídos até integrar e testar esses fluxos.
+
 ### Arquivar botões e seções
 
 Fundação do recurso:
