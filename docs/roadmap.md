@@ -110,6 +110,8 @@ Base da API iniciada: `POST /api/sync` cria um espaço; `GET` e `PATCH /api/sync
 
 Cliente preparado em `js/data/sync-space-client.js` com criar, acessar e publicar, mensagens de erro e testes. O arquivo continua fora do loader e não faz requisições até ser chamado pela futura interface.
 
+Cópia local preparada em `js/data/sync-space-store.js`: `blu:data-sync` guarda um envelope versionado com lista de espaços (limite atual de um, expansível para três), metadados de publicação e dados recebidos. Gravar, consultar e remover são ações explícitas; o módulo não lê nem altera `blu:data` e continua fora do loader. A futura interface ainda precisará ligar o acesso da API ao salvamento após confirmação.
+
 ### Arquivar botões e seções
 
 Fundação do recurso:
