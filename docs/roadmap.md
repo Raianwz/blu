@@ -29,7 +29,8 @@ Pendências para o lançamento:
 - [x] Sinalizar novidades pelo sininho, sem abrir o What's New automaticamente.
 - [x] Ativar o visual sazonal na primeira abertura voluntária das novidades, seguindo o comportamento do visual Novo e respeitando escolhas posteriores de ON/OFF.
 - [x] Validar a regra de primeira ativação após “Redefinir Preferências” e “Limpar Tudo”.
-- [x] Confirmar a janela sazonal: 01–31/10, com retorno ao visual normal em 01/11.
+- [x] Confirmar a janela sazonal de 2026: 01/10 a 02/11 às 20h (horário de São Paulo), com retorno automático ao visual normal.
+- [x] Mostrar uma despedida breve com fantasma uma vez em 02/11, somente quando o visual de Halloween estiver ativo.
 - [x] Garantir retorno ao visual normal e ocultação do controle após o período, sem perder dados ou personalizações.
 - [x] Validar contraste, navegação por teclado, telas estreitas e combinações Claro/Escuro × Clássico/Novo × Halloween ON/OFF.
 - [x] Liberar manualmente as flags e atualizar o service worker na publicação da 1.9.5.

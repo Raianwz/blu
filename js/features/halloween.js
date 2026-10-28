@@ -3,6 +3,7 @@ let halloweenVisualWasEnabled = null;
 let halloweenPaletteNoticePending = false;
 let halloweenUpdateCheckComplete = false;
 const HALLOWEEN_PALETTE_NOTICE_REVISION = 'palettes-v33';
+const HALLOWEEN_FAREWELL_SETTING = 'halloweenFarewell2026Seen';
 // The built-in JSON demo cycles its webs visually without changing copy statistics.
 const halloweenDemoWebCooldowns = new Map();
 
@@ -140,6 +141,7 @@ function dismissHalloweenPaletteBanner(acknowledged = true) {
     halloweenPaletteNoticePending = false;
     setSetting('halloweenPaletteNoticeRevision', HALLOWEEN_PALETTE_NOTICE_REVISION);
   }
+  queueMicrotask(showHalloweenFarewellWhenReady);
 }
 
 function showHalloweenPaletteBannerWhenReady() {
@@ -153,6 +155,20 @@ function showHalloweenPaletteBannerWhenReady() {
   if (!banner) return;
   banner.hidden = false;
   halloweenPaletteNoticePending = false;
+}
+
+function showHalloweenFarewellWhenReady() {
+  if (!halloweenUpdateCheckComplete || !isHalloweenFarewellTime() ||
+      !document.body.classList.contains('halloween-theme') ||
+      getMetaValue('updates', HALLOWEEN_FAREWELL_SETTING, false) || halloweenPaletteNoticePending ||
+      document.getElementById('halloweenPaletteBanner')?.hidden === false ||
+      document.querySelector('.modal-bg.open') || document.getElementById('updateBanner')?.hidden === false) return;
+
+  const toast = notify('Até o próximo Halloween! O visual se despede hoje às 20h.', 'ok', { duration: 6500 });
+  toast.classList.add('halloween-farewell');
+  toast.querySelector('.halloween-toast-creature')?.style.setProperty(
+    '--halloween-toast-icon', 'url("/libs/events/halloween/toast_ghost.svg")');
+  setMetaValue('updates', HALLOWEEN_FAREWELL_SETTING, true);
 }
 
 function openHalloweenPaletteFromBanner(event) {
@@ -205,7 +221,8 @@ function applyHalloweenPreference() {
     halloweenPaletteNoticePending = true;
     queueMicrotask(showHalloweenPaletteBannerWhenReady);
   }
-  // Keep an already-open What's New dialog in sync when the season ends at midnight.
+  queueMicrotask(showHalloweenFarewellWhenReady);
+  // Keep an already-open What's New dialog in sync when the season ends.
   if (typeof updateWhatsNewVisualToggle === 'function') updateWhatsNewVisualToggle();
 }
 
@@ -228,16 +245,26 @@ document.addEventListener('visibilitychange', applyHalloweenPreference);
 document.addEventListener('blu:update-check-complete', () => {
   halloweenUpdateCheckComplete = true;
   showHalloweenPaletteBannerWhenReady();
+  showHalloweenFarewellWhenReady();
 });
-document.addEventListener('blu:modal-closed', showHalloweenPaletteBannerWhenReady);
-document.addEventListener('blu:update-banner-closed', showHalloweenPaletteBannerWhenReady);
+document.addEventListener('blu:modal-closed', () => {
+  showHalloweenPaletteBannerWhenReady();
+  showHalloweenFarewellWhenReady();
+});
+document.addEventListener('blu:update-banner-closed', () => {
+  showHalloweenPaletteBannerWhenReady();
+  showHalloweenFarewellWhenReady();
+});
 window.addEventListener('focus', applyHalloweenPreference);
 window.addEventListener('storage', event => {
   if (event.key === 'blu:settings' || event.key === null) applyHalloweenPreference();
 });
-// Recheck the calendar at local midnight, including tabs left open overnight.
+// Recheck at each seasonal boundary, including 20h on November 2.
 (function scheduleHalloweenCalendarCheck() {
   const now = new Date();
-  const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-  setTimeout(() => { applyHalloweenPreference(); scheduleHalloweenCalendarCheck(); }, midnight - now + 100);
+  const next = [HALLOWEEN_START, HALLOWEEN_FAREWELL_START, HALLOWEEN_END]
+    .find(boundary => boundary > now.getTime());
+  if (next === undefined) return;
+  setTimeout(() => { applyHalloweenPreference(); scheduleHalloweenCalendarCheck(); },
+    Math.min(next - now.getTime() + 100, 24 * 60 * 60 * 1000));
 })();

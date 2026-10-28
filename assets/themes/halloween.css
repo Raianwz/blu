@@ -623,6 +623,16 @@ body.halloween-theme .halloween-toast-creature {
   -webkit-mask: var(--halloween-toast-icon) center / contain no-repeat;
   mask: var(--halloween-toast-icon) center / contain no-repeat;
 }
+body.halloween-theme .halloween-farewell .halloween-toast-creature {
+  animation: halloween-farewell-ghost 2.8s ease-in-out both;
+}
+@keyframes halloween-farewell-ghost {
+  0%, 100% { transform: translateX(-4px); }
+  50% { transform: translateX(5px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.halloween-theme .halloween-farewell .halloween-toast-creature { animation: none; }
+}
 
 /* A subtle web marks buttons that have never been copied. */
 body.halloween-theme .btn-wrap.halloween-webbed .copy-btn {
