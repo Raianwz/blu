@@ -6,6 +6,10 @@ const HALLOWEEN_PALETTE_NOTICE_REVISION = 'palettes-v33';
 const HALLOWEEN_FAREWELL_SETTING = 'halloweenFarewell2026Seen';
 // The built-in JSON demo cycles its webs visually without changing copy statistics.
 const halloweenDemoWebCooldowns = new Map();
+let halloweenSpiderWebs = new WeakSet();
+const halloweenSectionSpiders = new Map();
+const HALLOWEEN_SPIDER_WAIT_MS = 60_000;
+const HALLOWEEN_SPIDER_WEB_MS = 15_000;
 
 function isHalloweenDemoJson() {
   if (typeof getDemoState !== 'function') return false;
@@ -53,11 +57,134 @@ function refreshHalloweenButtonWebs() {
   document.querySelectorAll('#sections .btn-wrap').forEach(button => {
     const id = button.dataset.id;
     button.classList.toggle('halloween-webbed',
-      halloweenEnabled && !!id && (demoJson
+      halloweenEnabled && !!id && (halloweenSpiderWebs.has(button) || (demoJson
         ? !halloweenDemoWebCooldowns.has(id)
-        : !(userData.stats[id]?.copies > 0)));
+        : !(userData.stats[id]?.copies > 0))));
   });
 }
+
+function releaseHalloweenSpiderTarget(state, completed = false) {
+  const target = state.target;
+  if (target && state.reservedDemoWeb) {
+    halloweenDemoWebCooldowns.delete(target.dataset.id);
+    if (!completed && target.isConnected) noteHalloweenDemoButtonCopy(target.dataset.id);
+  }
+  state.target = null;
+  state.reservedDemoWeb = false;
+  state.dwellMs = 0;
+}
+
+function clearHalloweenSpider(state, completed = false) {
+  state.spider?.remove();
+  state.spider = null;
+  releaseHalloweenSpiderTarget(state, completed);
+}
+
+function positionHalloweenSpider(state, section) {
+  const body = section.querySelector('.section-body');
+  const button = state.target?.querySelector('.copy-btn');
+  if (!body || !button || !state.spider) return;
+  const bodyRect = body.getBoundingClientRect();
+  const buttonRect = button.getBoundingClientRect();
+  state.spider.style.transform = `translate(${Math.round(buttonRect.left - bodyRect.left + Math.min(12, buttonRect.width / 2))}px, ${Math.round(buttonRect.top - bodyRect.top - 4)}px)`;
+}
+
+function syncHalloweenSectionSpiders() {
+  const now = Date.now();
+  const enabled = document.body.classList.contains('halloween-theme') &&
+    !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  if (!enabled) {
+    if (!halloweenSectionSpiders.size) return;
+    halloweenSectionSpiders.forEach(state => clearHalloweenSpider(state));
+    halloweenSectionSpiders.clear();
+    halloweenSpiderWebs = new WeakSet();
+    refreshHalloweenButtonWebs();
+    return;
+  }
+
+  const sections = [...document.querySelectorAll('#sections > .section-wrap')];
+  for (const [section, state] of halloweenSectionSpiders) {
+    if (sections.includes(section)) continue;
+    clearHalloweenSpider(state);
+    halloweenSectionSpiders.delete(section);
+  }
+
+  sections.forEach(section => {
+    let state = halloweenSectionSpiders.get(section);
+    if (!state) {
+      state = { openMs: 0, dwellMs: 0, lastTick: now, target: null, spider: null, reservedDemoWeb: false };
+      halloweenSectionSpiders.set(section, state);
+    }
+    const elapsed = Math.max(0, now - state.lastTick);
+    state.lastTick = now;
+    if (document.visibilityState !== 'visible') {
+      state.spider?.remove();
+      state.spider = null;
+      return;
+    }
+    if (section.classList.contains('collapsed') || section.classList.contains('search-hidden') ||
+        !section.getClientRects().length) {
+      clearHalloweenSpider(state);
+      state.openMs = 0;
+      return;
+    }
+
+    state.openMs += elapsed;
+    if (state.openMs < HALLOWEEN_SPIDER_WAIT_MS) return;
+    if (state.target && (!state.target.isConnected || state.target.classList.contains('search-hidden') ||
+        state.target.classList.contains('halloween-webbed'))) clearHalloweenSpider(state);
+
+    if (!state.target) {
+      const available = [...section.querySelectorAll('.btn-wrap:not(.search-hidden):not(.halloween-webbed)')]
+        .filter(button => button.querySelector('.copy-btn'));
+      if (!available.length) {
+        state.spider?.remove();
+        state.spider = null;
+        return;
+      }
+      state.target = available[Math.floor(Math.random() * available.length)];
+      const cooldown = halloweenDemoWebCooldowns.get(state.target.dataset.id);
+      if (cooldown !== undefined) {
+        clearTimeout(cooldown);
+        halloweenDemoWebCooldowns.set(state.target.dataset.id, null);
+        state.reservedDemoWeb = true;
+      }
+      state.dwellMs = 0;
+    } else {
+      state.dwellMs += elapsed;
+    }
+
+    if (!state.spider) {
+      state.spider = document.createElement('span');
+      state.spider.className = 'halloween-roaming-spider';
+      state.spider.setAttribute('aria-hidden', 'true');
+      section.querySelector('.section-body')?.appendChild(state.spider);
+    }
+    positionHalloweenSpider(state, section);
+    if (state.dwellMs >= HALLOWEEN_SPIDER_WEB_MS) {
+      halloweenSpiderWebs.add(state.target);
+      state.target.classList.add('halloween-webbed');
+      releaseHalloweenSpiderTarget(state, true);
+      // O mesmo elemento atravessa até o próximo botão no próximo ciclo.
+    }
+  });
+}
+
+function noteHalloweenSpiderButtonCopy(id) {
+  document.querySelectorAll('#sections .btn-wrap').forEach(button => {
+    if (button.dataset.id === id) halloweenSpiderWebs.delete(button);
+  });
+  halloweenSectionSpiders.forEach(state => {
+    if (state.target?.dataset.id === id) clearHalloweenSpider(state);
+  });
+}
+
+setInterval(syncHalloweenSectionSpiders, 1000);
+document.addEventListener('visibilitychange', () => {
+  halloweenSectionSpiders.forEach(state => { state.lastTick = Date.now(); });
+  syncHalloweenSectionSpiders();
+});
+window.addEventListener('resize', syncHalloweenSectionSpiders);
 
 function activateHalloweenLivingEye() {
   if (!document.body.classList.contains('halloween-theme') ||

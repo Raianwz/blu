@@ -224,6 +224,7 @@ function recordButtonCopy(buttonId) {
   userData.activity.copied++;
   recordDailyMetric('copied', id);
   persistUserData();
+  if (typeof noteHalloweenSpiderButtonCopy === 'function') noteHalloweenSpiderButtonCopy(id);
   if (typeof noteHalloweenDemoButtonCopy === 'function') noteHalloweenDemoButtonCopy(id);
   if (typeof refreshHalloweenButtonWebs === 'function') refreshHalloweenButtonWebs();
   renderUserDataPanels();

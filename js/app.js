@@ -480,6 +480,7 @@ function openPopoutBlank() {
   clone.querySelector('#backupBanner')?.classList.remove('show');
   clone.querySelector('#updateBanner')?.setAttribute('hidden', '');
   clone.querySelector('#halloweenPaletteBanner')?.setAttribute('hidden', '');
+  clone.querySelectorAll('.halloween-roaming-spider').forEach(spider => spider.remove());
   clone.querySelector('#menuOverlay')?.classList.remove('open');
 
   win.document.write(clone.outerHTML);

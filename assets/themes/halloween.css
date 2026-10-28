@@ -654,8 +654,44 @@ body.halloween-theme .btn-wrap.halloween-webbed .copy-btn::after {
 body.halloween-theme .btn-wrap.halloween-webbed .copy-btn.copied::after {
   display: none;
 }
+body.halloween-theme .section-body { position: relative; }
+body.halloween-theme .halloween-roaming-spider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 18px;
+  height: 18px;
+  z-index: 2;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 1px rgba(255, 248, 232, .8))
+    drop-shadow(0 0 4px rgba(164, 71, 22, .45));
+  transition: transform 1.2s ease-in-out;
+}
+body.dark.halloween-theme .halloween-roaming-spider {
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .8))
+    drop-shadow(0 0 5px rgba(255, 181, 105, .5));
+}
+body.halloween-theme .halloween-roaming-spider::before {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #562445;
+  -webkit-mask: url("../../libs/events/halloween/copy_spider.svg") center / contain no-repeat;
+  mask: url("../../libs/events/halloween/copy_spider.svg") center / contain no-repeat;
+  animation: halloween-spider-step .7s ease-in-out infinite alternate;
+}
+body.dark.halloween-theme .halloween-roaming-spider::before { background: #f8dfc2; }
+@keyframes halloween-spider-step {
+  from { transform: rotate(-8deg) translateY(0); }
+  to { transform: rotate(8deg) translateY(-3px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.halloween-theme .halloween-roaming-spider { display: none; }
+}
 @media (forced-colors: active) {
-  body.halloween-theme .btn-wrap.halloween-webbed .copy-btn::after { display: none; }
+  body.halloween-theme .btn-wrap.halloween-webbed .copy-btn::after,
+  body.halloween-theme .halloween-roaming-spider { display: none; }
 }
 /* Decorative copy feedback: fixed to the clicked button, never intercepts input. */
 body.halloween-theme .halloween-copy-effect {
