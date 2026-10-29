@@ -10,6 +10,86 @@ let halloweenSpiderWebs = new WeakSet();
 const halloweenSectionSpiders = new Map();
 const HALLOWEEN_SPIDER_WAIT_MS = 60_000;
 const HALLOWEEN_SPIDER_WEB_MS = 15_000;
+const HALLOWEEN_IDLE_GHOST_MS = 120_000;
+let halloweenIdleGhostTimer = null;
+let halloweenIdleGhost = null;
+let halloweenIdleGhostClicks = 0;
+let halloweenIdleGhostPointer = null;
+let halloweenIdleGhostFrame = 0;
+
+function canShowHalloweenIdleGhost() {
+  return document.body.classList.contains('halloween-theme') && document.visibilityState === 'visible' &&
+    window.matchMedia?.('(hover: hover) and (pointer: fine)').matches &&
+    !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+}
+
+function removeHalloweenIdleGhost() {
+  if (halloweenIdleGhostFrame) cancelAnimationFrame(halloweenIdleGhostFrame);
+  halloweenIdleGhostFrame = 0;
+  halloweenIdleGhost?.remove();
+  halloweenIdleGhost = null;
+  halloweenIdleGhostClicks = 0;
+}
+
+function clearHalloweenIdleGhost() {
+  clearTimeout(halloweenIdleGhostTimer);
+  halloweenIdleGhostTimer = null;
+  removeHalloweenIdleGhost();
+}
+
+function positionHalloweenIdleGhost() {
+  if (!halloweenIdleGhost || !halloweenIdleGhostPointer || halloweenIdleGhostFrame) return;
+  halloweenIdleGhostFrame = requestAnimationFrame(() => {
+    halloweenIdleGhostFrame = 0;
+    if (!halloweenIdleGhost || !halloweenIdleGhostPointer) return;
+    halloweenIdleGhost.style.left = `${Math.max(4, Math.min(innerWidth - 36, halloweenIdleGhostPointer.x + 18))}px`;
+    halloweenIdleGhost.style.top = `${Math.max(4, Math.min(innerHeight - 36, halloweenIdleGhostPointer.y + 18))}px`;
+    halloweenIdleGhost.classList.add('visible');
+  });
+}
+
+function showHalloweenIdleGhost() {
+  halloweenIdleGhostTimer = null;
+  if (!canShowHalloweenIdleGhost()) return;
+  halloweenIdleGhost = document.createElement('span');
+  halloweenIdleGhost.className = 'halloween-idle-ghost';
+  halloweenIdleGhost.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(halloweenIdleGhost);
+  halloweenIdleGhostClicks = 2 + Math.floor(Math.random() * 4);
+  positionHalloweenIdleGhost();
+}
+
+function scheduleHalloweenIdleGhost() {
+  if (!canShowHalloweenIdleGhost()) {
+    clearHalloweenIdleGhost();
+    return;
+  }
+  if (!halloweenIdleGhost && !halloweenIdleGhostTimer)
+    halloweenIdleGhostTimer = setTimeout(showHalloweenIdleGhost, HALLOWEEN_IDLE_GHOST_MS);
+}
+
+document.addEventListener('pointermove', event => {
+  if (event.pointerType !== 'mouse') return;
+  halloweenIdleGhostPointer = { x: event.clientX, y: event.clientY };
+  positionHalloweenIdleGhost();
+}, { passive: true });
+
+document.addEventListener('click', event => {
+  if (!event.target?.closest?.('button')) return;
+  if (!canShowHalloweenIdleGhost()) {
+    clearHalloweenIdleGhost();
+    return;
+  }
+  if (halloweenIdleGhost) {
+    halloweenIdleGhostClicks--;
+    if (halloweenIdleGhostClicks > 0) return;
+    removeHalloweenIdleGhost();
+  } else {
+    clearTimeout(halloweenIdleGhostTimer);
+    halloweenIdleGhostTimer = null;
+  }
+  scheduleHalloweenIdleGhost();
+}, true);
 
 function isHalloweenDemoJson() {
   if (typeof getDemoState !== 'function') return false;
@@ -317,6 +397,7 @@ function applyHalloweenPreference() {
   const justEnabled = halloweenVisualWasEnabled === false && enabled;
   halloweenVisualWasEnabled = enabled;
   document.body.classList.toggle('halloween-theme', enabled);
+  scheduleHalloweenIdleGhost();
   refreshHalloweenButtonWebs();
   const savedPalette = getSetting('halloweenPalette', 'pumpkin');
   const palette = ['pumpkin', 'zombie', 'vampire', 'witch', 'ghost'].includes(savedPalette) ? savedPalette : 'pumpkin';

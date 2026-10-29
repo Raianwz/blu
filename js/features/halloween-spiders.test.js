@@ -56,14 +56,14 @@ function setup() {
   };
 }
 
-test('só aparece após 60 segundos abertos e cria teia após mais 30 segundos', () => {
+test('só aparece após 60 segundos abertos e cria teia após mais 15 segundos', () => {
   const scene = setup();
   scene.tick(0);
   scene.tick(59_999);
   assert.equal(scene.body.spider, undefined);
   scene.tick(1);
   assert.ok(scene.body.spider);
-  scene.tick(29_999);
+  scene.tick(14_999);
   assert.equal(scene.buttonClasses.contains('halloween-webbed'), false);
   scene.tick(1);
   assert.equal(scene.buttonClasses.contains('halloween-webbed'), true);
