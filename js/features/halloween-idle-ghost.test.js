@@ -11,24 +11,42 @@ function setup(random = 0) {
   let time = 0;
   let nextId = 1;
   let visible = true;
+  let focused = true;
   const timers = new Map();
   const listeners = new Map();
+  const windowListeners = new Map();
   const classes = new Set(['halloween-theme']);
   const body = {
     classList: { contains: name => classes.has(name) },
-    appendChild(element) { this.ghost = element; }
+    appendChild(element) {
+      if (element.className === 'halloween-idle-spotlight') this.spotlight = element;
+      else this.ghost = element;
+    }
   };
   const document = {
     body,
     get visibilityState() { return visible ? 'visible' : 'hidden'; },
-    createElement: () => ({
-      style: {}, classList: { add() {} }, setAttribute() {},
-      remove() { this.removed = true; }
-    }),
+    hasFocus: () => focused,
+    createElement: () => {
+      const elementClasses = new Set();
+      return {
+        style: { setProperty(name, value) { this[name] = value; } },
+        classList: {
+          add: (...names) => names.forEach(name => elementClasses.add(name)),
+          remove: name => elementClasses.delete(name),
+          contains: name => elementClasses.has(name)
+        },
+        offsetWidth: 32, setAttribute() {}, remove() { this.removed = true; }
+      };
+    },
     addEventListener(name, listener) { listeners.set(name, listener); }
   };
   const context = vm.createContext({
-    document, window: { matchMedia: query => ({ matches: query.includes('pointer: fine') }) },
+    document, window: {
+      matchMedia: query => ({ matches: query.includes('pointer: fine') }),
+      addEventListener(name, listener) { windowListeners.set(name, listener); }
+    },
+    Date: { now: () => time },
     Math: { random: () => random, floor: Math.floor, min: Math.min, max: Math.max },
     innerWidth: 1000, innerHeight: 800,
     setTimeout(callback, ms) { const id = nextId++; timers.set(id, { due: time + ms, callback }); return id; },
@@ -47,8 +65,9 @@ function setup(random = 0) {
       }
     },
     click() { listeners.get('click')({ target: { closest: () => ({}) } }); },
-    hide() { visible = false; vm.runInContext('scheduleHalloweenIdleGhost()', context); },
-    show() { visible = true; vm.runInContext('scheduleHalloweenIdleGhost()', context); }
+    move(x, y) { listeners.get('pointermove')({ pointerType: 'mouse', clientX: x, clientY: y }); },
+    hide() { focused = false; visible = false; windowListeners.get('blur')(); listeners.get('visibilitychange')(); },
+    show() { focused = true; visible = true; listeners.get('visibilitychange')(); windowListeners.get('focus')(); }
   };
 }
 
@@ -60,9 +79,13 @@ test('aparece após dois minutos sem clique e sai após dois cliques no sorteio 
   scene.advance(1);
   const ghost = scene.body.ghost;
   assert.ok(ghost);
+  assert.equal(scene.body.spotlight, undefined);
   scene.click();
   assert.equal(ghost.removed, undefined);
+  assert.equal(ghost.classList.contains('halloween-idle-ghost--blink'), true);
   scene.click();
+  assert.equal(ghost.classList.contains('halloween-idle-ghost--puff'), true);
+  scene.advance(550);
   assert.equal(ghost.removed, true);
 });
 
@@ -85,10 +108,34 @@ test('o sorteio máximo mantém o fantasma até o quinto clique', () => {
   for (let click = 0; click < 4; click++) scene.click();
   assert.equal(ghost.removed, undefined);
   scene.click();
+  scene.advance(550);
   assert.equal(ghost.removed, true);
 });
 
-test('aba oculta cancela a aparição e recomeça ao voltar', () => {
+test('o destaque só inicia ao mover o mouse após voltar ao foco', () => {
+  const scene = setup();
+  scene.move(100, 100);
+  scene.start();
+  scene.advance(120_000);
+  const ghost = scene.body.ghost;
+  assert.equal(scene.body.spotlight, undefined);
+  scene.move(200, 200);
+  assert.equal(scene.body.spotlight, undefined);
+  scene.hide();
+  scene.show();
+  assert.equal(scene.body.spotlight, undefined);
+  const initialLeft = ghost.style.left;
+  scene.move(400, 300);
+  assert.ok(scene.body.spotlight);
+  scene.advance(1_999);
+  assert.equal(ghost.style.left, initialLeft);
+  scene.advance(1);
+  assert.equal(scene.body.spotlight.classList.contains('halloween-idle-spotlight--fade'), true);
+  scene.advance(1);
+  assert.equal(ghost.style.left, '418px');
+});
+
+test('inatividade na aba oculta mostra o fantasma no retorno sem destaque imediato', () => {
   const scene = setup();
   scene.start();
   scene.advance(110_000);
@@ -96,6 +143,18 @@ test('aba oculta cancela a aparição e recomeça ao voltar', () => {
   scene.advance(120_000);
   assert.equal(scene.body.ghost, undefined);
   scene.show();
-  scene.advance(120_000);
   assert.ok(scene.body.ghost);
+  assert.equal(scene.body.spotlight, undefined);
+});
+
+test('voltar ao foco antes da aparição não prepara o destaque', () => {
+  const scene = setup();
+  scene.start();
+  scene.advance(30_000);
+  scene.hide();
+  scene.show();
+  scene.advance(90_000);
+  assert.ok(scene.body.ghost);
+  scene.move(400, 300);
+  assert.equal(scene.body.spotlight, undefined);
 });

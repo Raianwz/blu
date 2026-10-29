@@ -16,16 +16,37 @@ let halloweenIdleGhost = null;
 let halloweenIdleGhostClicks = 0;
 let halloweenIdleGhostPointer = null;
 let halloweenIdleGhostFrame = 0;
+let halloweenIdleGhostSpotlight = null;
+let halloweenIdleGhostHoldTimer = null;
+let halloweenIdleGhostPuff = null;
+let halloweenIdleGhostPuffTimer = null;
+let halloweenIdleLastButtonClick = Date.now();
+let halloweenIdleGhostSpotlightArmed = false;
+let halloweenIdleWasAway = false;
 
 function canShowHalloweenIdleGhost() {
   return document.body.classList.contains('halloween-theme') && document.visibilityState === 'visible' &&
+    (typeof document.hasFocus !== 'function' || document.hasFocus()) &&
     window.matchMedia?.('(hover: hover) and (pointer: fine)').matches &&
     !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+}
+
+function stopHalloweenIdleGhostSpotlight() {
+  clearTimeout(halloweenIdleGhostHoldTimer);
+  halloweenIdleGhostHoldTimer = null;
+  halloweenIdleGhostSpotlight?.remove();
+  halloweenIdleGhostSpotlight = null;
+  halloweenIdleGhost?.classList.remove('halloween-idle-ghost--still');
 }
 
 function removeHalloweenIdleGhost() {
   if (halloweenIdleGhostFrame) cancelAnimationFrame(halloweenIdleGhostFrame);
   halloweenIdleGhostFrame = 0;
+  stopHalloweenIdleGhostSpotlight();
+  clearTimeout(halloweenIdleGhostPuffTimer);
+  halloweenIdleGhostPuffTimer = null;
+  halloweenIdleGhostPuff?.remove();
+  halloweenIdleGhostPuff = null;
   halloweenIdleGhost?.remove();
   halloweenIdleGhost = null;
   halloweenIdleGhostClicks = 0;
@@ -35,10 +56,11 @@ function clearHalloweenIdleGhost() {
   clearTimeout(halloweenIdleGhostTimer);
   halloweenIdleGhostTimer = null;
   removeHalloweenIdleGhost();
+  halloweenIdleGhostSpotlightArmed = false;
 }
 
 function positionHalloweenIdleGhost() {
-  if (!halloweenIdleGhost || !halloweenIdleGhostPointer || halloweenIdleGhostFrame) return;
+  if (!halloweenIdleGhost || halloweenIdleGhostHoldTimer || !halloweenIdleGhostPointer || halloweenIdleGhostFrame) return;
   halloweenIdleGhostFrame = requestAnimationFrame(() => {
     halloweenIdleGhostFrame = 0;
     if (!halloweenIdleGhost || !halloweenIdleGhostPointer) return;
@@ -48,31 +70,96 @@ function positionHalloweenIdleGhost() {
   });
 }
 
+function startHalloweenIdleGhostSpotlight() {
+  if (!halloweenIdleGhost || !canShowHalloweenIdleGhost() || halloweenIdleGhostHoldTimer) return;
+  halloweenIdleGhostSpotlightArmed = false;
+  if (halloweenIdleGhostFrame) cancelAnimationFrame(halloweenIdleGhostFrame);
+  halloweenIdleGhostFrame = 0;
+  const bounds = halloweenIdleGhost.getBoundingClientRect?.();
+  const left = bounds?.left ?? parseFloat(halloweenIdleGhost.style.left);
+  const top = bounds?.top ?? parseFloat(halloweenIdleGhost.style.top);
+  halloweenIdleGhostSpotlight = document.createElement('span');
+  halloweenIdleGhostSpotlight.className = 'halloween-idle-spotlight';
+  halloweenIdleGhostSpotlight.setAttribute('aria-hidden', 'true');
+  halloweenIdleGhostSpotlight.style.setProperty('--ghost-x', `${left + 16}px`);
+  halloweenIdleGhostSpotlight.style.setProperty('--ghost-y', `${top + 16}px`);
+  document.body.appendChild(halloweenIdleGhostSpotlight);
+  halloweenIdleGhost.classList.add('halloween-idle-ghost--still');
+  halloweenIdleGhostHoldTimer = setTimeout(() => {
+    halloweenIdleGhostHoldTimer = null;
+    halloweenIdleGhost?.classList.remove('halloween-idle-ghost--still');
+    const spotlight = halloweenIdleGhostSpotlight;
+    spotlight?.classList.add('halloween-idle-spotlight--fade');
+    halloweenIdleGhostSpotlight = null;
+    setTimeout(() => spotlight?.remove(), 350);
+    positionHalloweenIdleGhost();
+  }, 2000);
+}
+
 function showHalloweenIdleGhost() {
   halloweenIdleGhostTimer = null;
   if (!canShowHalloweenIdleGhost()) return;
+  const initialPointer = halloweenIdleGhostPointer || { x: innerWidth / 2 - 18, y: innerHeight / 2 - 18 };
+  const left = Math.max(4, Math.min(innerWidth - 36, initialPointer.x + 18));
+  const top = Math.max(4, Math.min(innerHeight - 36, initialPointer.y + 18));
   halloweenIdleGhost = document.createElement('span');
   halloweenIdleGhost.className = 'halloween-idle-ghost';
   halloweenIdleGhost.setAttribute('aria-hidden', 'true');
+  halloweenIdleGhost.style.left = `${left}px`;
+  halloweenIdleGhost.style.top = `${top}px`;
+  halloweenIdleGhost.classList.add('visible');
   document.body.appendChild(halloweenIdleGhost);
   halloweenIdleGhostClicks = 2 + Math.floor(Math.random() * 4);
-  positionHalloweenIdleGhost();
 }
 
 function scheduleHalloweenIdleGhost() {
   if (!canShowHalloweenIdleGhost()) {
-    clearHalloweenIdleGhost();
+    clearTimeout(halloweenIdleGhostTimer);
+    halloweenIdleGhostTimer = null;
+    if (!document.body.classList.contains('halloween-theme') ||
+        window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) clearHalloweenIdleGhost();
     return;
   }
-  if (!halloweenIdleGhost && !halloweenIdleGhostTimer)
-    halloweenIdleGhostTimer = setTimeout(showHalloweenIdleGhost, HALLOWEEN_IDLE_GHOST_MS);
+  if (halloweenIdleGhost || halloweenIdleGhostTimer) return;
+  const remaining = Math.max(0, HALLOWEEN_IDLE_GHOST_MS - (Date.now() - halloweenIdleLastButtonClick));
+  if (remaining === 0) showHalloweenIdleGhost();
+  else halloweenIdleGhostTimer = setTimeout(showHalloweenIdleGhost, remaining);
 }
 
 document.addEventListener('pointermove', event => {
   if (event.pointerType !== 'mouse') return;
   halloweenIdleGhostPointer = { x: event.clientX, y: event.clientY };
-  positionHalloweenIdleGhost();
+  if (halloweenIdleGhostSpotlightArmed) startHalloweenIdleGhostSpotlight();
+  if (canShowHalloweenIdleGhost()) positionHalloweenIdleGhost();
 }, { passive: true });
+
+function noteHalloweenIdleReturn() {
+  const wasAway = halloweenIdleWasAway;
+  halloweenIdleWasAway = false;
+  scheduleHalloweenIdleGhost();
+  if (wasAway && halloweenIdleGhost) halloweenIdleGhostSpotlightArmed = true;
+}
+
+window.addEventListener('blur', () => {
+  halloweenIdleWasAway = true;
+  if (halloweenIdleGhostFrame) cancelAnimationFrame(halloweenIdleGhostFrame);
+  halloweenIdleGhostFrame = 0;
+  clearTimeout(halloweenIdleGhostTimer);
+  halloweenIdleGhostTimer = null;
+  stopHalloweenIdleGhostSpotlight();
+});
+window.addEventListener('focus', noteHalloweenIdleReturn);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') noteHalloweenIdleReturn();
+  else {
+    halloweenIdleWasAway = true;
+    if (halloweenIdleGhostFrame) cancelAnimationFrame(halloweenIdleGhostFrame);
+    halloweenIdleGhostFrame = 0;
+    clearTimeout(halloweenIdleGhostTimer);
+    halloweenIdleGhostTimer = null;
+    stopHalloweenIdleGhostSpotlight();
+  }
+});
 
 document.addEventListener('click', event => {
   if (!event.target?.closest?.('button')) return;
@@ -80,11 +167,31 @@ document.addEventListener('click', event => {
     clearHalloweenIdleGhost();
     return;
   }
+  halloweenIdleLastButtonClick = Date.now();
   if (halloweenIdleGhost) {
     halloweenIdleGhostClicks--;
-    if (halloweenIdleGhostClicks > 0) return;
-    removeHalloweenIdleGhost();
+    halloweenIdleGhost.classList.remove('halloween-idle-ghost--blink');
+    if (halloweenIdleGhostClicks > 0) {
+      void halloweenIdleGhost.offsetWidth;
+      halloweenIdleGhost.classList.add('halloween-idle-ghost--blink');
+      return;
+    }
+    if (halloweenIdleGhostFrame) cancelAnimationFrame(halloweenIdleGhostFrame);
+    halloweenIdleGhostFrame = 0;
+    stopHalloweenIdleGhostSpotlight();
+    halloweenIdleGhostPuff = halloweenIdleGhost;
+    halloweenIdleGhost = null;
+    halloweenIdleGhostClicks = 0;
+    halloweenIdleGhostSpotlightArmed = false;
+    halloweenIdleGhostPuff.classList.remove('halloween-idle-ghost--still');
+    halloweenIdleGhostPuff.classList.add('halloween-idle-ghost--puff');
+    halloweenIdleGhostPuffTimer = setTimeout(() => {
+      halloweenIdleGhostPuff?.remove();
+      halloweenIdleGhostPuff = null;
+      halloweenIdleGhostPuffTimer = null;
+    }, 550);
   } else {
+    halloweenIdleGhostSpotlightArmed = false;
     clearTimeout(halloweenIdleGhostTimer);
     halloweenIdleGhostTimer = null;
   }

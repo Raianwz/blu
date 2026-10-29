@@ -682,6 +682,21 @@ body.halloween-theme .halloween-roaming-spider::before {
   animation: halloween-spider-step .7s ease-in-out infinite alternate;
 }
 body.dark.halloween-theme .halloween-roaming-spider::before { background: #f8dfc2; }
+body.halloween-theme .halloween-idle-spotlight {
+  position: fixed;
+  inset: 0;
+  z-index: 2390;
+  pointer-events: none;
+  opacity: 1;
+  background: radial-gradient(circle 72px at var(--ghost-x) var(--ghost-y),
+    transparent 0 42px, rgba(20, 9, 27, .58) 72px);
+  transition: opacity .3s ease-out;
+}
+body.dark.halloween-theme .halloween-idle-spotlight {
+  background: radial-gradient(circle 72px at var(--ghost-x) var(--ghost-y),
+    transparent 0 42px, rgba(4, 2, 9, .72) 72px);
+}
+body.halloween-theme .halloween-idle-spotlight--fade { opacity: 0; }
 body.halloween-theme .halloween-idle-ghost {
   position: fixed;
   top: 0;
@@ -693,9 +708,16 @@ body.halloween-theme .halloween-idle-ghost {
   pointer-events: none;
   filter: drop-shadow(0 1px 2px rgba(46, 20, 50, .35))
     drop-shadow(0 0 6px rgba(164, 71, 22, .35));
-  transition: left .25s ease-out, top .25s ease-out, opacity .25s ease-out;
+  transition: left .55s ease-out, top .55s ease-out, opacity .25s ease-out;
 }
 body.halloween-theme .halloween-idle-ghost.visible { opacity: .88; }
+body.halloween-theme .halloween-idle-ghost--still { transition: none; }
+body.halloween-theme .halloween-idle-ghost--blink {
+  animation: halloween-idle-ghost-blink .3s ease-in-out;
+}
+body.halloween-theme .halloween-idle-ghost--puff {
+  animation: halloween-idle-ghost-puff .5s ease-out forwards;
+}
 body.halloween-theme .halloween-idle-ghost::before {
   content: '';
   display: block;
@@ -715,18 +737,30 @@ body.dark.halloween-theme .halloween-idle-ghost::before { background: #eee1ff; }
   0%, 100% { transform: translateY(0) rotate(-4deg); }
   50% { transform: translateY(-5px) rotate(4deg); }
 }
+@keyframes halloween-idle-ghost-blink {
+  0%, 100% { opacity: .88; }
+  45% { opacity: .12; }
+}
+@keyframes halloween-idle-ghost-puff {
+  0% { opacity: .88; transform: scale(1); }
+  15% { opacity: .12; transform: scale(.88); }
+  35% { opacity: .88; transform: scale(1.12); }
+  100% { opacity: 0; transform: scale(1.8); }
+}
 @keyframes halloween-spider-step {
   from { transform: rotate(-8deg) translateY(0); }
   to { transform: rotate(8deg) translateY(-3px); }
 }
 @media (prefers-reduced-motion: reduce) {
   body.halloween-theme .halloween-roaming-spider,
-  body.halloween-theme .halloween-idle-ghost { display: none; }
+  body.halloween-theme .halloween-idle-ghost,
+  body.halloween-theme .halloween-idle-spotlight { display: none; }
 }
 @media (forced-colors: active) {
   body.halloween-theme .btn-wrap.halloween-webbed .copy-btn::after,
   body.halloween-theme .halloween-roaming-spider,
-  body.halloween-theme .halloween-idle-ghost { display: none; }
+  body.halloween-theme .halloween-idle-ghost,
+  body.halloween-theme .halloween-idle-spotlight { display: none; }
 }
 /* Decorative copy feedback: fixed to the clicked button, never intercepts input. */
 body.halloween-theme .halloween-copy-effect {

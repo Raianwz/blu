@@ -32,7 +32,7 @@ Pendências para o lançamento:
 - [x] Confirmar a janela sazonal de 2026: 01/10 a 02/11 às 20h (horário de São Paulo), com retorno automático ao visual normal.
 - [x] Mostrar uma despedida breve com fantasma uma vez em 02/11, somente quando o visual de Halloween estiver ativo.
 - [x] Após 60 segundos com uma seção aberta e visível (inclusive pela busca), mostrar uma aranha por seção em botões sem teia. Ela percorre um botão por vez e cria teia após 15 segundos; pausa quando a aba fica oculta e respeita movimento reduzido.
-- [x] Após dois minutos sem clicar em botões, mostrar um fantasma que acompanha o mouse; ele sai após 2–5 cliques. Respeitar aba oculta, toque e movimento reduzido.
+- [x] Após dois minutos sem clicar em botões, mostrar o fantasma acompanhando o mouse suavemente. Ao voltar ao foco, o primeiro movimento do mouse o destaca por dois segundos; ele pisca a cada clique e desaparece em um “puff” após 2–5 cliques. Respeitar aba oculta, toque e movimento reduzido.
 - [x] Garantir retorno ao visual normal e ocultação do controle após o período, sem perder dados ou personalizações.
 - [x] Validar contraste, navegação por teclado, telas estreitas e combinações Claro/Escuro × Clássico/Novo × Halloween ON/OFF.
 - [x] Liberar manualmente as flags e atualizar o service worker na publicação da 1.9.5.
