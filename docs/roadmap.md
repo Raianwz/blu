@@ -33,6 +33,7 @@ Pendências para o lançamento:
 - [x] Mostrar uma despedida breve com fantasma uma vez em 02/11, somente quando o visual de Halloween estiver ativo.
 - [x] Após 60 segundos com uma seção aberta e visível (inclusive pela busca), mostrar uma aranha por seção em botões sem teia. Ela percorre um botão por vez e cria teia após 15 segundos; pausa quando a aba fica oculta e respeita movimento reduzido.
 - [x] Mostrar o fantasma após dois minutos sem clicar em botões na primeira vez e após dez minutos nas aparições seguintes. Ele acompanha o mouse suavemente; ao voltar ao foco, o primeiro movimento do mouse o destaca por dois segundos. Pisca a cada clique e desaparece em um “puff” após 2–5 cliques. Respeitar aba oculta, toque e movimento reduzido.
+- [x] Se o fantasma permanecer por dois minutos em foco, transformá-lo temporariamente em cursores de Halloween (padrão e ponteiro); restaurar o cursor após 10–20 cliques.
 - [x] Garantir retorno ao visual normal e ocultação do controle após o período, sem perder dados ou personalizações.
 - [x] Validar contraste, navegação por teclado, telas estreitas e combinações Claro/Escuro × Clássico/Novo × Halloween ON/OFF.
 - [x] Liberar manualmente as flags e atualizar o service worker na publicação da 1.9.5.

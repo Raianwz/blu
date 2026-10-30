@@ -17,7 +17,11 @@ function setup(random = 0) {
   const windowListeners = new Map();
   const classes = new Set(['halloween-theme']);
   const body = {
-    classList: { contains: name => classes.has(name) },
+    classList: {
+      contains: name => classes.has(name),
+      add: name => classes.add(name),
+      remove: name => classes.delete(name)
+    },
     appendChild(element) {
       if (element.className === 'halloween-idle-spotlight') this.spotlight = element;
       else this.ghost = element;
@@ -65,6 +69,8 @@ function setup(random = 0) {
       }
     },
     click() { listeners.get('click')({ target: { closest: () => ({}) } }); },
+    clickOutside() { listeners.get('click')({ target: { closest: () => null } }); },
+    clear() { vm.runInContext('clearHalloweenIdleGhost()', context); },
     move(x, y) { listeners.get('pointermove')({ pointerType: 'mouse', clientX: x, clientY: y }); },
     hide() { focused = false; visible = false; windowListeners.get('blur')(); listeners.get('visibilitychange')(); },
     show() { focused = true; visible = true; listeners.get('visibilitychange')(); windowListeners.get('focus')(); }
@@ -187,4 +193,58 @@ test('cliques antes da próxima aparição reiniciam os dez minutos', () => {
   assert.equal(scene.body.ghost, firstGhost);
   scene.advance(500_000);
   assert.notEqual(scene.body.ghost, firstGhost);
+});
+
+test('fantasma vira cursor após dois minutos visíveis e some após dez cliques', () => {
+  const scene = setup(0);
+  scene.start();
+  scene.advance(120_000);
+  const ghost = scene.body.ghost;
+  scene.advance(119_999);
+  assert.equal(scene.body.classList.contains('halloween-ghost-cursor'), false);
+  scene.advance(1);
+  assert.equal(ghost.removed, true);
+  assert.equal(scene.body.classList.contains('halloween-ghost-cursor'), true);
+  for (let click = 0; click < 9; click++) scene.clickOutside();
+  assert.equal(scene.body.classList.contains('halloween-ghost-cursor'), true);
+  scene.clickOutside();
+  assert.equal(scene.body.classList.contains('halloween-ghost-cursor'), false);
+});
+
+test('cursor dura até vinte cliques no sorteio máximo', () => {
+  const scene = setup(.99);
+  scene.start();
+  scene.advance(120_000);
+  scene.advance(120_000);
+  for (let click = 0; click < 19; click++) scene.clickOutside();
+  assert.equal(scene.body.classList.contains('halloween-ghost-cursor'), true);
+  scene.clickOutside();
+  assert.equal(scene.body.classList.contains('halloween-ghost-cursor'), false);
+});
+
+test('tempo para virar cursor pausa fora de foco e limpeza restaura o cursor', () => {
+  const scene = setup();
+  scene.start();
+  scene.advance(120_000);
+  scene.advance(60_000);
+  scene.hide();
+  scene.advance(200_000);
+  scene.show();
+  scene.advance(59_999);
+  assert.equal(scene.body.classList.contains('halloween-ghost-cursor'), false);
+  scene.advance(1);
+  assert.equal(scene.body.classList.contains('halloween-ghost-cursor'), true);
+  scene.clear();
+  assert.equal(scene.body.classList.contains('halloween-ghost-cursor'), false);
+});
+
+test('dispensar o fantasma antes de dois minutos impede a skin do cursor', () => {
+  const scene = setup();
+  scene.start();
+  scene.advance(120_000);
+  scene.advance(90_000);
+  scene.click();
+  scene.click();
+  scene.advance(30_000);
+  assert.equal(scene.body.classList.contains('halloween-ghost-cursor'), false);
 });

@@ -682,6 +682,17 @@ body.halloween-theme .halloween-roaming-spider::before {
   animation: halloween-spider-step .7s ease-in-out infinite alternate;
 }
 body.dark.halloween-theme .halloween-roaming-spider::before { background: #f8dfc2; }
+body.halloween-theme.halloween-ghost-cursor,
+body.halloween-theme.halloween-ghost-cursor * {
+  cursor: url("../../libs/events/halloween/cursor/halloween-ghost-cursor.png") 16 16, auto !important;
+}
+body.halloween-theme.halloween-ghost-cursor :is(button, a, select, label, [role="button"], [role="menuitem"]),
+body.halloween-theme.halloween-ghost-cursor :is(button, a, select, label, [role="button"], [role="menuitem"]) * {
+  cursor: url("../../libs/events/halloween/cursor/halloween-ghost-pointer.png") 16 16, pointer !important;
+}
+body.halloween-theme.halloween-ghost-cursor :is(input, textarea, [contenteditable="true"]) {
+  cursor: text !important;
+}
 body.halloween-theme .halloween-idle-spotlight {
   position: fixed;
   inset: 0;

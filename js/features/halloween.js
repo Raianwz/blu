@@ -12,10 +12,15 @@ const HALLOWEEN_SPIDER_WAIT_MS = 60_000;
 const HALLOWEEN_SPIDER_WEB_MS = 15_000;
 const HALLOWEEN_IDLE_GHOST_FIRST_MS = 120_000;
 const HALLOWEEN_IDLE_GHOST_REPEAT_MS = 600_000;
+const HALLOWEEN_GHOST_CURSOR_WAIT_MS = 120_000;
 let halloweenIdleGhostTimer = null;
 let halloweenIdleGhost = null;
 let halloweenIdleGhostHasAppeared = false;
 let halloweenIdleGhostClicks = 0;
+let halloweenGhostCursorTimer = null;
+let halloweenGhostCursorWaitRemaining = HALLOWEEN_GHOST_CURSOR_WAIT_MS;
+let halloweenGhostCursorWaitStarted = null;
+let halloweenGhostCursorClicks = 0;
 let halloweenIdleGhostPointer = null;
 let halloweenIdleGhostFrame = 0;
 let halloweenIdleGhostSpotlight = null;
@@ -41,7 +46,23 @@ function stopHalloweenIdleGhostSpotlight() {
   halloweenIdleGhost?.classList.remove('halloween-idle-ghost--still');
 }
 
+function pauseHalloweenGhostCursorWait() {
+  if (halloweenGhostCursorWaitStarted !== null) {
+    halloweenGhostCursorWaitRemaining = Math.max(0, halloweenGhostCursorWaitRemaining -
+      (Date.now() - halloweenGhostCursorWaitStarted));
+  }
+  clearTimeout(halloweenGhostCursorTimer);
+  halloweenGhostCursorTimer = null;
+  halloweenGhostCursorWaitStarted = null;
+}
+
+function resetHalloweenGhostCursorWait() {
+  pauseHalloweenGhostCursorWait();
+  halloweenGhostCursorWaitRemaining = HALLOWEEN_GHOST_CURSOR_WAIT_MS;
+}
+
 function removeHalloweenIdleGhost() {
+  resetHalloweenGhostCursorWait();
   if (halloweenIdleGhostFrame) cancelAnimationFrame(halloweenIdleGhostFrame);
   halloweenIdleGhostFrame = 0;
   stopHalloweenIdleGhostSpotlight();
@@ -59,6 +80,24 @@ function clearHalloweenIdleGhost() {
   halloweenIdleGhostTimer = null;
   removeHalloweenIdleGhost();
   halloweenIdleGhostSpotlightArmed = false;
+  halloweenGhostCursorClicks = 0;
+  document.body.classList.remove('halloween-ghost-cursor');
+}
+
+function activateHalloweenGhostCursor() {
+  halloweenGhostCursorTimer = null;
+  halloweenGhostCursorWaitStarted = null;
+  if (!halloweenIdleGhost || !canShowHalloweenIdleGhost()) return;
+  removeHalloweenIdleGhost();
+  halloweenIdleGhostSpotlightArmed = false;
+  halloweenGhostCursorClicks = 10 + Math.floor(Math.random() * 11);
+  document.body.classList.add('halloween-ghost-cursor');
+}
+
+function resumeHalloweenGhostCursorWait() {
+  if (!halloweenIdleGhost || !canShowHalloweenIdleGhost() || halloweenGhostCursorTimer) return;
+  halloweenGhostCursorWaitStarted = Date.now();
+  halloweenGhostCursorTimer = setTimeout(activateHalloweenGhostCursor, halloweenGhostCursorWaitRemaining);
 }
 
 function positionHalloweenIdleGhost() {
@@ -113,6 +152,8 @@ function showHalloweenIdleGhost() {
   document.body.appendChild(halloweenIdleGhost);
   halloweenIdleGhostClicks = 2 + Math.floor(Math.random() * 4);
   halloweenIdleGhostHasAppeared = true;
+  resetHalloweenGhostCursorWait();
+  resumeHalloweenGhostCursorWait();
 }
 
 function scheduleHalloweenIdleGhost() {
@@ -123,7 +164,7 @@ function scheduleHalloweenIdleGhost() {
         window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) clearHalloweenIdleGhost();
     return;
   }
-  if (halloweenIdleGhost || halloweenIdleGhostTimer) return;
+  if (halloweenIdleGhost || halloweenIdleGhostTimer || halloweenGhostCursorClicks) return;
   const idleDelay = halloweenIdleGhostHasAppeared ? HALLOWEEN_IDLE_GHOST_REPEAT_MS : HALLOWEEN_IDLE_GHOST_FIRST_MS;
   const remaining = Math.max(0, idleDelay - (Date.now() - halloweenIdleLastButtonClick));
   if (remaining === 0) showHalloweenIdleGhost();
@@ -141,11 +182,13 @@ function noteHalloweenIdleReturn() {
   const wasAway = halloweenIdleWasAway;
   halloweenIdleWasAway = false;
   scheduleHalloweenIdleGhost();
+  resumeHalloweenGhostCursorWait();
   if (wasAway && halloweenIdleGhost) halloweenIdleGhostSpotlightArmed = true;
 }
 
 window.addEventListener('blur', () => {
   halloweenIdleWasAway = true;
+  pauseHalloweenGhostCursorWait();
   if (halloweenIdleGhostFrame) cancelAnimationFrame(halloweenIdleGhostFrame);
   halloweenIdleGhostFrame = 0;
   clearTimeout(halloweenIdleGhostTimer);
@@ -157,6 +200,7 @@ document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') noteHalloweenIdleReturn();
   else {
     halloweenIdleWasAway = true;
+    pauseHalloweenGhostCursorWait();
     if (halloweenIdleGhostFrame) cancelAnimationFrame(halloweenIdleGhostFrame);
     halloweenIdleGhostFrame = 0;
     clearTimeout(halloweenIdleGhostTimer);
@@ -166,6 +210,14 @@ document.addEventListener('visibilitychange', () => {
 });
 
 document.addEventListener('click', event => {
+  if (halloweenGhostCursorClicks) {
+    halloweenGhostCursorClicks--;
+    if (!halloweenGhostCursorClicks) {
+      document.body.classList.remove('halloween-ghost-cursor');
+      halloweenIdleLastButtonClick = Date.now();
+      scheduleHalloweenIdleGhost();
+    }
+  }
   if (!event.target?.closest?.('button')) return;
   if (!canShowHalloweenIdleGhost()) {
     clearHalloweenIdleGhost();
@@ -183,6 +235,7 @@ document.addEventListener('click', event => {
     if (halloweenIdleGhostFrame) cancelAnimationFrame(halloweenIdleGhostFrame);
     halloweenIdleGhostFrame = 0;
     stopHalloweenIdleGhostSpotlight();
+    resetHalloweenGhostCursorWait();
     halloweenIdleGhostPuff = halloweenIdleGhost;
     halloweenIdleGhost = null;
     halloweenIdleGhostClicks = 0;

@@ -483,6 +483,7 @@ function openPopoutBlank() {
   clone.querySelectorAll('.halloween-roaming-spider').forEach(spider => spider.remove());
   clone.querySelectorAll('.halloween-idle-ghost').forEach(ghost => ghost.remove());
   clone.querySelectorAll('.halloween-idle-spotlight').forEach(spotlight => spotlight.remove());
+  clone.querySelector('body')?.classList.remove('halloween-ghost-cursor');
   clone.querySelector('#menuOverlay')?.classList.remove('open');
 
   win.document.write(clone.outerHTML);
