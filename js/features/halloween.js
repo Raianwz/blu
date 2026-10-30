@@ -10,9 +10,11 @@ let halloweenSpiderWebs = new WeakSet();
 const halloweenSectionSpiders = new Map();
 const HALLOWEEN_SPIDER_WAIT_MS = 60_000;
 const HALLOWEEN_SPIDER_WEB_MS = 15_000;
-const HALLOWEEN_IDLE_GHOST_MS = 120_000;
+const HALLOWEEN_IDLE_GHOST_FIRST_MS = 120_000;
+const HALLOWEEN_IDLE_GHOST_REPEAT_MS = 600_000;
 let halloweenIdleGhostTimer = null;
 let halloweenIdleGhost = null;
+let halloweenIdleGhostHasAppeared = false;
 let halloweenIdleGhostClicks = 0;
 let halloweenIdleGhostPointer = null;
 let halloweenIdleGhostFrame = 0;
@@ -110,6 +112,7 @@ function showHalloweenIdleGhost() {
   halloweenIdleGhost.classList.add('visible');
   document.body.appendChild(halloweenIdleGhost);
   halloweenIdleGhostClicks = 2 + Math.floor(Math.random() * 4);
+  halloweenIdleGhostHasAppeared = true;
 }
 
 function scheduleHalloweenIdleGhost() {
@@ -121,7 +124,8 @@ function scheduleHalloweenIdleGhost() {
     return;
   }
   if (halloweenIdleGhost || halloweenIdleGhostTimer) return;
-  const remaining = Math.max(0, HALLOWEEN_IDLE_GHOST_MS - (Date.now() - halloweenIdleLastButtonClick));
+  const idleDelay = halloweenIdleGhostHasAppeared ? HALLOWEEN_IDLE_GHOST_REPEAT_MS : HALLOWEEN_IDLE_GHOST_FIRST_MS;
+  const remaining = Math.max(0, idleDelay - (Date.now() - halloweenIdleLastButtonClick));
   if (remaining === 0) showHalloweenIdleGhost();
   else halloweenIdleGhostTimer = setTimeout(showHalloweenIdleGhost, remaining);
 }

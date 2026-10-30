@@ -5,7 +5,7 @@ const vm = require('node:vm');
 const path = require('node:path');
 
 const file = fs.readFileSync(path.join(__dirname, 'halloween.js'), 'utf8');
-const source = file.slice(file.indexOf('const HALLOWEEN_IDLE_GHOST_MS'), file.indexOf('function isHalloweenDemoJson()'));
+const source = file.slice(file.indexOf('const HALLOWEEN_IDLE_GHOST_FIRST_MS'), file.indexOf('function isHalloweenDemoJson()'));
 
 function setup(random = 0) {
   let time = 0;
@@ -157,4 +157,34 @@ test('voltar ao foco antes da aparição não prepara o destaque', () => {
   assert.ok(scene.body.ghost);
   scene.move(400, 300);
   assert.equal(scene.body.spotlight, undefined);
+});
+
+test('depois da primeira aparição, espera dez minutos sem clicar em botões', () => {
+  const scene = setup();
+  scene.start();
+  scene.advance(120_000);
+  const firstGhost = scene.body.ghost;
+  scene.click();
+  scene.advance(30_000);
+  scene.click();
+  assert.equal(firstGhost.classList.contains('halloween-idle-ghost--puff'), true);
+  scene.advance(599_999);
+  assert.equal(scene.body.ghost, firstGhost);
+  scene.advance(1);
+  assert.notEqual(scene.body.ghost, firstGhost);
+});
+
+test('cliques antes da próxima aparição reiniciam os dez minutos', () => {
+  const scene = setup();
+  scene.start();
+  scene.advance(120_000);
+  const firstGhost = scene.body.ghost;
+  scene.click();
+  scene.click();
+  scene.advance(500_000);
+  scene.click();
+  scene.advance(100_000);
+  assert.equal(scene.body.ghost, firstGhost);
+  scene.advance(500_000);
+  assert.notEqual(scene.body.ghost, firstGhost);
 });
