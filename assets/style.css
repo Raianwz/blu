@@ -114,7 +114,8 @@ textarea::placeholder {
   cursor: pointer;
 }
 
-#whatsNewBtn[hidden] {
+#whatsNewBtn[hidden],
+[data-blu-optional][hidden] {
   display: none;
 }
 

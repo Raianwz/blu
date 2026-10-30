@@ -115,7 +115,7 @@ function viewContextButton(buttonWrap) {
   document.getElementById('buttonViewCopyBtn').hidden = false;
   document.getElementById('archiveViewRestoreBtn').hidden = true;
   openModal('buttonViewModal');
-  activateHalloweenLivingEye();
+  if (typeof activateHalloweenLivingEye === 'function') activateHalloweenLivingEye();
 }
 
 async function copyViewedButtonText() {

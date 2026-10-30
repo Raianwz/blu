@@ -116,7 +116,8 @@ function updateWhatsNewVisualToggle() {
   if (toggle) toggle.checked = isNewButtonVisualEnabled();
   const halloweenToggle = document.getElementById('whatsNewHalloweenVisualSwitch');
   if (halloweenToggle) {
-    halloweenToggle.closest('.whats-new-seasonal-setting').hidden = !isBluFeatureAvailable('halloween');
+    halloweenToggle.closest('.whats-new-seasonal-setting').hidden =
+      !isBluFeatureAvailable('halloween') || typeof applyHalloweenPreference !== 'function';
     halloweenToggle.checked = document.body.classList.contains('halloween-theme');
   }
 }
@@ -127,7 +128,7 @@ function setWhatsNewButtonVisual(enabled) {
 }
 
 function setWhatsNewHalloweenVisual(enabled) {
-  if (!isBluFeatureAvailable('halloween')) return;
+  if (!isBluFeatureAvailable('halloween') || typeof applyHalloweenPreference !== 'function') return;
   setSetting('halloweenVisual', enabled ? 'on' : 'off');
   applyHalloweenPreference();
 }
@@ -191,7 +192,8 @@ function openWhatsNew({ markSeen = true } = {}) {
     setSetting('buttonVisual', 'new');
     applyButtonVisualPreference();
   }
-  if (markSeen && WHATS_NEW_195_AVAILABLE && isBluFeatureAvailable('halloween') && getSetting('halloweenVisual') === null) {
+  if (markSeen && WHATS_NEW_195_AVAILABLE && isBluFeatureAvailable('halloween') &&
+      typeof applyHalloweenPreference === 'function' && getSetting('halloweenVisual') === null) {
     setSetting('halloweenVisual', 'on');
     applyHalloweenPreference();
   }

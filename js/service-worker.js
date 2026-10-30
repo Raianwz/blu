@@ -13,7 +13,7 @@
 // subir a versão abaixo (CACHE_VERSION). Isso cria um cache
 // novo e descarta o antigo na ativação.
 
-const CACHE_VERSION = 'v45';
+const CACHE_VERSION = 'v46';
 const CACHE_NAME = `blu-cache-${CACHE_VERSION}`;
 
 const APP_SHELL = [
@@ -21,31 +21,13 @@ const APP_SHELL = [
   '/index.html',
   '/manifest.json',
   '/assets/style.css',
-  '/libs/events/halloween/halloween.css',
-  '/libs/events/halloween/icons/blu-halloween.svg',
   '/js/core/feature-release.js',
   '/js/loader.js',
-  '/libs/events/halloween/halloween.js',
   '/assets/icons/blu.svg',
-  '/libs/events/halloween/icons/halloween_ghost.svg',
-  '/libs/events/halloween/icons/halloween_web.svg',
-  '/libs/events/halloween/cursor/halloween-ghost-cursor.png',
-  '/libs/events/halloween/cursor/halloween-ghost-pointer.png',
-  '/libs/events/halloween/icons/halloween_cauldron.svg',
-  '/libs/events/halloween/icons/halloween_pumpkin_out.svg',
-  '/libs/events/halloween/icons/toast_bat.svg',
-  '/libs/events/halloween/icons/toast_ghost.svg',
-  '/libs/events/halloween/icons/toast_owl.svg',
-  '/libs/events/halloween/icons/toast_cat.svg',
-  '/libs/events/halloween/icons/toast_hat.svg',
-  '/libs/events/halloween/icons/toast_broom.svg',
-  '/libs/events/halloween/icons/copy_spider.svg',
-  '/libs/events/halloween/icons/toast_saci_cap.svg',
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',
   '/assets/icons/icon-maskable-192.png',
   '/assets/icons/icon-maskable-512.png',
-  '/js/core/debug.js',
   '/js/core/utils.js',
   '/libs/icons/bootstrap-icons/button-icons.js',
   '/libs/icons/material-icons/button-icons.js',
@@ -65,13 +47,8 @@ const APP_SHELL = [
   '/js/core/crypto.js',
   '/js/data/crud.js',
   '/js/data/share-options.js',
-  '/libs/experiments/runtime.js',
   '/js/features/dnd.js',
-  '/js/data/json-tools.js',
-  '/js/data/custom-export.js',
   '/js/ui/context-menu.js',
-  '/js/ui/quick-actions.js',
-  '/js/features/whats-new.js',
   '/js/app.js'
 ];
 

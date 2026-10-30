@@ -619,6 +619,11 @@ document.addEventListener('blu:update-check-complete', () => {
   showHalloweenPaletteBannerWhenReady();
   showHalloweenFarewellWhenReady();
 });
+if (window.BluUpdateCheckComplete === true) {
+  halloweenUpdateCheckComplete = true;
+  showHalloweenPaletteBannerWhenReady();
+  showHalloweenFarewellWhenReady();
+}
 document.addEventListener('blu:modal-closed', () => {
   showHalloweenPaletteBannerWhenReady();
   showHalloweenFarewellWhenReady();

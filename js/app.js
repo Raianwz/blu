@@ -186,7 +186,7 @@ async function resetPreferences() {
   applyTheme(!!systemThemeQuery?.matches);
   applyTextPreviewState(true);
   applyButtonVisualPreference();
-  applyHalloweenPreference();
+  if (typeof applyHalloweenPreference === 'function') applyHalloweenPreference();
   dragPreviewEnabled = false;
   applyDragPreviewState();
   window.resetBluExperiments?.();
@@ -523,8 +523,13 @@ async function waitForServiceWorkerInstall(registration) {
 }
 
 function registerServiceWorker() {
-  if (!('serviceWorker' in navigator)) {
+  window.BluUpdateCheckComplete = false;
+  const finishUpdateCheck = () => {
+    window.BluUpdateCheckComplete = true;
     document.dispatchEvent(new Event('blu:update-check-complete'));
+  };
+  if (!('serviceWorker' in navigator)) {
+    finishUpdateCheck();
     return;
   }
 
@@ -561,7 +566,7 @@ function registerServiceWorker() {
         }
       })
       .catch(error => console.warn('Não foi possível registrar o service worker:', error))
-      .finally(() => document.dispatchEvent(new Event('blu:update-check-complete')));
+      .finally(finishUpdateCheck);
   };
   if (document.readyState === 'complete') startServiceWorker();
   else window.addEventListener('load', startServiceWorker, { once: true });
@@ -722,7 +727,6 @@ requestAnimationFrame(() => requestAnimationFrame(() => {
 }));
 initEditAnimationPreference();
 initDragPreviewPreference();
-window.initBluExperiments?.();
 initTextPreviewPreference();
 applyButtonVisualPreference();
 initSearchGuidance();
@@ -733,5 +737,4 @@ registerServiceWorker();
 init();
 pruneUserData();
 initContentDashboard();
-initQuickActions();
-initWhatsNew();
+window.BluCoreReady = true;

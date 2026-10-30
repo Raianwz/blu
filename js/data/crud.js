@@ -1225,7 +1225,7 @@ async function clearAll(event = null) {
   clearSearchHistory({ silent: true });
   resetQuickAccessPreferences({ persist: false, notifyUser: false });
   resetUserData();
-  updateWhatsNewButtonUI();
+  if (typeof updateWhatsNewButtonUI === 'function') updateWhatsNewButtonUI();
   updateContentPreferenceButtons();
   updateContentViewSwitcher();
 
@@ -1234,7 +1234,7 @@ async function clearAll(event = null) {
   applyTheme(!!systemThemeQuery?.matches);
   applyTextPreviewState(true);
   applyButtonVisualPreference();
-  applyHalloweenPreference();
+  if (typeof applyHalloweenPreference === 'function') applyHalloweenPreference();
   dragPreviewEnabled = false;
   applyDragPreviewState();
 }
@@ -1244,7 +1244,7 @@ async function clearAll(event = null) {
 // Compatibilidade com chamadas antigas; a implementação completa vive em
 // json-tools.js.
 function checkJsonIntegrity() {
-  openJsonModal('diagnostic');
+  if (typeof openJsonModal === 'function') openJsonModal('diagnostic');
 }
 
 function getLevenshteinDistance(left, right) {
