@@ -37,8 +37,11 @@ O servidor estático não executa as rotas `api/`. Criar e abrir links compartil
 ## Organização
 
 - `index.html` e `share.html`: aplicação principal e página de links compartilhados.
-- `js/` e `assets/`: código, estilos e recursos da aplicação principal.
-- `libs/`: catálogos de ícones e dados de demonstração.
+- `js/` e `assets/`: código, estilos e recursos permanentes da aplicação principal.
+- `libs/icons/`: catálogos de ícones.
+- `libs/events/`: visuais sazonais com código, estilos e imagens próprios.
+- `libs/experiments/`: recursos experimentais carregados sob demanda.
+- `libs/demo/`: dados de demonstração.
 - `vercel.json`: encaminha `/sprinklr/` para a publicação separada do Offline.
 - `api/`: funções de compartilhamento; `docs/roadmap.md`: planejamento.
 

@@ -6,9 +6,9 @@
       'js/core/debug.js'
     ],
     libs: [
-      'libs/bootstrap-icons/button-icons.js',
-      'libs/material-icons/button-icons.js',
-      'libs/blu/blu-icons.js'
+      'libs/icons/bootstrap-icons/button-icons.js',
+      'libs/icons/material-icons/button-icons.js',
+      'libs/icons/blu/blu-icons.js'
     ],
     dataAndUi: [
       'js/ui/button-icon-picker.js',
@@ -18,13 +18,13 @@
       'js/data/user-data.js',
       'js/features/content-dashboard.js',
       'js/features/archive.js',
-      'libs/lucide/lucide-icons.js',
+      'libs/icons/lucide/lucide-icons.js',
       'js/ui/render.js',
       'js/features/search.js',
       'js/core/crypto.js',
       'js/data/crud.js',
       'js/data/share-options.js',
-      'js/experiments/runtime.js',
+      'libs/experiments/runtime.js',
       'js/features/dnd.js',
       'js/data/json-tools.js',
       'js/data/custom-export.js',
@@ -32,7 +32,7 @@
       'js/ui/quick-actions.js',
       'js/features/whats-new.js',
       'js/ui/section-icon-picker.js',
-      'js/features/halloween.js'
+      'libs/events/halloween/halloween.js'
     ]
   };
   const base = new URL('../', document.currentScript.src);

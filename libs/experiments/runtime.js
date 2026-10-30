@@ -5,8 +5,8 @@
 (() => {
   const definitions = {
     'advanced-drag-layout': {
-      script: 'js/experiments/advanced-drag-layout.js',
-      style: 'assets/experiments/advanced-drag-layout.css',
+      script: 'libs/experiments/advanced-drag-layout/advanced-drag-layout.js',
+      style: 'libs/experiments/advanced-drag-layout/advanced-drag-layout.css',
       setting: 'advancedOrganizing',
       buttonId: 'advancedOrganizingBtn',
       label: 'Estabilizar ao Arrastar'

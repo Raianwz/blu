@@ -25,7 +25,9 @@ test('despedida aparece somente no último dia da temporada', () => {
   assert.equal(farewell('2026-11-02T23:00:00Z'), false);
 });
 
-test('localhost continua permitindo prévia fora da janela pública', () => {
+test('localhost mantém Halloween desativado após o desenvolvimento', () => {
   context.window.location.hostname = 'localhost';
-  assert.equal(available('2026-11-03T00:00:00Z'), true);
+  assert.equal(available('2026-10-30T12:00:00Z'), false);
+  assert.equal(available('2026-11-03T00:00:00Z'), false);
+  assert.equal(vm.runInContext("isBluFeatureAvailable('sectionIcons')", context), true);
 });

@@ -154,8 +154,8 @@ body.halloween-theme.button-visual-new.section-icons-enabled
   width: 17px;
   height: 17px;
   background: currentColor;
-  -webkit-mask: url("../../libs/events/halloween/halloween_ghost.svg") center / contain no-repeat;
-  mask: url("../../libs/events/halloween/halloween_ghost.svg") center / contain no-repeat;
+  -webkit-mask: url("icons/halloween_ghost.svg") center / contain no-repeat;
+  mask: url("icons/halloween_ghost.svg") center / contain no-repeat;
 }
 body.halloween-theme .section-head .section-count {
   color: var(--halloween-section-ink);
@@ -312,8 +312,8 @@ body.dark.halloween-theme #halloweenPaletteBanner {
   width: 20px;
   height: 20px;
   background: #a44716;
-  -webkit-mask: url("../../libs/events/halloween/halloween_pumpkin_out.svg") center / contain no-repeat;
-  mask: url("../../libs/events/halloween/halloween_pumpkin_out.svg") center / contain no-repeat;
+  -webkit-mask: url("icons/halloween_pumpkin_out.svg") center / contain no-repeat;
+  mask: url("icons/halloween_pumpkin_out.svg") center / contain no-repeat;
 }
 body.dark.halloween-theme .halloween-palette-banner-icon { background: #ffc48c; }
 .halloween-palette-banner-copy {
@@ -384,12 +384,12 @@ body.dark.halloween-theme .halloween-palette-banner-actions button:last-child {
   background: currentColor;
 }
 .halloween-menu-icon {
-  -webkit-mask: url("../../libs/events/halloween/halloween_pumpkin_out.svg") center / contain no-repeat;
-  mask: url("../../libs/events/halloween/halloween_pumpkin_out.svg") center / contain no-repeat;
+  -webkit-mask: url("icons/halloween_pumpkin_out.svg") center / contain no-repeat;
+  mask: url("icons/halloween_pumpkin_out.svg") center / contain no-repeat;
 }
 .halloween-cauldron-icon {
-  -webkit-mask: url("../../libs/events/halloween/halloween_cauldron.svg") center / contain no-repeat;
-  mask: url("../../libs/events/halloween/halloween_cauldron.svg") center / contain no-repeat;
+  -webkit-mask: url("icons/halloween_cauldron.svg") center / contain no-repeat;
+  mask: url("icons/halloween_cauldron.svg") center / contain no-repeat;
 }
 body.halloween-theme #halloweenVisualBtn .halloween-menu-icon {
   background: #ffb25f;
@@ -402,8 +402,8 @@ body.halloween-theme #sectionIconsVisualBtn::before {
   height: 16px;
   flex: 0 0 16px;
   background: currentColor;
-  -webkit-mask: url("../../libs/events/halloween/halloween_ghost.svg") center / contain no-repeat;
-  mask: url("../../libs/events/halloween/halloween_ghost.svg") center / contain no-repeat;
+  -webkit-mask: url("icons/halloween_ghost.svg") center / contain no-repeat;
+  mask: url("icons/halloween_ghost.svg") center / contain no-repeat;
 }
 body.halloween-theme .about-brand img { box-shadow: 0 8px 22px rgba(226, 101, 33, .28); }
 @media (forced-colors: active) {
@@ -419,8 +419,8 @@ body.halloween-theme #searchWrap::after {
   width: 17px;
   height: 17px;
   background: var(--halloween-menu-active-text);
-  -webkit-mask: url("../../libs/events/halloween/halloween_ghost.svg") center / contain no-repeat;
-  mask: url("../../libs/events/halloween/halloween_ghost.svg") center / contain no-repeat;
+  -webkit-mask: url("icons/halloween_ghost.svg") center / contain no-repeat;
+  mask: url("icons/halloween_ghost.svg") center / contain no-repeat;
   pointer-events: none;
   opacity: .8;
 }
@@ -435,8 +435,8 @@ body.halloween-theme #noResultsMsg.show::before {
   height: 34px;
   margin: 0 auto 12px;
   background: #71466f;
-  -webkit-mask: url("../../libs/events/halloween/halloween_ghost.svg") center / contain no-repeat;
-  mask: url("../../libs/events/halloween/halloween_ghost.svg") center / contain no-repeat;
+  -webkit-mask: url("icons/halloween_ghost.svg") center / contain no-repeat;
+  mask: url("icons/halloween_ghost.svg") center / contain no-repeat;
   animation: halloween-empty-ghost 2.8s ease-in-out infinite;
 }
 body.dark.halloween-theme #noResultsMsg.show::before {
@@ -490,8 +490,8 @@ body.halloween-theme #updateBanner #updateNowBtn::before {
   margin-right: 6px;
   vertical-align: -2px;
   background: currentColor;
-  -webkit-mask: url("../../libs/events/halloween/halloween_pumpkin_out.svg") center / contain no-repeat;
-  mask: url("../../libs/events/halloween/halloween_pumpkin_out.svg") center / contain no-repeat;
+  -webkit-mask: url("icons/halloween_pumpkin_out.svg") center / contain no-repeat;
+  mask: url("icons/halloween_pumpkin_out.svg") center / contain no-repeat;
 }
 @media (max-width: 600px) {
   body.halloween-theme #updateBanner #updateNowBtn::before {
@@ -536,8 +536,8 @@ body.halloween-theme #backupBanner::before {
   width: 80px;
   height: 80px;
   background: #a44716;
-  -webkit-mask: url("../../libs/events/halloween/halloween_ghost.svg") center / contain no-repeat;
-  mask: url("../../libs/events/halloween/halloween_ghost.svg") center / contain no-repeat;
+  -webkit-mask: url("icons/halloween_ghost.svg") center / contain no-repeat;
+  mask: url("icons/halloween_ghost.svg") center / contain no-repeat;
   opacity: .24;
   pointer-events: none;
   z-index: 0;
@@ -589,12 +589,12 @@ body.halloween-theme #backupBanner .backup-banner-actions button::before {
   background: currentColor;
 }
 body.halloween-theme #backupBanner .bb-export::before {
-  -webkit-mask: url("../../libs/events/halloween/halloween_pumpkin_out.svg") center / contain no-repeat;
-  mask: url("../../libs/events/halloween/halloween_pumpkin_out.svg") center / contain no-repeat;
+  -webkit-mask: url("icons/halloween_pumpkin_out.svg") center / contain no-repeat;
+  mask: url("icons/halloween_pumpkin_out.svg") center / contain no-repeat;
 }
 body.halloween-theme #backupBanner .bb-dismiss::before {
-  -webkit-mask: url("../../libs/events/halloween/halloween_ghost.svg") center / contain no-repeat;
-  mask: url("../../libs/events/halloween/halloween_ghost.svg") center / contain no-repeat;
+  -webkit-mask: url("icons/halloween_ghost.svg") center / contain no-repeat;
+  mask: url("icons/halloween_ghost.svg") center / contain no-repeat;
 }
 @media (hover: hover) {
   body.halloween-theme #backupBanner .bb-export:hover { background: #81340f; }
@@ -648,8 +648,8 @@ body.halloween-theme .btn-wrap.halloween-webbed .copy-btn::after {
   background: currentColor;
   opacity: .58;
   pointer-events: none;
-  -webkit-mask: url("../../libs/events/halloween/halloween_web.svg") center / contain no-repeat;
-  mask: url("../../libs/events/halloween/halloween_web.svg") center / contain no-repeat;
+  -webkit-mask: url("icons/halloween_web.svg") center / contain no-repeat;
+  mask: url("icons/halloween_web.svg") center / contain no-repeat;
 }
 body.halloween-theme .btn-wrap.halloween-webbed .copy-btn.copied::after {
   display: none;
@@ -677,18 +677,18 @@ body.halloween-theme .halloween-roaming-spider::before {
   width: 100%;
   height: 100%;
   background: #562445;
-  -webkit-mask: url("../../libs/events/halloween/copy_spider.svg") center / contain no-repeat;
-  mask: url("../../libs/events/halloween/copy_spider.svg") center / contain no-repeat;
+  -webkit-mask: url("icons/copy_spider.svg") center / contain no-repeat;
+  mask: url("icons/copy_spider.svg") center / contain no-repeat;
   animation: halloween-spider-step .7s ease-in-out infinite alternate;
 }
 body.dark.halloween-theme .halloween-roaming-spider::before { background: #f8dfc2; }
 body.halloween-theme.halloween-ghost-cursor,
 body.halloween-theme.halloween-ghost-cursor * {
-  cursor: url("../../libs/events/halloween/cursor/halloween-ghost-cursor.png") 16 16, auto !important;
+  cursor: url("cursor/halloween-ghost-cursor.png") 16 16, auto !important;
 }
 body.halloween-theme.halloween-ghost-cursor :is(button, a, select, label, [role="button"], [role="menuitem"]),
 body.halloween-theme.halloween-ghost-cursor :is(button, a, select, label, [role="button"], [role="menuitem"]) * {
-  cursor: url("../../libs/events/halloween/cursor/halloween-ghost-pointer.png") 16 16, pointer !important;
+  cursor: url("cursor/halloween-ghost-pointer.png") 16 16, pointer !important;
 }
 body.halloween-theme.halloween-ghost-cursor :is(input, textarea, [contenteditable="true"]) {
   cursor: text !important;
@@ -735,8 +735,8 @@ body.halloween-theme .halloween-idle-ghost::before {
   width: 100%;
   height: 100%;
   background: #683b73;
-  -webkit-mask: url("../../libs/events/halloween/halloween_ghost.svg") center / contain no-repeat;
-  mask: url("../../libs/events/halloween/halloween_ghost.svg") center / contain no-repeat;
+  -webkit-mask: url("icons/halloween_ghost.svg") center / contain no-repeat;
+  mask: url("icons/halloween_ghost.svg") center / contain no-repeat;
   animation: halloween-idle-ghost-float 2.4s ease-in-out infinite;
 }
 body.dark.halloween-theme .halloween-idle-ghost {
@@ -804,32 +804,32 @@ body.halloween-theme .halloween-copy-effect--bubbles .halloween-copy-particle {
   box-shadow: 0 0 5px var(--halloween-copy-color, #a5e2ba);
 }
 body.halloween-theme .halloween-copy-effect--ghosts .halloween-copy-particle {
-  -webkit-mask: url("../../libs/events/halloween/halloween_ghost.svg") center / contain no-repeat;
-  mask: url("../../libs/events/halloween/halloween_ghost.svg") center / contain no-repeat;
+  -webkit-mask: url("icons/halloween_ghost.svg") center / contain no-repeat;
+  mask: url("icons/halloween_ghost.svg") center / contain no-repeat;
 }
 body.halloween-theme .halloween-copy-effect--bats .halloween-copy-particle {
   width: 19px;
-  -webkit-mask: url("../../libs/events/halloween/toast_bat.svg") center / contain no-repeat;
-  mask: url("../../libs/events/halloween/toast_bat.svg") center / contain no-repeat;
+  -webkit-mask: url("icons/toast_bat.svg") center / contain no-repeat;
+  mask: url("icons/toast_bat.svg") center / contain no-repeat;
 }
 body.halloween-theme .halloween-copy-effect--hats .halloween-copy-particle {
   width: 18px;
   height: 18px;
-  -webkit-mask: url("../../libs/events/halloween/toast_hat.svg") center / contain no-repeat;
-  mask: url("../../libs/events/halloween/toast_hat.svg") center / contain no-repeat;
+  -webkit-mask: url("icons/toast_hat.svg") center / contain no-repeat;
+  mask: url("icons/toast_hat.svg") center / contain no-repeat;
 }
 body.halloween-theme .halloween-copy-effect--brooms .halloween-copy-particle {
   width: 18px;
   height: 18px;
-  -webkit-mask: url("../../libs/events/halloween/toast_broom.svg") center / contain no-repeat;
-  mask: url("../../libs/events/halloween/toast_broom.svg") center / contain no-repeat;
+  -webkit-mask: url("icons/toast_broom.svg") center / contain no-repeat;
+  mask: url("icons/toast_broom.svg") center / contain no-repeat;
   animation-name: halloween-copy-sweep;
 }
 body.halloween-theme .halloween-copy-effect--spiders .halloween-copy-particle {
   width: 20px;
   height: 20px;
-  -webkit-mask: url("../../libs/events/halloween/copy_spider.svg") center / contain no-repeat;
-  mask: url("../../libs/events/halloween/copy_spider.svg") center / contain no-repeat;
+  -webkit-mask: url("icons/copy_spider.svg") center / contain no-repeat;
+  mask: url("icons/copy_spider.svg") center / contain no-repeat;
   animation-name: halloween-copy-scurry;
   animation-duration: 1260ms;
   animation-timing-function: cubic-bezier(.22, .7, .3, 1);

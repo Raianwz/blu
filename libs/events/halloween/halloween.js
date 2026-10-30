@@ -538,7 +538,7 @@ function showHalloweenFarewellWhenReady() {
   const toast = notify('Até o próximo Halloween! O visual se despede hoje às 20h.', 'ok', { duration: 6500 });
   toast.classList.add('halloween-farewell');
   toast.querySelector('.halloween-toast-creature')?.style.setProperty(
-    '--halloween-toast-icon', 'url("/libs/events/halloween/toast_ghost.svg")');
+    '--halloween-toast-icon', 'url("/libs/events/halloween/icons/toast_ghost.svg")');
   setMetaValue('updates', HALLOWEEN_FAREWELL_SETTING, true);
 }
 
@@ -572,10 +572,10 @@ function applyHalloweenPreference() {
   if (paletteRow) paletteRow.hidden = !enabled;
   if (paletteSelect) paletteSelect.value = palette;
   const favicon = document.getElementById('bluFavicon');
-  const faviconPath = enabled ? 'assets/themes/blu-halloween.svg' : 'assets/icons/blu.svg';
+  const faviconPath = enabled ? 'libs/events/halloween/icons/blu-halloween.svg' : 'assets/icons/blu.svg';
   if (favicon && favicon.getAttribute('href') !== faviconPath) favicon.setAttribute('href', faviconPath);
   const aboutLogo = document.getElementById('aboutBluLogo');
-  const aboutLogoPath = enabled ? 'assets/themes/blu-halloween.svg' : 'assets/icons/icon-192.png';
+  const aboutLogoPath = enabled ? 'libs/events/halloween/icons/blu-halloween.svg' : 'assets/icons/icon-192.png';
   if (aboutLogo && aboutLogo.getAttribute('src') !== aboutLogoPath) aboutLogo.setAttribute('src', aboutLogoPath);
   const button = document.getElementById('halloweenVisualBtn');
   if (button) {

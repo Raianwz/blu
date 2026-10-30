@@ -87,7 +87,7 @@ function notify(msg, type = 'ok', options = {}) {
     const creature = document.createElement('span');
     creature.className = 'halloween-toast-creature';
     creature.setAttribute('aria-hidden', 'true');
-    creature.style.setProperty('--halloween-toast-icon', `url("/libs/events/halloween/toast_${HALLOWEEN_TOAST_CREATURES[next]}.svg")`);
+    creature.style.setProperty('--halloween-toast-icon', `url("/libs/events/halloween/icons/toast_${HALLOWEEN_TOAST_CREATURES[next]}.svg")`);
     message.prepend(creature);
   }
   element.appendChild(message);

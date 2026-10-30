@@ -11,6 +11,8 @@ para módulos.
   criptografia e diagnóstico.
 - `data/`: leitura, alteração, importação e exportação dos dados da aplicação.
 - `features/`: comportamentos completos disponibilizados ao usuário.
+- `../libs/events/`: recursos sazonais, com CSS, JavaScript e imagens agrupados por evento.
+- `../libs/experiments/`: runtime e recursos experimentais carregados sob demanda.
 - `ui/`: renderização e componentes de interação reutilizáveis.
 - `app.js`: inicialização e coordenação geral da aplicação.
 - `loader.js`: lista e carrega os scripts na ordem necessária.

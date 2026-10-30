@@ -5,6 +5,7 @@ Recursos experimentais ficam separados dos módulos principais até serem consid
 ## Contrato
 
 - `runtime.js` é a única infraestrutura experimental carregada na inicialização.
+- Cada experimento mantém seus arquivos JavaScript e CSS na própria subpasta.
 - Cada experimento registra `enable()`, `disable()` e, opcionalmente, `hooks`.
 - JavaScript e CSS do experimento são carregados apenas quando ele é ativado.
 - Toda classe CSS experimental deve ser escopada por uma classe exclusiva no `body`.
