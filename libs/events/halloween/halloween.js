@@ -577,13 +577,6 @@ function applyHalloweenPreference() {
   const aboutLogo = document.getElementById('aboutBluLogo');
   const aboutLogoPath = enabled ? 'libs/events/halloween/icons/blu-halloween.svg' : 'assets/icons/icon-192.png';
   if (aboutLogo && aboutLogo.getAttribute('src') !== aboutLogoPath) aboutLogo.setAttribute('src', aboutLogoPath);
-  const button = document.getElementById('halloweenVisualBtn');
-  if (button) {
-    button.hidden = !available;
-    button.classList.toggle('active', enabled);
-    button.setAttribute('aria-pressed', String(enabled));
-    button.querySelector('.menu-btn-label').textContent = `Visual de Halloween: ${enabled ? 'ON' : 'OFF'}`;
-  }
   if (!enabled) {
     resetHalloweenEyePupil();
     halloweenPaletteNoticePending = false;
@@ -596,12 +589,6 @@ function applyHalloweenPreference() {
   queueMicrotask(showHalloweenFarewellWhenReady);
   // Keep an already-open What's New dialog in sync when the season ends.
   if (typeof updateWhatsNewVisualToggle === 'function') updateWhatsNewVisualToggle();
-}
-
-function toggleHalloweenPreference() {
-  if (!isBluFeatureAvailable('halloween')) return;
-  setSetting('halloweenVisual', getSetting('halloweenVisual', 'off') === 'on' ? 'off' : 'on');
-  applyHalloweenPreference();
 }
 
 function setHalloweenPalette(value) {

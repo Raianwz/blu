@@ -2,6 +2,9 @@
 
 Cada evento fica em uma pasta própria. O Halloween, primeiro visual sazonal do
 Blû, reúne em `halloween/` seu CSS, JavaScript, testes, ícones e cursores.
+`vice-city/` contém um primeiro estudo de cores para novembro. Seu CSS já pode
+ser carregado, mas só atua quando `body` recebe a classe `vice-city-theme`;
+o Halloween tem prioridade se as duas classes estiverem presentes.
 
 Ao adicionar outro evento, carregue os arquivos necessários no `index.html` e
 no `js/loader.js`. Se ele precisar funcionar no PWA sem rede, inclua seus
