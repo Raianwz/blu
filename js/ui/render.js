@@ -20,7 +20,6 @@ function applyButtonVisualPreference() {
   button.classList.toggle('active', modern);
   button.setAttribute('aria-pressed', String(modern));
   button.querySelector('.menu-btn-label').textContent = `Visual dos Botões: ${modern ? 'Novo' : 'Clássico'}`;
-  if (typeof updateWhatsNewVisualToggle === 'function') updateWhatsNewVisualToggle();
 }
 
 function toggleButtonVisualPreference() {

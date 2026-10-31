@@ -588,7 +588,7 @@ function applyHalloweenPreference() {
   }
   queueMicrotask(showHalloweenFarewellWhenReady);
   // Keep an already-open What's New dialog in sync when the season ends.
-  if (typeof updateWhatsNewVisualToggle === 'function') updateWhatsNewVisualToggle();
+  if (typeof updateWhatsNewHalloweenToggle === 'function') updateWhatsNewHalloweenToggle();
 }
 
 function setHalloweenPalette(value) {
