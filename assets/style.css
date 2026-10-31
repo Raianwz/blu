@@ -2009,6 +2009,7 @@ body.edit-mode .btn-del {
   --import-muted: #596071;
   --import-green: #047857;
   --import-blue: #4f46e5;
+  --whats-new-removed: #b91c1c;
   display: flex;
   flex-direction: column;
   max-width: 560px;
@@ -2019,6 +2020,7 @@ body.dark .whats-new-modal {
   --import-muted: #adb3c7;
   --import-green: #6ee7b7;
   --import-blue: #a5b4fc;
+  --whats-new-removed: #fca5a5;
 }
 
 .whats-new-header {
@@ -2096,6 +2098,11 @@ body.dark .whats-new-modal {
 .whats-new-visual-switch input:checked + span { background: var(--accent1); }
 .whats-new-visual-switch input:checked + span::after { transform: translateX(18px); }
 .whats-new-visual-switch input:focus-visible + span { outline: 2px solid var(--accent1); outline-offset: 3px; }
+
+.whats-new-item .custom-import-status.removed {
+  background: color-mix(in srgb, var(--whats-new-removed) 13%, transparent);
+  color: var(--whats-new-removed);
+}
 
 .whats-new-item {
   display: grid;

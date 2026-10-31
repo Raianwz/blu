@@ -7,7 +7,7 @@ const SETTINGS_STORAGE_KEY = 'blu:settings';
 const META_STORAGE_KEY = 'blu:meta';
 const CLIENT_ID_STORAGE_KEY = 'blu:clientId';
 const PENDING_IMPORT_UNDO_KEY = 'blu:pendingImportUndo';
-const VERSION = '1.9.5';
+const VERSION = '1.10.0';
 const BASE_TITLE = 'Blû';
 
 let editMode = false;

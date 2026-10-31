@@ -2,94 +2,30 @@
 // Novidades da versão — conteúdo dinâmico e controle de leitura
 // ==========================================================
 
-// O anúncio da 1.9.5 segue a liberação manual dos ícones de seção.
-const WHATS_NEW_195_AVAILABLE = isBluFeatureAvailable('sectionIcons');
-const WHATS_NEW_VERSION = WHATS_NEW_195_AVAILABLE ? '1.9.5' : '1.9';
-
-const WHATS_NEW_ITEMS_195 = [
+const WHATS_NEW_VERSION = '1.10.0';
+const WHATS_NEW_ITEMS = [
   {
     icon: '🎨',
     type: 'Novo',
     status: 'new',
-    title: 'Mais cores para os botões',
-    description: 'Escolha entre novas cores sólidas e gradientes para personalizar os botões Outro.'
+    title: 'Prévia dos botões ao editar',
+    description: 'Veja a cor e o ícone escolhidos antes de salvar um botão.'
   },
   {
-    icon: '📚',
-    type: 'Novo',
-    status: 'new',
-    title: 'Ícones nas seções',
-    description: 'No visual Novo, os ícones podem aparecer automaticamente ou ser escolhidos ao renomear a seção. Mostre ou oculte todos em Menu &gt; Conteúdo.'
-  },
-  {
-    icon: '🎃',
-    type: 'Novo',
-    status: 'new',
-    title: 'Tema de Dia das Bruxas',
-    description: 'Uma aparência sazonal opcional para os temas claro e escuro, com cores temáticas e pequenos detalhes festivos. Durante a temporada, controle-a em Menu &gt; Conteúdo.'
-  }
-];
-
-const WHATS_NEW_ITEMS_19 = [
-  {
-    icon: '🗃️',
-    type: 'Novo',
-    status: 'new',
-    title: 'Arquivamento de conteúdo',
-    description: 'Guarde botões e seções fora da tela inicial e restaure quando precisar.'
-  },
-  {
-    icon: '🎚️',
+    icon: '🧩',
     type: 'Melhoria',
-    status: 'moved',
-    title: 'Menu simplificado e avançado',
-    description: 'O modo simplificado destaca o essencial. Opções avançadas continuam disponíveis em Configurações.'
-  },
-  {
-    icon: '📌',
-    type: 'Novo',
-    status: 'new',
-    title: 'Acesso rápido personalizável',
-    description: 'Fixe ou desfixe Gerenciar Tags e Compartilhar pelo menu de contexto.'
-  },
-  {
-    icon: '👁️',
-    type: 'Melhoria',
-    status: 'moved',
-    title: 'Modos de prévia de texto',
-    description: 'Escolha entre a prévia Flutuante, a dica Nativa do navegador ou desative completamente.'
-  },
-  {
-    icon: '🎨',
-    type: 'Novo',
-    status: 'new',
-    title: 'Visual dos botões',
-    description: 'Indicadores mais claros para Público e Privado. Em Outro, escolha uma cor e um ícone para cada botão.'
-  },
-  {
-    icon: '🔎',
-    type: 'Novo',
-    status: 'new',
-    title: 'Pesquisas recentes',
-    description: 'O histórico opcional guarda somente buscas com resultados e pode ser alternado com <kbd>Alt</kbd> + <kbd>H</kbd>.'
-  },
-  {
-    icon: '⌨️',
-    type: 'Novo',
-    status: 'new',
-    title: 'Atalhos de janela',
-    description: 'Use <kbd>Alt</kbd> + <kbd>J</kbd> para uma nova janela e <kbd>Alt</kbd> + <kbd>P</kbd> para o pop-out.'
-  },
-  {
-    icon: '💾',
-    type: 'Alterado',
     status: 'changed',
-    title: 'Dados reorganizados',
-    description: 'Importação, exportação e limpeza agora ficam reunidas, com ações destrutivas visualmente separadas.'
+    title: 'Recursos opcionais mais resistentes',
+    description: 'Falhas em extras como novidades, diagnóstico e efeitos sazonais não impedem o Blû de abrir.'
+  },
+  {
+    icon: '☆',
+    type: 'Removido',
+    status: 'removed',
+    title: 'Favoritos',
+    description: 'A função de favoritos foi retirada do menu, da busca e dos dados de atividade.'
   }
 ];
-
-const WHATS_NEW_ITEMS = WHATS_NEW_195_AVAILABLE ? WHATS_NEW_ITEMS_195 : WHATS_NEW_ITEMS_19;
 
 function hasSeenWhatsNew(version = WHATS_NEW_VERSION) {
   return getMetaValue('updates', 'seenVersion') === version;
@@ -149,8 +85,8 @@ function ensureWhatsNewModal() {
       <div class="modal whats-new-modal">
         <header class="whats-new-header">
           <span class="whats-new-kicker">Novidades · Blû ${WHATS_NEW_VERSION}</span>
-          <h2 id="whatsNewTitle">🦉 O que mudou no Blû</h2>
-          <p>Confira os principais recursos, ajustes e melhorias desta atualização.</p>
+          <h2 id="whatsNewTitle">🐘 O que mudou no Blû</h2>
+          <p>Confira os principais recursos e mudanças desta versão.</p>
         </header>
         <div class="whats-new-list">${items}</div>
         <div class="whats-new-visual-setting">
@@ -163,17 +99,16 @@ function ensureWhatsNewModal() {
             <span aria-hidden="true"></span>
           </label>
         </div>
-        ${WHATS_NEW_195_AVAILABLE ? `
         <div class="whats-new-visual-setting whats-new-seasonal-setting">
           <div>
             <strong>Visual de Dia das Bruxas</strong>
-            <p>Ativado ao abrir estas novidades durante a temporada, se você ainda não fez uma escolha. Desative aqui ou em Menu &gt; Conteúdo.</p>
+            <p>Durante a temporada, ative ou desative este visual aqui ou em Menu &gt; Conteúdo.</p>
           </div>
           <label class="whats-new-visual-switch">
             <input id="whatsNewHalloweenVisualSwitch" type="checkbox" role="switch" aria-label="Ativar visual de Dia das Bruxas" onchange="setWhatsNewHalloweenVisual(this.checked)">
             <span aria-hidden="true"></span>
           </label>
-        </div>` : ''}
+        </div>
         <div class="modal-footer"><button class="mbtn primary" type="button" onclick="closeModal('whatsNewModal')">Entendi</button></div>
       </div>
     </div>
@@ -192,7 +127,7 @@ function openWhatsNew({ markSeen = true } = {}) {
     setSetting('buttonVisual', 'new');
     applyButtonVisualPreference();
   }
-  if (markSeen && WHATS_NEW_195_AVAILABLE && isBluFeatureAvailable('halloween') &&
+  if (markSeen && isBluFeatureAvailable('halloween') &&
       typeof applyHalloweenPreference === 'function' && getSetting('halloweenVisual') === null) {
     setSetting('halloweenVisual', 'on');
     applyHalloweenPreference();
