@@ -500,7 +500,9 @@ function openPopoutBlank() {
     link.rel = 'icon';
     link.type = 'image/svg+xml';
     link.href = doc.body.classList.contains('halloween-theme')
-      ? '/libs/events/halloween/icons/blu-halloween.svg' : '/assets/icons/blu.svg';
+      ? '/libs/events/halloween/icons/blu-halloween.svg'
+      : doc.body.classList.contains('vice-city-theme')
+        ? '/libs/events/vice-city/blu-vice-city.svg' : '/assets/icons/blu.svg';
     doc.head.appendChild(link);
   }, 50);
 }

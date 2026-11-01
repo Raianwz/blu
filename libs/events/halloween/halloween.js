@@ -572,10 +572,13 @@ function applyHalloweenPreference() {
   if (paletteRow) paletteRow.hidden = !enabled;
   if (paletteSelect) paletteSelect.value = palette;
   const favicon = document.getElementById('bluFavicon');
-  const faviconPath = enabled ? 'libs/events/halloween/icons/blu-halloween.svg' : 'assets/icons/blu.svg';
+  const viceCityEnabled = !enabled && document.body.classList.contains('vice-city-theme');
+  const faviconPath = enabled ? 'libs/events/halloween/icons/blu-halloween.svg'
+    : viceCityEnabled ? 'libs/events/vice-city/blu-vice-city.svg' : 'assets/icons/blu.svg';
   if (favicon && favicon.getAttribute('href') !== faviconPath) favicon.setAttribute('href', faviconPath);
   const aboutLogo = document.getElementById('aboutBluLogo');
-  const aboutLogoPath = enabled ? 'libs/events/halloween/icons/blu-halloween.svg' : 'assets/icons/icon-192.png';
+  const aboutLogoPath = enabled ? 'libs/events/halloween/icons/blu-halloween.svg'
+    : viceCityEnabled ? 'libs/events/vice-city/blu-vice-city.svg' : 'assets/icons/icon-192.png';
   if (aboutLogo && aboutLogo.getAttribute('src') !== aboutLogoPath) aboutLogo.setAttribute('src', aboutLogoPath);
   if (!enabled) {
     resetHalloweenEyePupil();

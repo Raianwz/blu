@@ -34,6 +34,8 @@
     { id: 'quick-actions', path: 'js/ui/quick-actions.js', ready: 'initQuickActions',
       init: () => window.initQuickActions() },
     { id: 'halloween', path: 'libs/events/halloween/halloween.js', ready: 'applyHalloweenPreference' },
+    { id: 'vice-city', path: 'libs/events/vice-city/vice-city.js', ready: 'initViceCityIntro',
+      init: () => window.initViceCityIntro() },
     { id: 'whats-new', path: 'js/features/whats-new.js', ready: 'initWhatsNew',
       init: () => window.initWhatsNew() }
   ];

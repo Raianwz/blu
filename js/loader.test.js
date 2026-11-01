@@ -12,6 +12,7 @@ const optionalReady = {
   'js/data/custom-export.js': 'openCustomExportModal',
   'js/ui/quick-actions.js': 'initQuickActions',
   'libs/events/halloween/halloween.js': 'applyHalloweenPreference',
+  'libs/events/vice-city/vice-city.js': 'initViceCityIntro',
   'js/features/whats-new.js': 'initWhatsNew'
 };
 
@@ -71,7 +72,7 @@ test('inicia o app antes dos recursos opcionais', async () => {
   assert.ok(appIndex > 0);
   assert.ok(state.loaded.indexOf('js/core/debug.js') > appIndex);
   assert.equal(state.alerts.length, 0);
-  assert.equal(state.statuses.length, 7);
+  assert.equal(state.statuses.length, 8);
   assert.ok(state.statuses.every(entry => entry.loaded));
   assert.equal(state.controls.customExportBtn.hidden, false);
   assert.ok(state.started.includes('js/features/whats-new.js'));

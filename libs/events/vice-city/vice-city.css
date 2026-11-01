@@ -83,3 +83,145 @@ body.vice-city-theme:not(.halloween-theme) :is(.menu-btn, .menu-submenu-toggle):
     box-shadow: none;
   }
 }
+
+/* Neon title card, shown once each time the easter egg is activated. */
+.vice-city-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+  cursor: pointer;
+  color: #fff7f5;
+  background: #100b20;
+  animation: vice-intro-arrive .55s ease-out both;
+}
+
+.vice-city-intro::before {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse at 48% 66%, rgba(255, 128, 112, .27), transparent 30%),
+    radial-gradient(ellipse at 22% 76%, rgba(235, 58, 145, .26), transparent 38%),
+    radial-gradient(ellipse at 83% 74%, rgba(68, 221, 224, .19), transparent 37%),
+    linear-gradient(180deg, #0b0c24 8%, #271237 68%, #5d2455);
+  animation: vice-intro-glow 7s ease-in-out both;
+}
+
+.vice-city-intro__horizon {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 67%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #ff9c8f 24%, #fa72bd 52%, #66dfe3 80%, transparent);
+  box-shadow: 0 0 26px 4px rgba(255, 112, 177, .36);
+  opacity: .7;
+  transform: scaleX(.4);
+  animation: vice-intro-horizon 4s ease-out both;
+}
+
+.vice-city-intro__frame {
+  position: relative;
+  width: min(58vw, 48vh, 400px);
+  min-width: min(190px, 80vw);
+  filter: drop-shadow(0 0 18px rgba(255, 96, 177, .35));
+  animation: vice-intro-title 7s ease-in-out both;
+}
+
+.vice-city-intro__logo {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.vice-city-intro__square-fill {
+  fill: url(#vice-neon-fill);
+  animation: vice-intro-fill 1.5s 3.8s both;
+}
+
+.vice-city-intro__square-trace,
+.vice-city-intro__b-trace {
+  fill: none;
+  stroke: url(#vice-neon-stroke);
+  stroke-width: 8;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 9px #ff7eb9);
+}
+
+.vice-city-intro__square-trace {
+  stroke-dasharray: 2200;
+  animation: vice-intro-square-trace 2.9s .35s ease-in-out both;
+}
+
+.vice-city-intro__b-fill {
+  fill: #fff1d8;
+  animation: vice-intro-fill 1.3s 4.3s both;
+}
+
+.vice-city-intro__b-trace {
+  stroke-dasharray: 1400;
+  animation: vice-intro-b-trace 3.4s 1.5s ease-in-out both;
+}
+
+.vice-city-intro__skip {
+  position: absolute;
+  left: 50%;
+  bottom: max(26px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  max-width: calc(100vw - 32px);
+  font: 500 12px/1.4 Arial, Helvetica, sans-serif;
+  letter-spacing: .04em;
+  text-align: center;
+  color: #ffebf6;
+  opacity: .75;
+}
+
+@keyframes vice-intro-arrive {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes vice-intro-glow {
+  from { transform: scale(1.08); opacity: .45; }
+  to { transform: scale(1); opacity: 1; }
+}
+@keyframes vice-intro-horizon {
+  from { opacity: 0; transform: scaleX(.4); }
+  to { opacity: .7; transform: scaleX(1); }
+}
+@keyframes vice-intro-title {
+  0% { opacity: 0; transform: translateY(22px) scale(.96); }
+  10%, 88% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-12px) scale(1.02); }
+}
+@keyframes vice-intro-square-trace {
+  from { opacity: 0; stroke-dashoffset: 2200; }
+  12% { opacity: 1; }
+  to { opacity: 1; stroke-dashoffset: 0; }
+}
+@keyframes vice-intro-b-trace {
+  from { opacity: 0; stroke-dashoffset: 1400; }
+  10% { opacity: 1; }
+  82% { opacity: 1; stroke-dashoffset: 0; }
+  to { opacity: 0; stroke-dashoffset: 0; }
+}
+@keyframes vice-intro-fill {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (forced-colors: active) {
+  .vice-city-intro { background: Canvas; color: CanvasText; }
+  .vice-city-intro__horizon { display: none; }
+  .vice-city-intro__frame { filter: none; }
+  .vice-city-intro__square-fill,
+  .vice-city-intro__b-fill { fill: CanvasText; }
+  .vice-city-intro__square-trace,
+  .vice-city-intro__b-trace { stroke: CanvasText; filter: none; }
+}
