@@ -18,6 +18,8 @@ function setup() {
   const body = {
     classList: {
       contains: name => classes.has(name),
+      add(name) { classes.add(name); },
+      remove(name) { classes.delete(name); },
       toggle(name) {
         if (classes.has(name)) classes.delete(name);
         else classes.add(name);
@@ -95,6 +97,8 @@ test('a intro só abre ao ativar o tema e pode ser pulada por clique ou tecla', 
   assert.equal(state.body.children.length, 0);
   state.classes.delete('vice-city-theme');
   state.changed();
+  assert.equal(state.body.children[0].className, 'vice-city-outro');
+  [...state.timers.values()].find(timer => timer.ms === 2000).fn();
   state.classes.add('vice-city-theme');
   state.changed();
   let prevented = false;
@@ -114,6 +118,22 @@ test('fim natural da intro deixa terminar o trecho de áudio', () => {
   state.classes.delete('vice-city-theme');
   state.changed();
   assert.equal(state.audios[0].pauseCount, 1);
+});
+
+test('reativação durante a saída espera a tela azul terminar', () => {
+  const state = setup();
+  state.classes.add('vice-city-theme');
+  state.changed();
+  state.body.children[0].listeners.get('click')();
+  state.classes.delete('vice-city-theme');
+  state.changed();
+  state.classes.add('vice-city-theme');
+  state.changed();
+  assert.equal(state.body.children.length, 1);
+  assert.equal(state.body.children[0].className, 'vice-city-outro');
+  [...state.timers.values()].find(timer => timer.ms === 2000).fn();
+  assert.equal(state.body.children.length, 1);
+  assert.equal(state.body.children[0].className, 'vice-city-intro');
 });
 
 test('Halloween impede a intro; voltar de uma aba oculta não a repete', () => {
@@ -145,7 +165,16 @@ test('código Konami alterna o tema e ignora digitação em campos', () => {
   keys.forEach((key, index) => send(key, index === 4 ? { closest: () => ({}) } : undefined));
   assert.equal(state.classes.has('vice-city-theme'), false);
   keys.forEach(key => send(key));
+  assert.equal(state.classes.has('vice-city-theme'), false);
+  assert.equal(state.body.children.length, 1);
+  assert.equal(state.body.children[0].className, 'vice-city-intro');
+  assert.equal(state.audios[0].playCount, 1);
+  assert.equal(state.branding.bluFavicon.getAttribute('href'), 'assets/icons/blu.svg');
+  assert.equal([...state.timers.values()].find(timer => timer.ms === 500).ms, 500);
+  [...state.timers.values()].find(timer => timer.ms === 500).fn();
   assert.equal(state.classes.has('vice-city-theme'), true);
+  assert.equal(state.branding.bluFavicon.getAttribute('href'),
+    'libs/events/vice-city/blu-vice-city.svg');
   state.changed();
   assert.equal(state.body.children.length, 1);
   state.body.children[0].listeners.get('click')();
@@ -153,4 +182,12 @@ test('código Konami alterna o tema e ignora digitação em campos', () => {
   assert.equal(state.classes.has('vice-city-theme'), false);
   state.changed();
   assert.equal(state.branding.bluFavicon.getAttribute('href'), 'assets/icons/blu.svg');
+  assert.equal(state.body.children.length, 1);
+  assert.equal(state.body.children[0].className, 'vice-city-outro');
+  assert.ok(state.body.children[0].innerHTML.includes('assets/icons/blu.svg'));
+  assert.equal([...state.timers.values()].find(timer => timer.ms === 2000).ms, 2000);
+  keys.forEach(key => send(key));
+  assert.equal(state.classes.has('vice-city-theme'), false);
+  [...state.timers.values()].find(timer => timer.ms === 2000).fn();
+  assert.equal(state.body.children.length, 0);
 });

@@ -225,3 +225,42 @@ body.vice-city-theme:not(.halloween-theme) :is(.menu-btn, .menu-submenu-toggle):
   .vice-city-intro__square-trace,
   .vice-city-intro__b-trace { stroke: CanvasText; filter: none; }
 }
+
+/* Two-second return to the original Blû visual when the easter egg is disabled. */
+.vice-city-outro {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #1e5fd9;
+  pointer-events: auto;
+  animation: vice-outro-exit 2s ease-in-out both;
+}
+
+.vice-city-outro img {
+  display: block;
+  width: min(48vw, 42vh, 240px);
+  min-width: min(140px, 70vw);
+  height: auto;
+  filter: drop-shadow(0 18px 30px rgba(7, 32, 106, .4));
+  animation: vice-outro-logo 2s ease-in-out both;
+}
+
+@keyframes vice-outro-exit {
+  0% { opacity: 0; transform: translateY(0); }
+  12%, 72% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 1; transform: translateY(-101%); }
+}
+
+@keyframes vice-outro-logo {
+  0% { opacity: 0; transform: translateY(22px) scale(.82); }
+  28%, 70% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 1; transform: translateY(-20px) scale(1.04); }
+}
+
+@media (forced-colors: active) {
+  .vice-city-outro { background: Canvas; }
+  .vice-city-outro img { filter: none; }
+}

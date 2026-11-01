@@ -2,6 +2,8 @@
 (() => {
   const THEME = 'vice-city-theme';
   const DURATION = 7000;
+  const OUTRO_DURATION = 2000;
+  const ACTIVATION_DELAY = 500;
   const VICE_LOGO = 'libs/events/vice-city/blu-vice-city.svg';
   const INTRO_AUDIO = new URL('ViceCity.ogg', document.currentScript.src).href;
   const KONAMI = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown',
@@ -9,11 +11,17 @@
   let active = false;
   let pending = false;
   let overlay = null;
+  let outroOverlay = null;
   let finishTimer = null;
+  let activationTimer = null;
   let introAudio = null;
   let konamiIndex = 0;
 
   function onKonamiKeyDown(event) {
+    if (outroOverlay || activationTimer !== null) {
+      konamiIndex = 0;
+      return;
+    }
     if (event.repeat || event.altKey || event.ctrlKey || event.metaKey ||
         event.target?.closest?.('input, textarea, select, [contenteditable="true"]')) {
       konamiIndex = 0;
@@ -23,9 +31,22 @@
     konamiIndex = key === KONAMI[konamiIndex] ? konamiIndex + 1 : Number(key === KONAMI[0]);
     if (konamiIndex !== KONAMI.length) return;
     konamiIndex = 0;
-    document.body.classList.toggle(THEME);
+    if (document.body.classList.contains(THEME)) {
+      document.body.classList.remove(THEME);
+      syncTheme();
+      return;
+    }
     // Start inside the key gesture so browsers can permit audible playback.
-    syncTheme();
+    if (!document.body.classList.contains('halloween-theme')) {
+      active = true;
+      pending = true;
+      startIntro(true);
+    }
+    activationTimer = setTimeout(() => {
+      activationTimer = null;
+      document.body.classList.add(THEME);
+      syncTheme();
+    }, ACTIVATION_DELAY);
   }
 
   function eligible() {
@@ -86,8 +107,10 @@
     finishIntro();
   }
 
-  function startIntro() {
-    if (overlay || !eligible() || document.visibilityState !== 'visible') return;
+  function startIntro(beforeTheme = false) {
+    if (overlay || outroOverlay || (!beforeTheme && !eligible()) ||
+        document.body.classList.contains('halloween-theme') ||
+        document.visibilityState !== 'visible') return;
     overlay = document.createElement('div');
     overlay.className = 'vice-city-intro';
     overlay.setAttribute('role', 'img');
@@ -133,13 +156,32 @@
     finishTimer = setTimeout(() => finishIntro(false), DURATION);
   }
 
+  function startOutro() {
+    if (outroOverlay || document.visibilityState !== 'visible') return;
+    outroOverlay = document.createElement('div');
+    outroOverlay.className = 'vice-city-outro';
+    outroOverlay.setAttribute('role', 'img');
+    outroOverlay.setAttribute('aria-label', 'Logo original do Blû retornando ao centro da tela.');
+    outroOverlay.innerHTML = '<img src="assets/icons/blu.svg" alt="" aria-hidden="true">';
+    document.body.appendChild(outroOverlay);
+    setTimeout(() => {
+      outroOverlay?.remove();
+      outroOverlay = null;
+      if (pending) startIntro();
+    }, OUTRO_DURATION);
+  }
+
   function syncTheme() {
     syncBranding();
     const enabled = eligible();
     if (!enabled) {
+      if (activationTimer !== null && !document.body.classList.contains('halloween-theme')) return;
+      const wasActive = active;
       active = false;
       pending = false;
       finishIntro();
+      if (wasActive && !document.body.classList.contains(THEME) &&
+          !document.body.classList.contains('halloween-theme')) startOutro();
       return;
     }
     if (active) return;
