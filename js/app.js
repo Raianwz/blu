@@ -186,7 +186,7 @@ async function resetPreferences() {
   applyTheme(!!systemThemeQuery?.matches);
   applyTextPreviewState(true);
   applyButtonVisualPreference();
-  if (typeof applyHalloweenPreference === 'function') applyHalloweenPreference();
+  document.dispatchEvent(new Event('blu:preferences-reset'));
   window.applyViceCityPreference?.();
   dragPreviewEnabled = false;
   applyDragPreviewState();
@@ -480,11 +480,7 @@ function openPopoutBlank() {
   clone.querySelectorAll('script[data-blu-loaded-by-loader]').forEach(script => script.remove());
   clone.querySelector('#backupBanner')?.classList.remove('show');
   clone.querySelector('#updateBanner')?.setAttribute('hidden', '');
-  clone.querySelector('#halloweenPaletteBanner')?.setAttribute('hidden', '');
-  clone.querySelectorAll('.halloween-roaming-spider').forEach(spider => spider.remove());
-  clone.querySelectorAll('.halloween-idle-ghost').forEach(ghost => ghost.remove());
-  clone.querySelectorAll('.halloween-idle-spotlight').forEach(spotlight => spotlight.remove());
-  clone.querySelector('body')?.classList.remove('halloween-ghost-cursor');
+  document.dispatchEvent(new CustomEvent('blu:prepare-popout-clone', { detail: { clone } }));
   clone.querySelector('#menuOverlay')?.classList.remove('open');
 
   win.document.write(clone.outerHTML);
@@ -500,10 +496,7 @@ function openPopoutBlank() {
     const link = doc.createElement('link');
     link.rel = 'icon';
     link.type = 'image/svg+xml';
-    link.href = doc.body.classList.contains('halloween-theme')
-      ? '/libs/events/halloween/icons/blu-halloween.svg'
-      : doc.body.classList.contains('vice-city-theme')
-        ? '/libs/events/vice-city/icons/blu-vice-city.svg' : '/assets/icons/blu.svg';
+    link.href = document.getElementById('bluFavicon')?.href || '/assets/icons/blu.svg';
     doc.head.appendChild(link);
   }, 50);
 }

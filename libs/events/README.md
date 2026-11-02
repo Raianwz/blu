@@ -2,6 +2,8 @@
 
 Cada evento fica em uma pasta própria. O Halloween, primeiro visual sazonal do
 Blû, reúne em `halloween/` seu CSS, JavaScript, testes, ícones e cursores.
+As integrações antigas com a redefinição de preferências e o pop-out ficam em
+`halloween/halloween-app.js`, carregado junto ao evento.
 `vice-city/` contém o estudo de cores para novembro e uma intro opcional.
 Digite ↑ ↑ ↓ ↓ ← → ← → B A fora dos campos de texto para ativar ou desativar
 o tema nesta página. A intro começa antes da troca de tema, que ocorre 500 ms
@@ -10,7 +12,7 @@ segundos e pode ser pulada por clique ou tecla. O Halloween tem
 prioridade se as duas classes estiverem presentes. `vice-city/icons/blu-vice-city.svg`
 é o favicon e o logo da janela Sobre enquanto o tema está ativo. A intro toca
 `vice-city/sounds/ViceCity.ogg` quando o navegador permite áudio; pulá-la
-interrompe o som.
+fecha a tela imediatamente e reduz o som por 250 ms.
 Ao desativar o tema, o logo original aparece sobre o azul do Blû por 2 segundos.
 O What's New oferece um atalho para pesquisar `#BlûViceCity19`. Essa busca
 mostra dez espaços com parte da sequência; cada tecla correta revela e acende

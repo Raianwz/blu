@@ -33,7 +33,12 @@
       controls: ['customExportBtn'] },
     { id: 'quick-actions', path: 'js/ui/quick-actions.js', ready: 'initQuickActions',
       init: () => window.initQuickActions() },
-    { id: 'halloween', path: 'libs/events/halloween/halloween.js', ready: 'applyHalloweenPreference' },
+    { id: 'halloween', path: 'libs/events/halloween/halloween.js', ready: 'applyHalloweenPreference',
+      init: async () => {
+        if (!await loadScript('libs/events/halloween/halloween-app.js')) {
+          throw new Error('Não foi possível carregar a integração do Halloween');
+        }
+      } },
     { id: 'vice-city', path: 'libs/events/vice-city/vice-city.js', ready: 'initViceCityIntro',
       init: () => window.initViceCityIntro() },
     { id: 'whats-new', path: 'js/features/whats-new.js', ready: 'initWhatsNew',

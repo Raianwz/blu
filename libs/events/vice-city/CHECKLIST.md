@@ -16,13 +16,14 @@
 - [x] Faixa em degradê e brilho suave nas seções em hover ou foco.
 - [x] Rosa de destaque mais contido no modo Escuro, inclusive nas ações e no brilho das seções.
 - [x] Cursor especial após cinco minutos sem interação, removido ao sair do tema ou atualizar a página.
+- [x] Cursores do Vice City em 32 × 32 px, como os do Halloween; originais de 128 × 128 px preservados.
 
 ## Antes de publicar
 
 - [x] Conferir visualmente Claro/Escuro × Clássico/Novo com botões públicos, privados, `vis-other` padrão e cores personalizadas.
 - [ ] Conferir contraste nos estados interativos e títulos longos.
 - [ ] Percorrer ativação, pulo, áudio e saída após voltar de outra aba; confirmar que nenhuma transição fica presa.
-- [ ] Conferir o tamanho e o ponto de clique dos dois cursores nos navegadores usados. As imagens têm 128 × 128 px; o desenho precisa apontar para o mesmo lugar em que ocorre o clique.
+- [ ] Conferir nos navegadores usados o ponto de clique do cursor comum (ponta superior esquerda) e do cursor interativo (ponta inferior do V).
 - [ ] Conferir a pista com leitor de tela e navegação por teclado: instruções, progresso e erro precisam ser compreensíveis sem depender só das cores.
 - [ ] Implementar o encerramento automático: desativar o Vice City na data acima, impedir nova ativação e tratar uma preferência `on` já salva.
 - [ ] Definir se o tema deve funcionar no PWA sem rede. O CSS, o JavaScript, o áudio e as imagens do Vice City não estão no `APP_SHELL` do service worker. A `origin/main` publicada pré-carrega o Halloween; a `main` local, após a reorganização, não o pré-carrega mais.

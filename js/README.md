@@ -8,6 +8,9 @@ seus controles ficam ocultos. O loader emite `blu:optional-status` com
 `{ id, loaded }` para cada opcional.
 Eventos emitidos antes de um opcional carregar devem ter também um estado
 consultável; a checagem de atualização usa `BluUpdateCheckComplete` para isso.
+O app emite `blu:preferences-reset` e `blu:prepare-popout-clone` para que
+integrações sazonais atualizem seu estado e removam efeitos transitórios da
+cópia do pop-out. A integração do Halloween fica em `../libs/events/halloween/halloween-app.js`.
 
 ## Estrutura
 
