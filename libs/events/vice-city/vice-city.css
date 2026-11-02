@@ -50,6 +50,7 @@ body.dark.vice-city-theme:not(.halloween-theme) {
 body.vice-city-theme:not(.halloween-theme).button-visual-new {
   --btn-public-2: var(--btn-public-1);
   --btn-private-2: var(--btn-private-1);
+  --btn-default-1: #7c3aed;
   --btn-default-2: var(--btn-default-1);
 }
 
@@ -58,9 +59,65 @@ body.vice-city-theme:not(.halloween-theme) #topbar {
 }
 
 body.vice-city-theme:not(.halloween-theme) .section-head {
-  box-shadow: inset 3px 0 0 var(--vice-coral);
+  position: relative;
   background-image: linear-gradient(100deg,
     color-mix(in srgb, var(--vice-pink) 11%, transparent), transparent 65%);
+}
+body.vice-city-theme:not(.halloween-theme) .section-head::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: linear-gradient(180deg,
+    #ffb54b 0%, #ff7b87 32%, #f135ae 65%, #8754d7 100%);
+  pointer-events: none;
+}
+
+/* O néon acompanha a seção sob o ponteiro ou em uso pelo teclado. */
+body.vice-city-theme:not(.halloween-theme) .section-wrap {
+  --vice-section-glow: rgba(173, 20, 95, .17);
+  --vice-section-glow-soft: rgba(8, 123, 131, .09);
+  transition: border-color 1.1s ease, box-shadow 1.1s ease;
+}
+body.dark.vice-city-theme:not(.halloween-theme) .section-wrap {
+  --vice-section-glow: rgba(255, 120, 184, .24);
+  --vice-section-glow-soft: rgba(105, 216, 215, .13);
+}
+@keyframes vice-section-neon {
+  from {
+    border-color: color-mix(in srgb, var(--vice-pink) 32%, var(--border));
+    box-shadow: 0 2px 8px var(--shadow), 0 0 10px 1px var(--vice-section-glow);
+  }
+  to {
+    border-color: color-mix(in srgb, var(--vice-cyan) 35%, var(--border));
+    box-shadow: 0 2px 8px var(--shadow), 0 0 22px 3px var(--vice-section-glow),
+      0 0 32px 4px var(--vice-section-glow-soft);
+  }
+}
+@media (hover: hover) {
+  body.vice-city-theme:not(.halloween-theme) .section-wrap:hover {
+    animation: vice-section-neon 7s ease-in-out infinite alternate;
+  }
+}
+body.vice-city-theme:not(.halloween-theme) .section-wrap:focus-within {
+  animation: vice-section-neon 7s ease-in-out infinite alternate;
+}
+@media (prefers-reduced-motion: reduce) {
+  body.vice-city-theme:not(.halloween-theme) .section-wrap {
+    transition: none;
+  }
+  body.vice-city-theme:not(.halloween-theme) .section-wrap:focus-within {
+    animation: none;
+    border-color: var(--vice-pink);
+    box-shadow: 0 2px 8px var(--shadow), 0 0 12px 1px var(--vice-section-glow);
+  }
+}
+@media (prefers-reduced-motion: reduce) and (hover: hover) {
+  body.vice-city-theme:not(.halloween-theme) .section-wrap:hover {
+    animation: none;
+    border-color: var(--vice-pink);
+    box-shadow: 0 2px 8px var(--shadow), 0 0 12px 1px var(--vice-section-glow);
+  }
 }
 
 body.vice-city-theme:not(.halloween-theme) :is(.menu-btn, .menu-submenu-toggle).active {
@@ -93,6 +150,13 @@ body.vice-city-theme:not(.halloween-theme).vice-city-idle-cursor :is(input, text
   }
   body.vice-city-theme:not(.halloween-theme) .section-head {
     background-image: none;
+    box-shadow: none;
+  }
+  body.vice-city-theme:not(.halloween-theme) .section-head::before {
+    background: CanvasText;
+  }
+  body.vice-city-theme:not(.halloween-theme) .section-wrap {
+    animation: none;
     box-shadow: none;
   }
 }
