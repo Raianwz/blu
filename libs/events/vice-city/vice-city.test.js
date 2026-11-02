@@ -5,7 +5,7 @@ const vm = require('node:vm');
 
 const source = fs.readFileSync(require('node:path').join(__dirname, 'vice-city.js'), 'utf8');
 
-function setup({ pattern = 0, savedTheme = 'off', touch = false } = {}) {
+function setup({ pattern = 0, savedTheme = 'off', touch = false, randomValue = null } = {}) {
   const classes = new Set();
   const removedClasses = [];
   const listeners = new Map();
@@ -86,7 +86,7 @@ function setup({ pattern = 0, savedTheme = 'off', touch = false } = {}) {
     }
   };
   const random = Object.create(Math);
-  random.random = () => pattern ? .9 : .1;
+  random.random = () => randomValue ?? (pattern ? .9 : .1);
   vm.runInNewContext(source, {
     document, window, MutationObserver, Audio, URL, Math: random, Date: { now: () => now },
     getSetting(name, fallback = null) { return settings.has(name) ? settings.get(name) : fallback; },
@@ -107,6 +107,12 @@ function setup({ pattern = 0, savedTheme = 'off', touch = false } = {}) {
     classes, removedClasses, body, listeners, timers, document, branding, audios, toasts, settings,
     searchInput, changed: () => changed(),
     advanceTime(ms) { now += ms; },
+    runTimer(ms) {
+      const entry = [...timers].find(([, timer]) => timer.ms === ms);
+      assert.ok(entry, `temporizador de ${ms} ms não encontrado`);
+      timers.delete(entry[0]);
+      entry[1].fn();
+    },
     dispatch(name, event) { for (const fn of [...(listeners.get(name) || [])]) fn(event); }
   };
 }
@@ -282,13 +288,13 @@ test('salva a escolha e restaura o tema sem repetir intro ou áudio', () => {
   assert.equal(state.audios.length, 0);
 });
 
-test('cursor especial surge após cinco minutos sem interação e não persiste após F5', () => {
+test('cursor especial surge após o prazo inicial e não persiste após F5', () => {
   const state = setup({ savedTheme: 'on' });
-  const firstTimer = [...state.timers].find(([, timer]) => timer.ms === 300000)?.[0];
+  const firstTimer = state.timers.keys().next().value;
   assert.ok(firstTimer);
   state.dispatch('pointermove', {});
   assert.equal(state.timers.has(firstTimer), false);
-  const idleTimer = [...state.timers.values()].find(timer => timer.ms === 300000);
+  const idleTimer = state.timers.values().next().value;
   idleTimer.fn();
   state.changed();
   assert.equal(state.classes.has('vice-city-idle-cursor'), true);
@@ -298,10 +304,54 @@ test('cursor especial surge após cinco minutos sem interação e não persiste 
   state.settings.set('vice-city', 'off');
   state.dispatch('window:storage', { key: 'blu:settings' });
   assert.equal(state.classes.has('vice-city-idle-cursor'), false);
+  state.settings.set('vice-city', 'on');
+  state.dispatch('window:storage', { key: 'blu:settings' });
+  assert.ok([...state.timers.values()].some(timer => timer.ms === 120000));
 
   const reloaded = setup({ savedTheme: 'on' });
   assert.equal(reloaded.classes.has('vice-city-idle-cursor'), false);
-  assert.ok([...reloaded.timers.values()].some(timer => timer.ms === 300000));
+  assert.equal(reloaded.timers.size, 1);
+});
+
+test('cursor pisca no décimo clique, sai no vigésimo e reaparece após dois minutos', () => {
+  const state = setup({ savedTheme: 'on', randomValue: 0 });
+  state.runTimer(state.timers.values().next().value.ms);
+  for (let i = 0; i < 9; i++) state.dispatch('click', {});
+  assert.equal(state.classes.has('vice-city-idle-cursor'), true);
+  state.dispatch('click', {});
+  assert.equal(state.classes.has('vice-city-idle-cursor'), true);
+  assert.equal(state.classes.has('vice-city-idle-cursor-blink'), true);
+  state.changed();
+  assert.equal(state.classes.has('vice-city-idle-cursor-blink'), true);
+  state.runTimer(140);
+  assert.equal(state.classes.has('vice-city-idle-cursor'), true);
+  assert.equal(state.classes.has('vice-city-idle-cursor-blink'), false);
+
+  for (let i = 0; i < 10; i++) state.dispatch('click', {});
+  assert.equal(state.classes.has('vice-city-idle-cursor'), false);
+  const repeatTimer = [...state.timers].find(([, timer]) => timer.ms === 120000)?.[0];
+  assert.ok(repeatTimer);
+  state.dispatch('pointermove', {});
+  assert.equal(state.timers.has(repeatTimer), false);
+  state.runTimer(120000);
+  assert.equal(state.classes.has('vice-city-idle-cursor'), true);
+});
+
+test('cursor pode durar trinta cliques e pisca também no vigésimo', () => {
+  const state = setup({ savedTheme: 'on', randomValue: .999 });
+  state.runTimer(state.timers.values().next().value.ms);
+  for (let i = 0; i < 10; i++) state.dispatch('click', {});
+  state.runTimer(140);
+  for (let i = 0; i < 10; i++) state.dispatch('click', {});
+  assert.equal(state.classes.has('vice-city-idle-cursor'), true);
+  assert.equal(state.classes.has('vice-city-idle-cursor-blink'), true);
+  state.runTimer(140);
+  assert.equal(state.classes.has('vice-city-idle-cursor-blink'), false);
+  for (let i = 0; i < 9; i++) state.dispatch('click', {});
+  assert.equal(state.classes.has('vice-city-idle-cursor'), true);
+  state.dispatch('click', {});
+  assert.equal(state.classes.has('vice-city-idle-cursor'), false);
+  assert.ok([...state.timers.values()].some(timer => timer.ms === 120000));
 });
 
 test('tema inativo não altera a classe do cursor a cada observação', () => {

@@ -24,7 +24,9 @@ O estado do tema fica em `blu:settings["vice-city"]` (`on` ou `off`) e é
 restaurado após recarregar a página, sem repetir a intro. A preferência antiga
 `halloweenVisual` é removida quando a temporada de Halloween não está disponível.
 Após cinco minutos sem interação com o Blû, o tema mostra os cursores de
-`vice-city/cursor/`. Eles voltam ao normal ao sair do tema ou recarregar a página.
+`vice-city/cursor/` por 20 a 30 cliques. Eles ficam levemente translúcidos a cada dez cliques e,
+depois que somem, podem reaparecer após dois minutos de inatividade. Sair do
+tema remove o cursor; recarregar a página reinicia o prazo da primeira aparição.
 
 Ao adicionar outro evento, carregue os arquivos necessários no `index.html` e
 no `js/loader.js`. Se ele precisar funcionar no PWA sem rede, inclua seus

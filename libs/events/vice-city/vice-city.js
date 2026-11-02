@@ -6,7 +6,9 @@
   const AUDIO_FADE_DURATION = 250;
   const OUTRO_DURATION = 2000;
   const ACTIVATION_DELAY = 500;
-  const IDLE_CURSOR_DELAY = 5 * 60 * 1000;
+  const IDLE_CURSOR_DELAY = 1 * 1 * 1000;
+  const IDLE_CURSOR_REPEAT_DELAY = 2 * 60 * 1000;
+  const IDLE_CURSOR_BLINK_DURATION = 140;
   const VICE_LOGO = 'libs/events/vice-city/icons/blu-vice-city.svg';
   const INTRO_AUDIO = new URL('sounds/ViceCity.ogg', document.currentScript.src).href;
   const KONAMI = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown',
@@ -40,12 +42,23 @@
   let clueProgress = 0;
   let clueResetTimer = null;
   let idleCursorTimer = null;
+  let idleCursorBlinkTimer = null;
   let idleCursorActive = false;
+  let idleCursorShown = false;
+  let idleCursorClicks = 0;
+  let idleCursorClickTarget = 0;
 
   function stopIdleCursor() {
     clearTimeout(idleCursorTimer);
+    clearTimeout(idleCursorBlinkTimer);
     idleCursorTimer = null;
+    idleCursorBlinkTimer = null;
     idleCursorActive = false;
+    idleCursorClicks = 0;
+    idleCursorClickTarget = 0;
+    if (document.body.classList.contains('vice-city-idle-cursor-blink')) {
+      document.body.classList.remove('vice-city-idle-cursor-blink');
+    }
     if (document.body.classList.contains('vice-city-idle-cursor')) {
       document.body.classList.remove('vice-city-idle-cursor');
     }
@@ -59,8 +72,27 @@
       idleCursorTimer = null;
       if (!eligible() || document.visibilityState !== 'visible') return;
       idleCursorActive = true;
+      idleCursorShown = true;
+      idleCursorClicks = 0;
+      idleCursorClickTarget = 20 + Math.floor(Math.random() * 11);
       document.body.classList.add('vice-city-idle-cursor');
-    }, IDLE_CURSOR_DELAY);
+    }, idleCursorShown ? IDLE_CURSOR_REPEAT_DELAY : IDLE_CURSOR_DELAY);
+  }
+
+  function noteIdleCursorClick() {
+    if (!idleCursorActive || !eligible() || document.visibilityState !== 'visible') return;
+    idleCursorClicks++;
+    if (idleCursorClicks >= idleCursorClickTarget) {
+      stopIdleCursor();
+      scheduleIdleCursor();
+    } else if (idleCursorClicks % 10 === 0) {
+      clearTimeout(idleCursorBlinkTimer);
+      document.body.classList.add('vice-city-idle-cursor-blink');
+      idleCursorBlinkTimer = setTimeout(() => {
+        idleCursorBlinkTimer = null;
+        document.body.classList.remove('vice-city-idle-cursor-blink');
+      }, IDLE_CURSOR_BLINK_DURATION);
+    }
   }
 
   function syncIdleCursor() {
@@ -69,6 +101,14 @@
     } else if (document.visibilityState !== 'visible') {
       clearTimeout(idleCursorTimer);
       idleCursorTimer = null;
+      clearTimeout(idleCursorBlinkTimer);
+      idleCursorBlinkTimer = null;
+      if (document.body.classList.contains('vice-city-idle-cursor-blink')) {
+        document.body.classList.remove('vice-city-idle-cursor-blink');
+      }
+    } else if (idleCursorActive && idleCursorBlinkTimer === null &&
+               !document.body.classList.contains('vice-city-idle-cursor')) {
+      document.body.classList.add('vice-city-idle-cursor');
     } else if (!idleCursorActive && idleCursorTimer === null) {
       scheduleIdleCursor();
     }
@@ -445,6 +485,7 @@
         if (idleCursorTimer !== null) scheduleIdleCursor();
       }, { passive: true });
     });
+    document.addEventListener('click', noteIdleCursorClick, true);
     new MutationObserver(syncTheme).observe(document.body, {
       attributes: true,
       attributeFilter: ['class']

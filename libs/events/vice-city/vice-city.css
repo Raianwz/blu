@@ -129,7 +129,7 @@ body.vice-city-theme:not(.halloween-theme) :is(.menu-btn, .menu-submenu-toggle):
   outline-offset: 2px;
 }
 
-/* Easter egg do cursor: ativo só após cinco minutos sem interação. */
+/* Easter egg do cursor: a primeira aparição espera cinco minutos. */
 body.vice-city-theme:not(.halloween-theme).vice-city-idle-cursor,
 body.vice-city-theme:not(.halloween-theme).vice-city-idle-cursor * {
   cursor: url("cursor/ViceCity_Cursor_32.png") 0 0, auto !important;
@@ -137,6 +137,14 @@ body.vice-city-theme:not(.halloween-theme).vice-city-idle-cursor * {
 body.vice-city-theme:not(.halloween-theme).vice-city-idle-cursor :is(button, a, select, label, [role="button"], [role="menuitem"]),
 body.vice-city-theme:not(.halloween-theme).vice-city-idle-cursor :is(button, a, select, label, [role="button"], [role="menuitem"]) * {
   cursor: url("cursor/ViceCity_Pointer_32.png") 11 30, pointer !important;
+}
+body.vice-city-theme:not(.halloween-theme).vice-city-idle-cursor.vice-city-idle-cursor-blink,
+body.vice-city-theme:not(.halloween-theme).vice-city-idle-cursor.vice-city-idle-cursor-blink * {
+  cursor: url("cursor/ViceCity_Cursor_32_blink.png") 0 0, auto !important;
+}
+body.vice-city-theme:not(.halloween-theme).vice-city-idle-cursor.vice-city-idle-cursor-blink :is(button, a, select, label, [role="button"], [role="menuitem"]),
+body.vice-city-theme:not(.halloween-theme).vice-city-idle-cursor.vice-city-idle-cursor-blink :is(button, a, select, label, [role="button"], [role="menuitem"]) * {
+  cursor: url("cursor/ViceCity_Pointer_32_blink.png") 11 30, pointer !important;
 }
 body.vice-city-theme:not(.halloween-theme).vice-city-idle-cursor :is(input, textarea, [contenteditable="true"]) {
   cursor: text !important;
