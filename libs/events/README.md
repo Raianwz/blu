@@ -11,6 +11,11 @@ prioridade se as duas classes estiverem presentes. `vice-city/blu-vice-city.svg`
 é o favicon e o logo da janela Sobre enquanto o tema está ativo. A intro toca
 `ViceCity.ogg` quando o navegador permite áudio; pulá-la interrompe o som.
 Ao desativar o tema, o logo original aparece sobre o azul do Blû por 2 segundos.
+O What's New oferece um atalho para pesquisar `#BlûViceCity19`. Essa busca
+mostra dez espaços com parte da sequência; cada tecla correta revela e acende
+um espaço. Um erro
+aparece em vermelho e reinicia a pista após 2 segundos.
+Ao completar a sequência, a busca é limpa na ativação e na desativação do tema.
 
 Ao adicionar outro evento, carregue os arquivos necessários no `index.html` e
 no `js/loader.js`. Se ele precisar funcionar no PWA sem rede, inclua seus

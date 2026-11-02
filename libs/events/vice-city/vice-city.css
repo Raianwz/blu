@@ -264,3 +264,49 @@ body.vice-city-theme:not(.halloween-theme) :is(.menu-btn, .menu-submenu-toggle):
   .vice-city-outro { background: Canvas; }
   .vice-city-outro img { filter: none; }
 }
+
+/* Search clue: the two layouts reveal different parts of the Konami sequence. */
+.vice-city-clue {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: repeat(10, minmax(0, 1fr));
+  gap: clamp(3px, .8vw, 8px);
+  width: min(100%, 520px);
+  margin: 0 auto 28px;
+  padding: 0 12px;
+}
+
+.vice-city-clue__slot {
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  min-width: 0;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface2);
+  color: var(--text2);
+  font-size: clamp(14px, 3vw, 22px);
+  font-weight: 700;
+  line-height: 1;
+  transition: border-color .2s, box-shadow .2s, color .2s, background .2s;
+}
+
+.vice-city-clue__slot.lit {
+  border-color: #408cff;
+  background: color-mix(in srgb, #408cff 16%, var(--surface2));
+  color: #3587f5;
+  box-shadow: 0 0 0 1px #408cff, 0 0 13px rgba(64, 140, 255, .42);
+}
+
+.vice-city-clue__slot.wrong {
+  border-color: #e34f6e;
+  background: color-mix(in srgb, #e34f6e 16%, var(--surface2));
+  color: #d63459;
+  box-shadow: 0 0 0 1px #e34f6e, 0 0 12px rgba(227, 79, 110, .4);
+}
+
+@media (forced-colors: active) {
+  .vice-city-clue__slot.lit,
+  .vice-city-clue__slot.wrong { border-color: Highlight; color: Highlight; box-shadow: none; }
+}

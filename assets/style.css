@@ -2131,6 +2131,29 @@ body.dark .whats-new-modal {
   margin-top: 4px;
 }
 
+.whats-new-search-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 2px;
+  padding: 0 2px;
+  border: 0;
+  background: none;
+  color: var(--whats-new-mystery);
+  font: inherit;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.whats-new-search-hint svg { width: 14px; height: 14px; }
+.whats-new-search-hint:hover { text-decoration: underline; }
+.whats-new-search-hint:focus-visible {
+  outline: 2px solid var(--whats-new-mystery);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
 .whats-new-icon {
   display: grid;
   place-items: center;

@@ -8,6 +8,12 @@
   const INTRO_AUDIO = new URL('ViceCity.ogg', document.currentScript.src).href;
   const KONAMI = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown',
     'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+  const CLUE_QUERY = '#bluvicecity19';
+  const CLUE_PATTERNS = [[1, 3, 5, 6, 8], [0, 2, 4, 7, 9]];
+  const CLUE_SYMBOLS = {
+    ArrowUp: '↑', ArrowDown: '↓', ArrowLeft: '←', ArrowRight: '→',
+    b: 'B', a: 'A'
+  };
   let active = false;
   let pending = false;
   let overlay = null;
@@ -16,21 +22,67 @@
   let activationTimer = null;
   let introAudio = null;
   let konamiIndex = 0;
+  let clueRoot = null;
+  let clueSlots = [];
+  let cluePattern = [];
+  let clueProgress = 0;
+  let clueResetTimer = null;
 
-  function onKonamiKeyDown(event) {
-    if (outroOverlay || activationTimer !== null) {
+  function isClueSearch() {
+    const input = document.getElementById('searchInput');
+    return input && normalizeSearchText(input.value) === CLUE_QUERY;
+  }
+
+  function clueSymbol(key) {
+    return CLUE_SYMBOLS[key] || (key === ' ' ? '␣' : key.length === 1 ? key.toUpperCase() : '×');
+  }
+
+  function renderClue(wrongKey = null) {
+    if (!clueRoot) return;
+    clueSlots.forEach((slot, index) => {
+      const reached = index < clueProgress;
+      const isWrong = wrongKey !== null && index === clueProgress;
+      slot.className = 'vice-city-clue__slot';
+      if (isWrong) slot.classList.add('wrong');
+      else if (reached && wrongKey === null) slot.classList.add('lit');
+      slot.textContent = isWrong ? clueSymbol(wrongKey)
+        : reached || cluePattern.includes(index) ? clueSymbol(KONAMI[index]) : '';
+    });
+    clueRoot.setAttribute('aria-label', `Sequência misteriosa: ${clueProgress} de 10 passos corretos`);
+  }
+
+  function updateClueSearch() {
+    if (!isClueSearch()) {
+      clearTimeout(clueResetTimer);
+      clueResetTimer = null;
+      clueRoot?.remove();
+      clueRoot = null;
+      clueSlots = [];
+      clueProgress = 0;
       konamiIndex = 0;
       return;
     }
-    if (event.repeat || event.altKey || event.ctrlKey || event.metaKey ||
-        event.target?.closest?.('input, textarea, select, [contenteditable="true"]')) {
-      konamiIndex = 0;
-      return;
-    }
-    const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
-    konamiIndex = key === KONAMI[konamiIndex] ? konamiIndex + 1 : Number(key === KONAMI[0]);
-    if (konamiIndex !== KONAMI.length) return;
+    if (clueRoot) return;
+    const results = document.getElementById('noResultsMsg');
+    if (!results) return;
+    cluePattern = CLUE_PATTERNS[Math.floor(Math.random() * CLUE_PATTERNS.length)];
+    clueRoot = document.createElement('div');
+    clueRoot.className = 'vice-city-clue';
+    clueRoot.setAttribute('role', 'group');
+    clueSlots = KONAMI.map(() => {
+      const slot = document.createElement('span');
+      slot.className = 'vice-city-clue__slot';
+      slot.setAttribute('aria-hidden', 'true');
+      clueRoot.appendChild(slot);
+      return slot;
+    });
+    clueProgress = 0;
     konamiIndex = 0;
+    results.insertAdjacentElement('afterend', clueRoot);
+    renderClue();
+  }
+
+  function toggleViceCityTheme() {
     if (document.body.classList.contains(THEME)) {
       document.body.classList.remove(THEME);
       syncTheme();
@@ -47,6 +99,58 @@
       document.body.classList.add(THEME);
       syncTheme();
     }, ACTIVATION_DELAY);
+  }
+
+  function onKonamiKeyDown(event) {
+    if (overlay || outroOverlay || activationTimer !== null) {
+      konamiIndex = 0;
+      return;
+    }
+    if (event.repeat || event.altKey || event.ctrlKey || event.metaKey) {
+      konamiIndex = 0;
+      return;
+    }
+    const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
+    if (clueRoot && isClueSearch()) {
+      if (['Tab', 'Shift', 'Control', 'Alt', 'Meta'].includes(key) ||
+          (event.target === document.getElementById('searchInput') &&
+            ['Backspace', 'Delete'].includes(key)) ||
+          (event.target?.closest?.('input, textarea, select, [contenteditable="true"]') &&
+            event.target !== document.getElementById('searchInput'))) return;
+      event.preventDefault();
+      if (event.stopImmediatePropagation) event.stopImmediatePropagation();
+      else event.stopPropagation?.();
+      if (clueResetTimer !== null) return;
+      if (clueProgress === KONAMI.length) {
+        clueProgress = 0;
+        renderClue();
+      }
+      if (key === KONAMI[clueProgress]) {
+        clueProgress++;
+        renderClue();
+        if (clueProgress === KONAMI.length) {
+          toggleViceCityTheme();
+          clearSearch();
+        }
+      } else {
+        renderClue(key);
+        notify('Quase lá, tente novamente', 'err', { duration: 2000 });
+        clueResetTimer = setTimeout(() => {
+          clueResetTimer = null;
+          clueProgress = 0;
+          renderClue();
+        }, 2000);
+      }
+      return;
+    }
+    if (event.target?.closest?.('input, textarea, select, [contenteditable="true"]')) {
+      konamiIndex = 0;
+      return;
+    }
+    konamiIndex = key === KONAMI[konamiIndex] ? konamiIndex + 1 : Number(key === KONAMI[0]);
+    if (konamiIndex !== KONAMI.length) return;
+    konamiIndex = 0;
+    toggleViceCityTheme();
   }
 
   function eligible() {
@@ -191,7 +295,8 @@
   }
 
   function initViceCityIntro() {
-    document.addEventListener('keydown', onKonamiKeyDown);
+    document.addEventListener('keydown', onKonamiKeyDown, true);
+    document.addEventListener('blu:search-updated', updateClueSearch);
     new MutationObserver(syncTheme).observe(document.body, {
       attributes: true,
       attributeFilter: ['class']
@@ -201,6 +306,7 @@
       if (document.visibilityState !== 'visible') finishIntro();
     });
     syncTheme();
+    updateClueSearch();
   }
 
   window.initViceCityIntro = initViceCityIntro;

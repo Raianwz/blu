@@ -352,10 +352,13 @@ function setNoResultsMessage(query) {
   const addSectionButton = document.getElementById('addSectionBtn');
   if (!msg) return;
 
+  const updated = () => document.dispatchEvent(new CustomEvent('blu:search-updated'));
+
   if (!query) {
     msg.classList.remove('show');
     msg.textContent = '';
     if (addSectionButton) addSectionButton.hidden = false;
+    updated();
     return;
   }
 
@@ -366,12 +369,14 @@ function setNoResultsMessage(query) {
     msg.classList.remove('show');
     msg.textContent = '';
     if (addSectionButton) addSectionButton.hidden = false;
+    updated();
     return;
   }
 
   msg.innerHTML = `🔍 Nenhum resultado para <strong>"${escapeHtml(query)}"</strong>`;
   msg.classList.add('show');
   if (addSectionButton) addSectionButton.hidden = true;
+  updated();
 }
 
 function collapseAllSectionsAfterSearchClear() {

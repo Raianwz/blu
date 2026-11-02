@@ -30,7 +30,7 @@ const WHATS_NEW_ITEMS = [
     type: 'Desconhecido',
     status: 'mystery',
     title: 'Quando o sol vai embora e o néon começa a brilhar?',
-    description: 'Uma pequena surpresa espera por quem gosta de explorar em novembro.'
+    description: 'Uma pequena surpresa espera por quem gosta de explorar em novembro. <button class="whats-new-search-hint" type="button" onclick="searchViceCityClue()" aria-label="Pesquisar por #BlûViceCity19">#BlûViceCity19 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg></button>'
   }
 ];
 
@@ -67,6 +67,18 @@ function setWhatsNewHalloweenVisual(enabled) {
   if (!isBluFeatureAvailable('halloween') || typeof applyHalloweenPreference !== 'function') return;
   setSetting('halloweenVisual', enabled ? 'on' : 'off');
   applyHalloweenPreference();
+}
+
+function searchViceCityClue() {
+  const input = document.getElementById('searchInput');
+  if (!input) return;
+  closeModal('whatsNewModal');
+  const type = document.getElementById('searchType');
+  if (type) type.value = 'all';
+  input.value = '#BlûViceCity19';
+  doSearch();
+  updateSearchGuidance();
+  input.focus();
 }
 
 function ensureWhatsNewModal() {
