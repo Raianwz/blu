@@ -2,14 +2,14 @@
 
 ## Calendário
 
-- [x] Encerrar o Vice City na virada de sábado, 28/11/2026, para domingo, 29/11/2026, às 00h de São Paulo.
-- [x] Reservar 29/11 sem tema especial programado; o tema de Natal começa em 30/11/2026.
+- [x] Encerrar o Vice City na virada de sexta, 27/11/2026, para sábado, 28/11/2026, às 00h de São Paulo.
 
 ## Já feito
 
 - [x] Ativação secreta pelo código Konami e pela pista `#BlûViceCity19`.
 - [x] Em telas de toque, os dez símbolos aparecem e podem ser tocados na ordem para alternar o tema.
 - [x] Intro de néon com áudio, opção de pular e transição curta de saída.
+- [x] Intro e áudio pausam ao ocultar a aba e continuam do mesmo ponto ao voltar.
 - [x] Tema salvo em `blu:settings["vice-city"]`; F5 com o tema ativo preserva o visual sem repetir a intro ou a animação.
 - [x] Favicon e logo da janela Sobre acompanham o tema.
 - [x] Paleta para os visuais Clássico e Novo: gradiente padrão em `vis-other` no Clássico e roxo padrão no Novo.
@@ -30,4 +30,4 @@
 ## Opcional, se ainda couber
 
 - [ ] Experimentar um foco discreto em rosa/ciano na busca durante o tema, sem aumentar o brilho permanente da tela.
-- [ ] Avaliar uma saída de áudio mais suave quando a intro é pulada, mantendo o pulo imediato.
+- [x] Saída de áudio de 250 ms ao pular a intro; a tela fecha imediatamente.

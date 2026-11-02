@@ -3,6 +3,7 @@
   const THEME = 'vice-city-theme';
   const SETTING = 'vice-city';
   const DURATION = 7000;
+  const AUDIO_FADE_DURATION = 250;
   const OUTRO_DURATION = 2000;
   const ACTIVATION_DELAY = 500;
   const IDLE_CURSOR_DELAY = 5 * 60 * 1000;
@@ -26,8 +27,12 @@
   let overlay = null;
   let outroOverlay = null;
   let finishTimer = null;
+  let introRemaining = DURATION;
+  let introStartedAt = null;
+  let introPaused = false;
   let activationTimer = null;
   let introAudio = null;
+  let audioFadeTimers = [];
   let konamiIndex = 0;
   let clueRoot = null;
   let clueSlots = [];
@@ -248,10 +253,26 @@
   }
 
   function stopAudio() {
+    audioFadeTimers.forEach(clearTimeout);
+    audioFadeTimers = [];
     if (!introAudio) return;
     introAudio.pause();
     introAudio.currentTime = 0;
     introAudio = null;
+  }
+
+  function fadeOutAudio() {
+    const audio = introAudio;
+    if (!audio) return;
+    const initialVolume = audio.volume;
+    const steps = 5;
+    for (let step = 1; step <= steps; step++) {
+      audioFadeTimers.push(setTimeout(() => {
+        if (introAudio !== audio) return;
+        audio.volume = initialVolume * (1 - step / steps);
+        if (step === steps) stopAudio();
+      }, AUDIO_FADE_DURATION * step / steps));
+    }
   }
 
   function playAudio() {
@@ -260,7 +281,11 @@
       const audio = new Audio(INTRO_AUDIO);
       audio.volume = 0.45;
       audio.addEventListener('ended', () => {
-        if (introAudio === audio) introAudio = null;
+        if (introAudio === audio) {
+          audioFadeTimers.forEach(clearTimeout);
+          audioFadeTimers = [];
+          introAudio = null;
+        }
       }, { once: true });
       introAudio = audio;
       audio.play().catch(() => {
@@ -276,16 +301,51 @@
     if (stopSound) stopAudio();
     if (!overlay) return;
     clearTimeout(finishTimer);
+    finishTimer = null;
+    introRemaining = DURATION;
+    introStartedAt = null;
+    introPaused = false;
     document.removeEventListener('keydown', onKeyDown, true);
     overlay.remove();
     overlay = null;
+  }
+
+  function scheduleIntroFinish() {
+    introStartedAt = Date.now();
+    finishTimer = setTimeout(() => finishIntro(false), introRemaining);
+  }
+
+  function pauseIntro() {
+    if (!overlay || introPaused) return;
+    introRemaining = Math.max(0, introRemaining - (Date.now() - introStartedAt));
+    clearTimeout(finishTimer);
+    finishTimer = null;
+    introStartedAt = null;
+    introPaused = true;
+    overlay.classList.add('vice-city-intro--paused');
+    introAudio?.pause();
+  }
+
+  function resumeIntro() {
+    if (!overlay || !introPaused) return;
+    overlay.classList.remove('vice-city-intro--paused');
+    introPaused = false;
+    if (introAudio) introAudio.play().catch(() => {});
+    if (introRemaining > 0) scheduleIntroFinish();
+    else finishIntro(false);
   }
 
   function onKeyDown(event) {
     if (event.key === 'Tab' || event.key === 'Shift' || event.key === 'Control' ||
         event.key === 'Alt' || event.key === 'Meta') return;
     event.preventDefault();
-    finishIntro();
+    skipIntro();
+  }
+
+  function skipIntro() {
+    if (!overlay) return;
+    finishIntro(false);
+    fadeOutAudio();
   }
 
   function startIntro(beforeTheme = false) {
@@ -329,12 +389,14 @@
         </svg>
       </div>
       <span class="vice-city-intro__skip">Clique ou pressione uma tecla para pular</span>`;
-    overlay.addEventListener('click', finishIntro);
+    overlay.addEventListener('click', skipIntro);
     document.body.appendChild(overlay);
     pending = false;
     document.addEventListener('keydown', onKeyDown, true);
     playAudio();
-    finishTimer = setTimeout(() => finishIntro(false), DURATION);
+    introRemaining = DURATION;
+    introPaused = false;
+    scheduleIntroFinish();
   }
 
   function startOutro() {
@@ -389,8 +451,9 @@
     });
     document.addEventListener('visibilitychange', () => {
       syncIdleCursor();
-      if (document.visibilityState === 'visible' && pending) startIntro();
-      if (document.visibilityState !== 'visible') finishIntro();
+      if (document.visibilityState !== 'visible') pauseIntro();
+      else if (overlay) resumeIntro();
+      else if (pending) startIntro();
     });
     window.addEventListener('storage', event => {
       if (event.key === 'blu:settings' || event.key === null) applyViceCityPreference();

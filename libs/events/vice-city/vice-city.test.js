@@ -37,6 +37,7 @@ function setup({ pattern = 0, savedTheme = 'off', touch = false } = {}) {
   };
   let changed;
   let nextTimer = 0;
+  let now = 0;
   const document = {
     body,
     currentScript: { src: 'https://blu.example/libs/events/vice-city/vice-city.js' },
@@ -54,7 +55,11 @@ function setup({ pattern = 0, savedTheme = 'off', touch = false } = {}) {
         appendChild(child) { this.children.push(child); },
         remove() { body.children.splice(body.children.indexOf(this), 1); }
       };
-      node.classList = { add(name) { node.className += ` ${name}`; } };
+      node.classList = {
+        add(name) { node.className += ` ${name}`; },
+        remove(name) { node.className = node.className.split(' ').filter(part => part !== name).join(' '); },
+        contains(name) { return node.className.split(' ').includes(name); }
+      };
       return node;
     },
     addEventListener(name, fn) {
@@ -83,7 +88,7 @@ function setup({ pattern = 0, savedTheme = 'off', touch = false } = {}) {
   const random = Object.create(Math);
   random.random = () => pattern ? .9 : .1;
   vm.runInNewContext(source, {
-    document, window, MutationObserver, Audio, URL, Math: random,
+    document, window, MutationObserver, Audio, URL, Math: random, Date: { now: () => now },
     getSetting(name, fallback = null) { return settings.has(name) ? settings.get(name) : fallback; },
     setSetting(name, value) { settings.set(name, value); },
     normalizeSearchText(value) {
@@ -101,6 +106,7 @@ function setup({ pattern = 0, savedTheme = 'off', touch = false } = {}) {
   return {
     classes, removedClasses, body, listeners, timers, document, branding, audios, toasts, settings,
     searchInput, changed: () => changed(),
+    advanceTime(ms) { now += ms; },
     dispatch(name, event) { for (const fn of [...(listeners.get(name) || [])]) fn(event); }
   };
 }
@@ -125,6 +131,10 @@ test('a intro só abre ao ativar o tema e pode ser pulada por clique ou tecla', 
   assert.equal([...state.timers.values()].find(timer => timer.ms === 7000).ms, 7000);
   state.body.children[0].listeners.get('click')();
   assert.equal(state.body.children.length, 0);
+  assert.equal(state.audios[0].pauseCount, 0);
+  [...state.timers.values()].find(timer => timer.ms === 100).fn();
+  assert.ok(state.audios[0].volume < 0.45);
+  [...state.timers.values()].find(timer => timer.ms === 250).fn();
   assert.equal(state.audios[0].pauseCount, 1);
   state.changed();
   assert.equal(state.body.children.length, 0);
@@ -138,6 +148,7 @@ test('a intro só abre ao ativar o tema e pode ser pulada por clique ou tecla', 
   state.dispatch('keydown', { key: 'Escape', preventDefault() { prevented = true; } });
   assert.equal(prevented, true);
   assert.equal(state.body.children.length, 0);
+  [...state.timers.values()].find(timer => timer.ms === 250).fn();
   assert.equal(state.audios[1].pauseCount, 1);
 });
 
@@ -151,6 +162,18 @@ test('fim natural da intro deixa terminar o trecho de áudio', () => {
   state.classes.delete('vice-city-theme');
   state.changed();
   assert.equal(state.audios[0].pauseCount, 1);
+});
+
+test('desativar o tema durante a saída de áudio interrompe o som', () => {
+  const state = setup();
+  state.classes.add('vice-city-theme');
+  state.changed();
+  state.body.children[0].listeners.get('click')();
+  assert.equal(state.audios[0].pauseCount, 0);
+  state.classes.delete('vice-city-theme');
+  state.changed();
+  assert.equal(state.audios[0].pauseCount, 1);
+  assert.equal([...state.timers.values()].some(timer => timer.ms === 250), false);
 });
 
 test('reativação durante a saída espera a tela azul terminar', () => {
@@ -169,7 +192,7 @@ test('reativação durante a saída espera a tela azul terminar', () => {
   assert.equal(state.body.children[0].className, 'vice-city-intro');
 });
 
-test('Halloween impede a intro; voltar de uma aba oculta não a repete', () => {
+test('Halloween impede a intro; trocar de aba pausa e retoma sem repetir', () => {
   const state = setup();
   state.classes.add('vice-city-theme');
   state.classes.add('halloween-theme');
@@ -180,11 +203,24 @@ test('Halloween impede a intro; voltar de uma aba oculta não a repete', () => {
   state.classes.delete('halloween-theme');
   state.changed();
   assert.equal(state.body.children.length, 1);
+  const intro = state.body.children[0];
+  state.advanceTime(1200);
   state.document.visibilityState = 'hidden';
   state.dispatch('visibilitychange');
-  assert.equal(state.body.children.length, 0);
+  assert.equal(state.body.children[0], intro);
+  assert.equal(intro.classList.contains('vice-city-intro--paused'), true);
+  assert.equal(state.audios[0].pauseCount, 1);
+  assert.equal([...state.timers.values()].some(timer => timer.ms === 7000), false);
+  state.advanceTime(10000);
   state.document.visibilityState = 'visible';
   state.dispatch('visibilitychange');
+  assert.equal(state.body.children[0], intro);
+  assert.equal(intro.classList.contains('vice-city-intro--paused'), false);
+  assert.equal(state.audios[0].playCount, 2);
+  assert.equal(state.audios.length, 1);
+  const remainingTimer = [...state.timers.values()].find(timer => timer.ms === 5800);
+  assert.ok(remainingTimer);
+  remainingTimer.fn();
   assert.equal(state.body.children.length, 0);
 });
 
@@ -349,6 +385,7 @@ test('sequência na busca ilumina os passos e ativa o tema após completar', () 
     preventDefault() {}, stopPropagation() {}
   });
   assert.equal(state.body.children.length, 0);
+  [...state.timers.values()].find(timer => timer.ms === 250).fn();
   assert.equal(state.audios[0].pauseCount, 1);
   assert.equal(state.toasts.length, 0);
 
