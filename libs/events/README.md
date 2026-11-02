@@ -7,15 +7,21 @@ Digite ↑ ↑ ↓ ↓ ← → ← → B A fora dos campos de texto para ativar 
 o tema nesta página. A intro começa antes da troca de tema, que ocorre 500 ms
 depois. Ela traça o logo de `assets/icons/blu.svg`, preenche as cores em 7
 segundos e pode ser pulada por clique ou tecla. O Halloween tem
-prioridade se as duas classes estiverem presentes. `vice-city/blu-vice-city.svg`
+prioridade se as duas classes estiverem presentes. `vice-city/icons/blu-vice-city.svg`
 é o favicon e o logo da janela Sobre enquanto o tema está ativo. A intro toca
-`ViceCity.ogg` quando o navegador permite áudio; pulá-la interrompe o som.
+`vice-city/sounds/ViceCity.ogg` quando o navegador permite áudio; pulá-la
+interrompe o som.
 Ao desativar o tema, o logo original aparece sobre o azul do Blû por 2 segundos.
 O What's New oferece um atalho para pesquisar `#BlûViceCity19`. Essa busca
 mostra dez espaços com parte da sequência; cada tecla correta revela e acende
 um espaço. Um erro
 aparece em vermelho e reinicia a pista após 2 segundos.
 Ao completar a sequência, a busca é limpa na ativação e na desativação do tema.
+O estado do tema fica em `blu:settings["vice-city"]` (`on` ou `off`) e é
+restaurado após recarregar a página, sem repetir a intro. A preferência antiga
+`halloweenVisual` é removida quando a temporada de Halloween não está disponível.
+Após cinco minutos sem interação com o Blû, o tema mostra os cursores de
+`vice-city/cursor/`. Eles voltam ao normal ao sair do tema ou recarregar a página.
 
 Ao adicionar outro evento, carregue os arquivos necessários no `index.html` e
 no `js/loader.js`. Se ele precisar funcionar no PWA sem rede, inclua seus

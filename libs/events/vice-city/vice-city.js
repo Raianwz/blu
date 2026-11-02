@@ -1,11 +1,13 @@
 // Optional seasonal theme and intro, activated by the Konami code.
 (() => {
   const THEME = 'vice-city-theme';
+  const SETTING = 'vice-city';
   const DURATION = 7000;
   const OUTRO_DURATION = 2000;
   const ACTIVATION_DELAY = 500;
-  const VICE_LOGO = 'libs/events/vice-city/blu-vice-city.svg';
-  const INTRO_AUDIO = new URL('ViceCity.ogg', document.currentScript.src).href;
+  const IDLE_CURSOR_DELAY = 5 * 60 * 1000;
+  const VICE_LOGO = 'libs/events/vice-city/icons/blu-vice-city.svg';
+  const INTRO_AUDIO = new URL('sounds/ViceCity.ogg', document.currentScript.src).href;
   const KONAMI = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown',
     'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
   const CLUE_QUERY = '#bluvicecity19';
@@ -27,6 +29,40 @@
   let cluePattern = [];
   let clueProgress = 0;
   let clueResetTimer = null;
+  let idleCursorTimer = null;
+  let idleCursorActive = false;
+
+  function stopIdleCursor() {
+    clearTimeout(idleCursorTimer);
+    idleCursorTimer = null;
+    idleCursorActive = false;
+    if (document.body.classList.contains('vice-city-idle-cursor')) {
+      document.body.classList.remove('vice-city-idle-cursor');
+    }
+  }
+
+  function scheduleIdleCursor() {
+    clearTimeout(idleCursorTimer);
+    idleCursorTimer = null;
+    if (!eligible() || document.visibilityState !== 'visible' || idleCursorActive) return;
+    idleCursorTimer = setTimeout(() => {
+      idleCursorTimer = null;
+      if (!eligible() || document.visibilityState !== 'visible') return;
+      idleCursorActive = true;
+      document.body.classList.add('vice-city-idle-cursor');
+    }, IDLE_CURSOR_DELAY);
+  }
+
+  function syncIdleCursor() {
+    if (!eligible()) {
+      stopIdleCursor();
+    } else if (document.visibilityState !== 'visible') {
+      clearTimeout(idleCursorTimer);
+      idleCursorTimer = null;
+    } else if (!idleCursorActive && idleCursorTimer === null) {
+      scheduleIdleCursor();
+    }
+  }
 
   function isClueSearch() {
     const input = document.getElementById('searchInput');
@@ -84,6 +120,7 @@
 
   function toggleViceCityTheme() {
     if (document.body.classList.contains(THEME)) {
+      setSetting(SETTING, 'off');
       document.body.classList.remove(THEME);
       syncTheme();
       return;
@@ -96,9 +133,30 @@
     }
     activationTimer = setTimeout(() => {
       activationTimer = null;
+      setSetting(SETTING, 'on');
       document.body.classList.add(THEME);
       syncTheme();
     }, ACTIVATION_DELAY);
+  }
+
+  function applyViceCityPreference() {
+    const enabled = getSetting(SETTING, 'off') === 'on';
+    const currentlyEnabled = document.body.classList.contains(THEME);
+    if (enabled === currentlyEnabled) {
+      syncBranding();
+      syncIdleCursor();
+      return;
+    }
+    document.body.classList.toggle(THEME, enabled);
+    // Restaurar a escolha após F5 não deve repetir a intro nem a música.
+    if (enabled) {
+      active = eligible();
+      pending = false;
+      syncBranding();
+      syncIdleCursor();
+    } else {
+      syncTheme();
+    }
   }
 
   function onKonamiKeyDown(event) {
@@ -277,6 +335,7 @@
 
   function syncTheme() {
     syncBranding();
+    syncIdleCursor();
     const enabled = eligible();
     if (!enabled) {
       if (activationTimer !== null && !document.body.classList.contains('halloween-theme')) return;
@@ -295,19 +354,32 @@
   }
 
   function initViceCityIntro() {
+    applyViceCityPreference();
+    active = eligible();
+    pending = false;
     document.addEventListener('keydown', onKonamiKeyDown, true);
     document.addEventListener('blu:search-updated', updateClueSearch);
+    ['pointermove', 'pointerdown', 'keydown', 'wheel', 'touchstart'].forEach(name => {
+      document.addEventListener(name, () => {
+        if (idleCursorTimer !== null) scheduleIdleCursor();
+      }, { passive: true });
+    });
     new MutationObserver(syncTheme).observe(document.body, {
       attributes: true,
       attributeFilter: ['class']
     });
     document.addEventListener('visibilitychange', () => {
+      syncIdleCursor();
       if (document.visibilityState === 'visible' && pending) startIntro();
       if (document.visibilityState !== 'visible') finishIntro();
+    });
+    window.addEventListener('storage', event => {
+      if (event.key === 'blu:settings' || event.key === null) applyViceCityPreference();
     });
     syncTheme();
     updateClueSearch();
   }
 
   window.initViceCityIntro = initViceCityIntro;
+  window.applyViceCityPreference = applyViceCityPreference;
 })();

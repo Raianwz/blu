@@ -74,6 +74,19 @@ body.vice-city-theme:not(.halloween-theme) :is(.menu-btn, .menu-submenu-toggle):
   outline-offset: 2px;
 }
 
+/* Easter egg do cursor: ativo só após cinco minutos sem interação. */
+body.vice-city-theme:not(.halloween-theme).vice-city-idle-cursor,
+body.vice-city-theme:not(.halloween-theme).vice-city-idle-cursor * {
+  cursor: url("cursor/ViceCity_Cursor.png") 0 0, auto !important;
+}
+body.vice-city-theme:not(.halloween-theme).vice-city-idle-cursor :is(button, a, select, label, [role="button"], [role="menuitem"]),
+body.vice-city-theme:not(.halloween-theme).vice-city-idle-cursor :is(button, a, select, label, [role="button"], [role="menuitem"]) * {
+  cursor: url("cursor/ViceCity_Pointer.png") 0 0, pointer !important;
+}
+body.vice-city-theme:not(.halloween-theme).vice-city-idle-cursor :is(input, textarea, [contenteditable="true"]) {
+  cursor: text !important;
+}
+
 @media (forced-colors: active) {
   body.vice-city-theme:not(.halloween-theme) {
     background-image: none;

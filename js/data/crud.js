@@ -1235,6 +1235,7 @@ async function clearAll(event = null) {
   applyTextPreviewState(true);
   applyButtonVisualPreference();
   if (typeof applyHalloweenPreference === 'function') applyHalloweenPreference();
+  window.applyViceCityPreference?.();
   dragPreviewEnabled = false;
   applyDragPreviewState();
 }
