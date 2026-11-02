@@ -353,6 +353,18 @@ body.vice-city-theme:not(.halloween-theme).vice-city-idle-cursor :is(input, text
   padding: 0 12px;
 }
 
+.vice-city-clue--touch::before {
+  content: 'Toque os símbolos na ordem';
+  grid-column: 1 / -1;
+  color: var(--text2);
+  font-size: 13px;
+  text-align: center;
+}
+.vice-city-clue--touch {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  width: min(100%, 400px);
+}
+
 .vice-city-clue__slot {
   box-sizing: border-box;
   display: grid;
@@ -367,6 +379,18 @@ body.vice-city-theme:not(.halloween-theme).vice-city-idle-cursor :is(input, text
   font-weight: 700;
   line-height: 1;
   transition: border-color .2s, box-shadow .2s, color .2s, background .2s;
+}
+
+button.vice-city-clue__slot {
+  width: 100%;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+button.vice-city-clue__slot:focus-visible {
+  outline: 2px solid var(--vice-cyan, #087b83);
+  outline-offset: 2px;
 }
 
 .vice-city-clue__slot.lit {

@@ -16,6 +16,7 @@ O What's New oferece um atalho para pesquisar `#BlûViceCity19`. Essa busca
 mostra dez espaços com parte da sequência; cada tecla correta revela e acende
 um espaço. Um erro
 aparece em vermelho e reinicia a pista após 2 segundos.
+Em telas de toque, os dez símbolos já aparecem e devem ser tocados na ordem.
 Ao completar a sequência, a busca é limpa na ativação e na desativação do tema.
 O estado do tema fica em `blu:settings["vice-city"]` (`on` ou `off`) e é
 restaurado após recarregar a página, sem repetir a intro. A preferência antiga

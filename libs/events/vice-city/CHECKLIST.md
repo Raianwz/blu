@@ -1,0 +1,31 @@
+# Vice City — checklist de polimento
+
+## Calendário
+
+- [x] Encerrar o Vice City na virada de sábado, 28/11/2026, para domingo, 29/11/2026, às 00h de São Paulo.
+- [x] Reservar 29/11 sem tema especial programado; o tema de Natal começa em 30/11/2026.
+
+## Já feito
+
+- [x] Ativação secreta pelo código Konami e pela pista `#BlûViceCity19`.
+- [x] Em telas de toque, os dez símbolos aparecem e podem ser tocados na ordem para alternar o tema.
+- [x] Intro de néon com áudio, opção de pular e transição curta de saída.
+- [x] Tema salvo em `blu:settings["vice-city"]`, restaurado após F5 sem repetir a intro.
+- [x] Favicon e logo da janela Sobre acompanham o tema.
+- [x] Paleta para os visuais Clássico e Novo, com roxo padrão em `vis-other` no Novo.
+- [x] Faixa em degradê e brilho suave nas seções em hover ou foco.
+- [x] Cursor especial após cinco minutos sem interação, removido ao sair do tema ou atualizar a página.
+
+## Antes de publicar
+
+- [ ] Conferir Claro/Escuro × Clássico/Novo com botões públicos, privados, `vis-other` padrão e cores personalizadas. Verificar também contraste e títulos longos.
+- [ ] Percorrer ativação, intro, pulo, áudio, saída e F5 em uma aba visível e após voltar de outra aba; confirmar que nenhuma transição fica presa.
+- [ ] Conferir o tamanho e o ponto de clique dos dois cursores nos navegadores usados. As imagens têm 128 × 128 px; o desenho precisa apontar para o mesmo lugar em que ocorre o clique.
+- [ ] Conferir a pista com leitor de tela e navegação por teclado: instruções, progresso e erro precisam ser compreensíveis sem depender só das cores.
+- [ ] Implementar o encerramento automático: desativar o Vice City na data acima, impedir nova ativação e tratar uma preferência `on` já salva.
+- [ ] Definir se o tema deve funcionar no PWA sem rede. O CSS, o JavaScript, o áudio e as imagens do Vice City não estão no `APP_SHELL` do service worker. A `origin/main` publicada pré-carrega o Halloween; a `main` local, após a reorganização, não o pré-carrega mais.
+
+## Opcional, se ainda couber
+
+- [ ] Experimentar um foco discreto em rosa/ciano na busca durante o tema, sem aumentar o brilho permanente da tela.
+- [ ] Avaliar uma saída de áudio mais suave quando a intro é pulada, mantendo o pulo imediato.

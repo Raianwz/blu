@@ -12,9 +12,14 @@
     'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
   const CLUE_QUERY = '#bluvicecity19';
   const CLUE_PATTERNS = [[1, 3, 5, 6, 8], [0, 2, 4, 7, 9]];
+  const TOUCH_CLUE = window.matchMedia?.('(any-pointer: coarse)')?.matches === true;
   const CLUE_SYMBOLS = {
     ArrowUp: '↑', ArrowDown: '↓', ArrowLeft: '←', ArrowRight: '→',
     b: 'B', a: 'A'
+  };
+  const CLUE_KEY_NAMES = {
+    ArrowUp: 'cima', ArrowDown: 'baixo', ArrowLeft: 'esquerda',
+    ArrowRight: 'direita', b: 'B', a: 'A'
   };
   let active = false;
   let pending = false;
@@ -77,14 +82,40 @@
     if (!clueRoot) return;
     clueSlots.forEach((slot, index) => {
       const reached = index < clueProgress;
-      const isWrong = wrongKey !== null && index === clueProgress;
+      const wrongIndex = TOUCH_CLUE && wrongKey !== null && typeof wrongKey === 'object'
+        ? wrongKey.index : clueProgress;
+      const isWrong = wrongKey !== null && index === wrongIndex;
       slot.className = 'vice-city-clue__slot';
       if (isWrong) slot.classList.add('wrong');
       else if (reached && wrongKey === null) slot.classList.add('lit');
-      slot.textContent = isWrong ? clueSymbol(wrongKey)
-        : reached || cluePattern.includes(index) ? clueSymbol(KONAMI[index]) : '';
+      slot.textContent = !TOUCH_CLUE && isWrong ? clueSymbol(wrongKey)
+        : TOUCH_CLUE || reached || cluePattern.includes(index) ? clueSymbol(KONAMI[index]) : '';
     });
-    clueRoot.setAttribute('aria-label', `Sequência misteriosa: ${clueProgress} de 10 passos corretos`);
+    clueRoot.setAttribute('aria-label', `${TOUCH_CLUE ? 'Toque os símbolos na ordem. ' : ''}Sequência misteriosa: ${clueProgress} de 10 passos corretos`);
+  }
+
+  function advanceClue(key, index = null) {
+    if (clueResetTimer !== null) return;
+    if (clueProgress === KONAMI.length) {
+      clueProgress = 0;
+      renderClue();
+    }
+    if (key === KONAMI[clueProgress] && (index === null || index === clueProgress)) {
+      clueProgress++;
+      renderClue();
+      if (clueProgress === KONAMI.length) {
+        toggleViceCityTheme();
+        clearSearch();
+      }
+    } else {
+      renderClue(TOUCH_CLUE ? { index } : key);
+      notify('Quase lá, tente novamente', 'err', { duration: 2000 });
+      clueResetTimer = setTimeout(() => {
+        clueResetTimer = null;
+        clueProgress = 0;
+        renderClue();
+      }, 2000);
+    }
   }
 
   function updateClueSearch() {
@@ -103,12 +134,18 @@
     if (!results) return;
     cluePattern = CLUE_PATTERNS[Math.floor(Math.random() * CLUE_PATTERNS.length)];
     clueRoot = document.createElement('div');
-    clueRoot.className = 'vice-city-clue';
+    clueRoot.className = TOUCH_CLUE ? 'vice-city-clue vice-city-clue--touch' : 'vice-city-clue';
     clueRoot.setAttribute('role', 'group');
-    clueSlots = KONAMI.map(() => {
-      const slot = document.createElement('span');
+    clueSlots = KONAMI.map((key, index) => {
+      const slot = document.createElement(TOUCH_CLUE ? 'button' : 'span');
       slot.className = 'vice-city-clue__slot';
-      slot.setAttribute('aria-hidden', 'true');
+      if (TOUCH_CLUE) {
+        slot.type = 'button';
+        slot.setAttribute('aria-label', `Passo ${index + 1}: ${CLUE_KEY_NAMES[key]}`);
+        slot.addEventListener('click', () => advanceClue(key, index));
+      } else {
+        slot.setAttribute('aria-hidden', 'true');
+      }
       clueRoot.appendChild(slot);
       return slot;
     });
@@ -170,6 +207,8 @@
     }
     const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
     if (clueRoot && isClueSearch()) {
+      if (TOUCH_CLUE && ['Enter', ' '].includes(key) &&
+          event.target?.closest?.('.vice-city-clue__slot')) return;
       if (['Tab', 'Shift', 'Control', 'Alt', 'Meta'].includes(key) ||
           (event.target === document.getElementById('searchInput') &&
             ['Backspace', 'Delete'].includes(key)) ||
@@ -178,27 +217,7 @@
       event.preventDefault();
       if (event.stopImmediatePropagation) event.stopImmediatePropagation();
       else event.stopPropagation?.();
-      if (clueResetTimer !== null) return;
-      if (clueProgress === KONAMI.length) {
-        clueProgress = 0;
-        renderClue();
-      }
-      if (key === KONAMI[clueProgress]) {
-        clueProgress++;
-        renderClue();
-        if (clueProgress === KONAMI.length) {
-          toggleViceCityTheme();
-          clearSearch();
-        }
-      } else {
-        renderClue(key);
-        notify('Quase lá, tente novamente', 'err', { duration: 2000 });
-        clueResetTimer = setTimeout(() => {
-          clueResetTimer = null;
-          clueProgress = 0;
-          renderClue();
-        }, 2000);
-      }
+      advanceClue(key);
       return;
     }
     if (event.target?.closest?.('input, textarea, select, [contenteditable="true"]')) {

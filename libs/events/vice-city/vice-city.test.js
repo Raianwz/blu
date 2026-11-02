@@ -5,7 +5,7 @@ const vm = require('node:vm');
 
 const source = fs.readFileSync(require('node:path').join(__dirname, 'vice-city.js'), 'utf8');
 
-function setup({ pattern = 0, savedTheme = 'off' } = {}) {
+function setup({ pattern = 0, savedTheme = 'off', touch = false } = {}) {
   const classes = new Set();
   const removedClasses = [];
   const listeners = new Map();
@@ -44,8 +44,9 @@ function setup({ pattern = 0, savedTheme = 'off' } = {}) {
     getElementById(id) {
       return branding[id] || { searchInput, noResultsMsg }[id] || null;
     },
-    createElement() {
+    createElement(tagName) {
       const node = {
+        tagName: tagName.toUpperCase(),
         listeners: new Map(),
         children: [],
         setAttribute() {},
@@ -73,6 +74,7 @@ function setup({ pattern = 0, savedTheme = 'off' } = {}) {
     pause() { this.pauseCount++; }
   }
   const window = {
+    matchMedia() { return { matches: touch }; },
     addEventListener(name, fn) {
       if (!listeners.has(`window:${name}`)) listeners.set(`window:${name}`, new Set());
       listeners.get(`window:${name}`).add(fn);
@@ -286,6 +288,38 @@ test('busca secreta alterna os dois padrões e só surge na consulta exata', () 
     state.dispatch('blu:search-updated');
     assert.equal(state.body.children.length, 0);
   }
+});
+
+test('em telas de toque a pista vem completa e exige tocar os dez passos na ordem', () => {
+  const state = setup({ touch: true });
+  state.searchInput.value = '#BlûViceCity19';
+  state.dispatch('blu:search-updated');
+  const clue = state.body.children[0];
+  assert.ok(clue.children.every(slot => slot.tagName === 'BUTTON' && slot.textContent));
+
+  clue.children[1].listeners.get('click')();
+  assert.ok(clue.children[1].className.includes('wrong'));
+  assert.equal(state.toasts[0].message, 'Quase lá, tente novamente');
+  [...state.timers.values()].find(timer => timer.ms === 2000).fn();
+  assert.ok(clue.children.every(slot => !slot.className.includes('wrong')));
+
+  for (let index = 0; index < clue.children.length; index++) {
+    clue.children[index].listeners.get('click')();
+    if (index < clue.children.length - 1) {
+      assert.ok(clue.children[index].className.includes('lit'));
+    }
+  }
+  assert.equal(state.searchInput.value, '');
+  [...state.timers.values()].find(timer => timer.ms === 500).fn();
+  assert.equal(state.classes.has('vice-city-theme'), true);
+  state.body.children[0].listeners.get('click')();
+
+  state.searchInput.value = '#BlûViceCity19';
+  state.dispatch('blu:search-updated');
+  const secondClue = state.body.children[0];
+  secondClue.children.forEach(slot => slot.listeners.get('click')());
+  assert.equal(state.classes.has('vice-city-theme'), false);
+  assert.equal(state.settings.get('vice-city'), 'off');
 });
 
 test('sequência na busca ilumina os passos e ativa o tema após completar', () => {
