@@ -12,6 +12,13 @@ const WHATS_NEW_ITEMS = [
     description: 'Veja a cor e o ícone escolhidos antes de salvar um botão.'
   },
   {
+    icon: '🔎',
+    type: 'Melhoria',
+    status: 'changed',
+    title: 'Busca mais útil',
+    description: 'Quando nome e tag não encontram nada, o Blû também procura no texto dos botões. A busca ignora pontuação nos três campos.'
+  },
+  {
     icon: '🧩',
     type: 'Melhoria',
     status: 'changed',

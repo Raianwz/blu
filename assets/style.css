@@ -1954,6 +1954,21 @@ body.edit-mode .btn-del {
   display: none;
 }
 
+.search-fallback-notice {
+  width: fit-content;
+  margin: 0 0 16px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface2);
+  color: var(--text2);
+  font-size: 12px;
+}
+
+.search-fallback-notice[hidden] {
+  display: none;
+}
+
 #addSectionBtn {
   display: flex;
   align-items: center;

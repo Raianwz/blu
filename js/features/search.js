@@ -335,6 +335,7 @@ function getQuotedTextQuery(raw) {
 }
 
 function showAllSearchResults() {
+  setSearchFallbackNotice(false);
   document.querySelectorAll('.btn-wrap').forEach(button => {
     button.classList.remove('search-hidden');
   });
@@ -345,6 +346,11 @@ function showAllSearchResults() {
 
   updateToggleSectionsBtnLabel();
   setNoResultsMessage(null);
+}
+
+function setSearchFallbackNotice(show) {
+  const notice = document.getElementById('searchFallbackNotice');
+  if (notice) notice.hidden = !show;
 }
 
 function setNoResultsMessage(query) {
@@ -393,6 +399,7 @@ function collapseAllSectionsAfterSearchClear() {
 function doSearch(options = {}) {
   hideButtonPreview();
   updateSearchClearButton();
+  setSearchFallbackNotice(false);
   const { collapseOnClear = false } = options;
   const raw = document.getElementById('searchInput').value.trim();
   const q = normalizeSearchText(raw);
@@ -450,7 +457,8 @@ function doSearch(options = {}) {
     return;
   }
 
-  searchButtons(q, type);
+  const foundInText = searchButtons(q, type);
+  setSearchFallbackNotice(foundInText);
   updateToggleSectionsBtnLabel();
   setNoResultsMessage(raw);
 }
@@ -473,22 +481,42 @@ function searchCategoriesByName(rawQuery) {
   updateToggleSectionsBtnLabel();
 }
 
+function normalizeButtonSearchText(value) {
+  return normalizeSearchText(value).replace(/\p{P}+/gu, ' ').replace(/\s+/g, ' ').trim();
+}
+
 function searchButtons(query, type) {
-  document.querySelectorAll('.btn-wrap').forEach(button => {
+  const buttons = [...document.querySelectorAll('.btn-wrap')];
+  const normalizedQuery = normalizeButtonSearchText(query);
+  const compactQuery = normalizedQuery.replace(/\s/g, '');
+  const matches = value => {
+    if (!normalizedQuery) return false;
+    const normalizedValue = normalizeButtonSearchText(value);
+    return normalizedValue.includes(normalizedQuery) ||
+      (compactQuery.length > 1 && normalizedValue.replace(/\s/g, '').includes(compactQuery));
+  };
+  const useTextFallback = type === 'all' && !!query && !buttons.some(button => (
+    matches(button.dataset.name || '') || matches(button.dataset.tag || '')
+  ));
+  let textMatchCount = 0;
+
+  buttons.forEach(button => {
     if (!query) {
       button.classList.remove('search-hidden');
       return;
     }
 
-    const matchName = (button.dataset.name || '').includes(query);
-    const matchTag = (button.dataset.tag || '').includes(query);
-    const matchText = type === 'text' && normalizeSearchText(button.dataset.text || '').includes(query);
+    const matchName = matches(button.dataset.name || '');
+    const matchTag = matches(button.dataset.tag || '');
+    const matchText = (type === 'text' || useTextFallback) &&
+      matches(button.dataset.text || '');
 
     let show = false;
-    if (type === 'all') show = matchName || matchTag;
+    if (type === 'all') show = useTextFallback ? matchText : matchName || matchTag;
     if (type === 'name') show = matchName;
     if (type === 'tag') show = matchTag;
     if (type === 'text') show = matchText;
+    if (useTextFallback && show) textMatchCount++;
 
     button.classList.toggle('search-hidden', !show);
   });
@@ -505,4 +533,6 @@ function searchButtons(query, type) {
     section.classList.toggle('search-hidden', !hasVisibleButton);
     if (hasVisibleButton) setSectionCollapsed(section, false);
   });
+
+  return useTextFallback && textMatchCount > 0;
 }
