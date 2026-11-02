@@ -10,16 +10,18 @@
 - [x] Ativação secreta pelo código Konami e pela pista `#BlûViceCity19`.
 - [x] Em telas de toque, os dez símbolos aparecem e podem ser tocados na ordem para alternar o tema.
 - [x] Intro de néon com áudio, opção de pular e transição curta de saída.
-- [x] Tema salvo em `blu:settings["vice-city"]`, restaurado após F5 sem repetir a intro.
+- [x] Tema salvo em `blu:settings["vice-city"]`; F5 com o tema ativo preserva o visual sem repetir a intro ou a animação.
 - [x] Favicon e logo da janela Sobre acompanham o tema.
-- [x] Paleta para os visuais Clássico e Novo, com roxo padrão em `vis-other` no Novo.
+- [x] Paleta para os visuais Clássico e Novo: gradiente padrão em `vis-other` no Clássico e roxo padrão no Novo.
 - [x] Faixa em degradê e brilho suave nas seções em hover ou foco.
+- [x] Rosa de destaque mais contido no modo Escuro, inclusive nas ações e no brilho das seções.
 - [x] Cursor especial após cinco minutos sem interação, removido ao sair do tema ou atualizar a página.
 
 ## Antes de publicar
 
-- [ ] Conferir Claro/Escuro × Clássico/Novo com botões públicos, privados, `vis-other` padrão e cores personalizadas. Verificar também contraste e títulos longos.
-- [ ] Percorrer ativação, intro, pulo, áudio, saída e F5 em uma aba visível e após voltar de outra aba; confirmar que nenhuma transição fica presa.
+- [x] Conferir visualmente Claro/Escuro × Clássico/Novo com botões públicos, privados, `vis-other` padrão e cores personalizadas.
+- [ ] Conferir contraste nos estados interativos e títulos longos.
+- [ ] Percorrer ativação, pulo, áudio e saída após voltar de outra aba; confirmar que nenhuma transição fica presa.
 - [ ] Conferir o tamanho e o ponto de clique dos dois cursores nos navegadores usados. As imagens têm 128 × 128 px; o desenho precisa apontar para o mesmo lugar em que ocorre o clique.
 - [ ] Conferir a pista com leitor de tela e navegação por teclado: instruções, progresso e erro precisam ser compreensíveis sem depender só das cores.
 - [ ] Implementar o encerramento automático: desativar o Vice City na data acima, impedir nova ativação e tratar uma preferência `on` já salva.
