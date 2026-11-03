@@ -368,8 +368,10 @@ test('busca secreta alterna os dois padrões e só surge na consulta exata', () 
     state.dispatch('blu:search-updated');
     const clue = state.body.children[0];
     assert.equal(clue.className, 'vice-city-clue');
-    assert.equal(clue.children.length, 10);
-    assert.deepEqual(clue.children.flatMap((slot, index) => slot.textContent ? [index] : []), visible);
+    assert.equal(clue.children.length, 11);
+    assert.deepEqual(clue.children.slice(0, 10).flatMap((slot, index) => slot.textContent ? [index] : []), visible);
+    assert.deepEqual(clue.children[10].children.map(key => key.textContent),
+      ['←', '↑', '→', '↓', 'A', 'B']);
     state.searchInput.value = '#outra-busca';
     state.dispatch('blu:search-updated');
     assert.equal(state.body.children.length, 0);
@@ -423,7 +425,7 @@ test('sequência na busca ilumina os passos e ativa o tema após completar', () 
     });
     assert.equal(prevented, true);
   }
-  assert.ok(clue.children.every(slot => slot.className.includes('lit')));
+  assert.ok(clue.children.slice(0, 10).every(slot => slot.className.includes('lit')));
   assert.equal(state.searchInput.value, '');
   assert.equal(state.body.children.length, 1);
   assert.equal(state.body.children[0].className, 'vice-city-intro');

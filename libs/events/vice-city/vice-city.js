@@ -194,6 +194,21 @@
       clueRoot.appendChild(slot);
       return slot;
     });
+    if (!TOUCH_CLUE) {
+      const keyboard = document.createElement('div');
+      keyboard.className = 'vice-city-clue__keyboard';
+      keyboard.setAttribute('aria-hidden', 'true');
+      for (const [name, symbol] of [
+        ['left', '←'], ['up', '↑'], ['right', '→'],
+        ['down', '↓'], ['a', 'A'], ['b', 'B']
+      ]) {
+        const key = document.createElement('kbd');
+        key.className = `vice-city-clue__key vice-city-clue__key--${name}`;
+        key.textContent = symbol;
+        keyboard.appendChild(key);
+      }
+      clueRoot.appendChild(keyboard);
+    }
     clueProgress = 0;
     konamiIndex = 0;
     results.insertAdjacentElement('afterend', clueRoot);
