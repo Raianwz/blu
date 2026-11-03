@@ -6,7 +6,7 @@
   const AUDIO_FADE_DURATION = 250;
   const OUTRO_DURATION = 2000;
   const ACTIVATION_DELAY = 500;
-  const IDLE_CURSOR_DELAY = 5 * 1 * 1000;
+  const IDLE_CURSOR_DELAY = 5 * 60 * 1000;
   const IDLE_CURSOR_REPEAT_DELAY = 2 * 60 * 1000;
   const IDLE_CURSOR_BLINK_DURATION = 140;
   const VICE_LOGO = 'libs/events/vice-city/icons/blu-vice-city.svg';

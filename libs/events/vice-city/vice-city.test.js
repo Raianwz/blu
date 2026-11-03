@@ -292,6 +292,7 @@ test('cursor especial surge após o prazo inicial e não persiste após F5', () 
   const state = setup({ savedTheme: 'on' });
   const firstTimer = state.timers.keys().next().value;
   assert.ok(firstTimer);
+  assert.equal(state.timers.get(firstTimer).ms, 300000);
   state.dispatch('pointermove', {});
   assert.equal(state.timers.has(firstTimer), false);
   const idleTimer = state.timers.values().next().value;

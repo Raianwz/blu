@@ -23,7 +23,7 @@
 - [x] Conferir visualmente Claro/Escuro × Clássico/Novo com botões públicos, privados, `vis-other` padrão e cores personalizadas.
 - [ ] Conferir contraste nos estados interativos e títulos longos.
 - [ ] Percorrer ativação, pulo, áudio e saída após voltar de outra aba; confirmar que nenhuma transição fica presa.
-- [ ] Conferir nos navegadores usados o ponto de clique do cursor comum (ponta superior esquerda) e do cursor interativo (ponta inferior do V).
+- [ ] Conferir nos navegadores usados o ponto de clique da seta comum (ponta superior esquerda), da mão neon (ponta do indicador) e do “VI” em inatividade (base do V).
 - [ ] Conferir a pista com leitor de tela e navegação por teclado: instruções, progresso e erro precisam ser compreensíveis sem depender só das cores.
 - [ ] Implementar o encerramento automático: desativar o Vice City na data acima, impedir nova ativação e tratar uma preferência `on` já salva.
 - [ ] Definir se o tema deve funcionar no PWA sem rede. O CSS, o JavaScript, o áudio e as imagens do Vice City não estão no `APP_SHELL` do service worker. A `origin/main` publicada pré-carrega o Halloween; a `main` local, após a reorganização, não o pré-carrega mais.
