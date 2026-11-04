@@ -62,6 +62,15 @@
   let cursorRevision = 0;
   let cursorImagesPromise = null;
   const cursorSizeCache = new Map();
+  let cursorTipShown = false;
+
+  function showCursorTip() {
+    if (cursorTipShown || TOUCH_CLUE || !eligible() || overlay || outroOverlay ||
+        document.visibilityState !== 'visible') return;
+    cursorTipShown = true;
+    notify('Você pode ajustar o tamanho do ponteiro: segure Shift e use a roda do mouse.',
+      'ok', { duration: 7000 });
+  }
 
   function clearCursorSizeStyles() {
     for (const name of Object.keys(CURSOR_ASSETS)) {
@@ -329,6 +338,7 @@
       setSetting(SETTING, 'on');
       document.body.classList.add(THEME);
       syncTheme();
+      showCursorTip();
     }, ACTIVATION_DELAY);
   }
 
@@ -459,6 +469,7 @@
     document.removeEventListener('keydown', onKeyDown, true);
     overlay.remove();
     overlay = null;
+    showCursorTip();
   }
 
   function scheduleIntroFinish() {
