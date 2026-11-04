@@ -16,7 +16,7 @@
 - [x] Faixa em degradê e brilho suave nas seções em hover ou foco.
 - [x] Rosa de destaque mais contido no modo Escuro, inclusive nas ações e no brilho das seções.
 - [x] Cursor especial após cinco minutos na primeira vez; dura de 20 a 30 cliques, fica brevemente translúcido a cada dez e pode reaparecer após dois minutos sem interação.
-- [x] Cursores do Vice City em 32 × 32 px, como os do Halloween; originais de 128 × 128 px preservados.
+- [x] Cursores do Vice City em 32 × 32 px por padrão, ajustáveis até 16 × 16 px com Shift + rolagem; originais de 128 × 128 px preservados.
 
 ## Antes de publicar
 

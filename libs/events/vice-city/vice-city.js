@@ -9,6 +9,17 @@
   const IDLE_CURSOR_DELAY = 5 * 60 * 1000;
   const IDLE_CURSOR_REPEAT_DELAY = 2 * 60 * 1000;
   const IDLE_CURSOR_BLINK_DURATION = 140;
+  const CURSOR_MIN_SIZE = 16;
+  const CURSOR_MAX_SIZE = 32;
+  const CURSOR_STEP = 2;
+  const CURSOR_BASE = new URL('cursor/', document.currentScript.src);
+  const CURSOR_ASSETS = {
+    arrow: 'ViceCity_Cursor_32.png',
+    hand: 'ViceCity_Hand.svg',
+    idle: 'ViceCity_Pointer_32.png',
+    'idle-blink': 'ViceCity_Pointer_32_blink.png',
+    'hand-blink': 'ViceCity_Hand_blink.svg'
+  };
   const VICE_LOGO = 'libs/events/vice-city/icons/blu-vice-city.svg';
   const INTRO_AUDIO = new URL('sounds/ViceCity.ogg', document.currentScript.src).href;
   const KONAMI = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown',
@@ -47,6 +58,91 @@
   let idleCursorShown = false;
   let idleCursorClicks = 0;
   let idleCursorClickTarget = 0;
+  let cursorSize = CURSOR_MAX_SIZE;
+  let cursorRevision = 0;
+  let cursorImagesPromise = null;
+  const cursorSizeCache = new Map();
+
+  function clearCursorSizeStyles() {
+    for (const name of Object.keys(CURSOR_ASSETS)) {
+      document.body.style.removeProperty(`--vice-cursor-${name}`);
+    }
+  }
+
+  function resetCursorSize() {
+    if (cursorSize === CURSOR_MAX_SIZE) return;
+    cursorSize = CURSOR_MAX_SIZE;
+    cursorRevision++;
+    clearCursorSizeStyles();
+  }
+
+  function loadCursorImages() {
+    if (!cursorImagesPromise) {
+      cursorImagesPromise = Promise.all(Object.entries(CURSOR_ASSETS).map(([name, file]) =>
+        new Promise((resolve, reject) => {
+          const image = new Image();
+          image.onload = () => resolve([name, image]);
+          image.onerror = reject;
+          image.src = new URL(file, CURSOR_BASE).href;
+        })
+      )).catch(error => {
+        cursorImagesPromise = null;
+        throw error;
+      });
+    }
+    return cursorImagesPromise;
+  }
+
+  function renderCursorImage(image, size) {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = size;
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('Canvas indisponível');
+    context.imageSmoothingQuality = 'high';
+    context.drawImage(image, 0, 0, size, size);
+    return canvas.toDataURL('image/png');
+  }
+
+  async function setCursorSize(size) {
+    cursorSize = size;
+    const revision = ++cursorRevision;
+    if (size === CURSOR_MAX_SIZE) {
+      clearCursorSizeStyles();
+      return;
+    }
+    try {
+      let styles = cursorSizeCache.get(size);
+      if (!styles) {
+        const images = await loadCursorImages();
+        if (revision !== cursorRevision || !eligible()) return;
+        styles = Object.fromEntries(images.map(([name, image]) => {
+          const hotspot = name.startsWith('hand') ? [12, 2]
+            : name.startsWith('idle') ? [11, 30] : [0, 0];
+          const [x, y] = hotspot.map(value => Math.round(value * size / CURSOR_MAX_SIZE));
+          return [name, `url("${renderCursorImage(image, size)}") ${x} ${y}`];
+        }));
+        cursorSizeCache.set(size, styles);
+      }
+      if (revision !== cursorRevision || !eligible()) return;
+      for (const [name, value] of Object.entries(styles)) {
+        document.body.style.setProperty(`--vice-cursor-${name}`, value);
+      }
+    } catch {
+      if (revision !== cursorRevision || !eligible()) return;
+      resetCursorSize();
+      notify('Não foi possível ajustar o tamanho do cursor', 'err');
+    }
+  }
+
+  function onCursorSizeWheel(event) {
+    if (!eligible() || !event.shiftKey) return;
+    const delta = event.deltaY || event.deltaX;
+    if (!delta) return;
+    event.preventDefault();
+    const nextSize = Math.max(CURSOR_MIN_SIZE,
+      Math.min(CURSOR_MAX_SIZE, cursorSize + (delta < 0 ? CURSOR_STEP : -CURSOR_STEP)));
+    if (nextSize !== cursorSize) setCursorSize(nextSize);
+  }
 
   function stopIdleCursor() {
     clearTimeout(idleCursorTimer);
@@ -474,6 +570,7 @@
     syncIdleCursor();
     const enabled = eligible();
     if (!enabled) {
+      resetCursorSize();
       if (activationTimer !== null && !document.body.classList.contains('halloween-theme')) return;
       const wasActive = active;
       active = false;
@@ -500,6 +597,7 @@
         if (idleCursorTimer !== null) scheduleIdleCursor();
       }, { passive: true });
     });
+    document.addEventListener('wheel', onCursorSizeWheel, { passive: false });
     document.addEventListener('click', noteIdleCursorClick, true);
     new MutationObserver(syncTheme).observe(document.body, {
       attributes: true,

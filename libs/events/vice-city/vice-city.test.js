@@ -13,6 +13,7 @@ function setup({ pattern = 0, savedTheme = 'off', touch = false, randomValue = n
   const timers = new Map();
   const audios = [];
   const toasts = [];
+  const cursorStyles = new Map();
   const searchInput = { value: '', closest() { return this; } };
   const noResultsMsg = {
     insertAdjacentElement(_position, node) { body.children.push(node); }
@@ -23,6 +24,10 @@ function setup({ pattern = 0, savedTheme = 'off', touch = false, randomValue = n
     setAttribute(name, value) { this.attributes.set(name, value); }
   }]));
   const body = {
+    style: {
+      setProperty(name, value) { cursorStyles.set(name, value); },
+      removeProperty(name) { cursorStyles.delete(name); }
+    },
     classList: {
       contains: name => classes.has(name),
       add(name) { classes.add(name); },
@@ -46,6 +51,10 @@ function setup({ pattern = 0, savedTheme = 'off', touch = false, randomValue = n
       return branding[id] || { searchInput, noResultsMsg }[id] || null;
     },
     createElement(tagName) {
+      if (tagName === 'canvas') return {
+        getContext() { return { drawImage() {} }; },
+        toDataURL() { return 'data:image/png;base64,AA=='; }
+      };
       const node = {
         tagName: tagName.toUpperCase(),
         listeners: new Map(),
@@ -78,6 +87,9 @@ function setup({ pattern = 0, savedTheme = 'off', touch = false, randomValue = n
     play() { this.playCount++; return Promise.resolve(); }
     pause() { this.pauseCount++; }
   }
+  class Image {
+    set src(value) { this.url = value; this.onload(); }
+  }
   const window = {
     matchMedia() { return { matches: touch }; },
     addEventListener(name, fn) {
@@ -88,7 +100,7 @@ function setup({ pattern = 0, savedTheme = 'off', touch = false, randomValue = n
   const random = Object.create(Math);
   random.random = () => randomValue ?? (pattern ? .9 : .1);
   vm.runInNewContext(source, {
-    document, window, MutationObserver, Audio, URL, Math: random, Date: { now: () => now },
+    document, window, MutationObserver, Audio, Image, URL, Math: random, Date: { now: () => now },
     getSetting(name, fallback = null) { return settings.has(name) ? settings.get(name) : fallback; },
     setSetting(name, value) { settings.set(name, value); },
     normalizeSearchText(value) {
@@ -105,6 +117,7 @@ function setup({ pattern = 0, savedTheme = 'off', touch = false, randomValue = n
   window.initViceCityIntro();
   return {
     classes, removedClasses, body, listeners, timers, document, branding, audios, toasts, settings,
+    cursorStyles,
     searchInput, changed: () => changed(),
     advanceTime(ms) { now += ms; },
     runTimer(ms) {
@@ -360,6 +373,35 @@ test('tema inativo não altera a classe do cursor a cada observação', () => {
   state.changed();
   state.changed();
   assert.equal(state.removedClasses.includes('vice-city-idle-cursor'), false);
+});
+
+test('Shift + rolagem ajusta todos os cursores entre 16 e 32 px', async () => {
+  const state = setup({ savedTheme: 'on' });
+  let prevented = 0;
+  const wheel = (deltaY, shiftKey = true) => state.dispatch('wheel', {
+    deltaY, deltaX: 0, shiftKey,
+    preventDefault() { prevented++; }
+  });
+
+  wheel(100, false);
+  assert.equal(prevented, 0);
+  for (let i = 0; i < 9; i++) wheel(100);
+  await new Promise(setImmediate);
+  assert.equal(prevented, 9);
+  assert.equal(state.cursorStyles.size, 5);
+  assert.ok(state.cursorStyles.get('--vice-cursor-hand').endsWith(' 6 1'));
+  assert.ok(state.cursorStyles.get('--vice-cursor-idle').endsWith(' 6 15'));
+
+  for (let i = 0; i < 9; i++) wheel(-100);
+  assert.equal(state.cursorStyles.size, 0);
+  wheel(100);
+  await new Promise(setImmediate);
+  assert.equal(state.cursorStyles.size, 5);
+  state.classes.delete('vice-city-theme');
+  state.changed();
+  assert.equal(state.cursorStyles.size, 0);
+  wheel(100);
+  assert.equal(prevented, 19);
 });
 
 test('busca secreta alterna os dois padrões e só surge na consulta exata', () => {
