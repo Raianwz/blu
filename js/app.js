@@ -75,6 +75,8 @@ function init() {
 
 function toggleEditMode() {
   editMode = !editMode;
+  if (editMode) clearSectionAlphabeticalSorts();
+  else document.querySelectorAll('#sections > .section-wrap').forEach(applySectionAlphabeticalSort);
   document.body.classList.toggle('edit-mode', editMode);
   document.querySelectorAll('.btn-wrap').forEach(button => button.draggable = editMode);
 

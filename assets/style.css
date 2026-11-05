@@ -1494,6 +1494,36 @@ body.content-dashboard-enabled .content-dashboard {
   flex-shrink: 0;
 }
 
+.section-sort-btn {
+  flex-shrink: 0;
+  min-width: 32px;
+  height: 26px;
+  padding: 0 5px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: none;
+  color: var(--text2);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.section-sort-btn:hover,
+.section-sort-btn.active {
+  color: var(--accent1);
+  background: color-mix(in srgb, var(--accent1) 12%, transparent);
+}
+
+.section-sort-btn:focus-visible {
+  outline: 2px solid var(--accent1);
+  outline-offset: 2px;
+}
+
+.section-sort-btn[hidden],
+body.edit-mode .section-sort-btn {
+  display: none;
+}
+
 .section-del-btn,
 .section-rename-btn {
   display: none;

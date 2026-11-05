@@ -234,6 +234,56 @@ function renderAll(sectionsData) {
   applyButtonReorderControls();
 }
 
+// A ordenação é apenas visual: o DOM mantém a ordem usada por backup e autosave.
+let alphabeticalSortAvailable = true;
+const alphabeticallySortedSections = new Set();
+const buttonNameCollator = new Intl.Collator('pt-BR', { sensitivity: 'base', numeric: true });
+
+function applySectionAlphabeticalSort(section) {
+  const body = section.querySelector('.section-body');
+  const button = section.querySelector('.section-sort-btn');
+  if (!body || !button) return;
+  const items = [...body.querySelectorAll('.btn-wrap')];
+  const enabled = alphabeticalSortAvailable && !editMode &&
+    alphabeticallySortedSections.has(section.dataset.id);
+  button.hidden = !alphabeticalSortAvailable || editMode || items.length < 2;
+  button.classList.toggle('active', enabled);
+  button.setAttribute('aria-pressed', String(enabled));
+  button.title = enabled ? 'Voltar à ordem original' : 'Ordenar botões de A a Z';
+  button.setAttribute('aria-label', `${button.title} em ${section.querySelector('.section-title')?.textContent || 'seção'}`);
+  items.forEach(item => { item.style.order = ''; });
+  if (!enabled) return;
+  items.sort((a, b) => buttonNameCollator.compare(
+    a.querySelector('.btn-label')?.textContent || '',
+    b.querySelector('.btn-label')?.textContent || ''
+  ));
+  items.forEach((item, index) => { item.style.order = String(index); });
+}
+
+function toggleSectionAlphabeticalSort(button) {
+  if (!alphabeticalSortAvailable || editMode) return;
+  const section = button.closest('.section-wrap');
+  if (!section) return;
+  if (alphabeticallySortedSections.has(section.dataset.id)) alphabeticallySortedSections.delete(section.dataset.id);
+  else alphabeticallySortedSections.add(section.dataset.id);
+  applySectionAlphabeticalSort(section);
+}
+
+function clearSectionAlphabeticalSorts() {
+  alphabeticallySortedSections.clear();
+  document.querySelectorAll('#sections > .section-wrap').forEach(applySectionAlphabeticalSort);
+}
+
+function toggleAlphabeticalSortAvailability() {
+  alphabeticalSortAvailable = !alphabeticalSortAvailable;
+  clearSectionAlphabeticalSorts();
+  const button = document.getElementById('alphabeticalSortMenuBtn');
+  if (!button) return;
+  button.classList.toggle('active', alphabeticalSortAvailable);
+  button.setAttribute('aria-pressed', String(alphabeticalSortAvailable));
+  button.querySelector('.menu-btn-label').textContent = `A–Z nas Seções: ${alphabeticalSortAvailable ? 'ON' : 'OFF'}`;
+}
+
 // Legacy section names often begin with an emoji. Use a local icon as a visual
 // fallback without rewriting the name saved in JSON or shown in the editor.
 const LEGACY_SECTION_EMOJI_ICONS = Object.freeze({
@@ -306,6 +356,7 @@ function renderSection(section, container) {
       <span class="section-custom-icon" aria-hidden="true">${customButtonIconMarkup(icon)}</span>
       <span class="section-title">${sectionTitleMarkup(section.name)}</span>
       <span class="section-count" title="${count} botão(ões)">${count}</span>
+      <button class="section-sort-btn" type="button" onclick="toggleSectionAlphabeticalSort(this)" aria-pressed="false" title="Ordenar botões de A a Z" ${!alphabeticalSortAvailable || editMode || count < 2 ? 'hidden' : ''}>A–Z</button>
       <button class="section-rename-btn" onclick="renameSection('${safeSectionId}')" title="Renomear seção" aria-label="Renomear seção">${iconSvg('pencil', 'edit-control-icon')}</button>
       <button class="section-del-btn" onclick="deleteSection('${safeSectionId}')" title="Excluir seção" aria-label="Excluir seção">${iconSvg('trash_2', 'edit-control-icon')}</button>
       <div class="section-move-controls">
@@ -320,6 +371,7 @@ function renderSection(section, container) {
   (section.buttons || []).forEach(button => body.appendChild(createBtnEl(button, String(section.id))));
   setupDrop(body);
   container.appendChild(wrap);
+  applySectionAlphabeticalSort(wrap);
   return wrap;
 }
 
@@ -387,6 +439,7 @@ function updateSectionCount(sectionId) {
   const wrap = document.querySelector(`.section-wrap[data-id="${cssEscape(sectionId)}"]`);
   if (!wrap) return;
   wrap.querySelector('.section-count').textContent = wrap.querySelectorAll('.btn-wrap').length;
+  applySectionAlphabeticalSort(wrap);
 }
 
 async function doCopy(text, btn) {
