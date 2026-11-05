@@ -176,10 +176,14 @@ body.vice-city-theme.vice-city-cursor-ready:not(.halloween-theme) :is(input, tex
   display: grid;
   place-items: center;
   isolation: isolate;
-  cursor: pointer;
+  cursor: none !important;
   color: #fff7f5;
   background: #100b20;
   animation: vice-intro-arrive .55s ease-out both;
+}
+
+.vice-city-intro * {
+  cursor: none !important;
 }
 
 .vice-city-intro--paused,
