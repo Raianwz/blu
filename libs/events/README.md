@@ -3,7 +3,9 @@
 Cada evento fica em uma pasta própria. O Halloween, primeiro visual sazonal do
 Blû, reúne em `halloween/` seu CSS, JavaScript, testes, ícones e cursores.
 As integrações antigas com a redefinição de preferências e o pop-out ficam em
-`halloween/halloween-app.js`, carregado junto ao evento.
+`halloween/archieved/halloween-app.js`. O evento não é carregado pelo Blû atual; a regra
+de calendário de 2026 e o painel de novidades antigo estão preservados na pasta
+do Halloween para uma eventual reativação.
 `vice-city/` contém o estudo de cores para novembro e uma intro opcional.
 Digite ↑ ↑ ↓ ↓ ← → ← → B A fora dos campos de texto para ativar ou desativar
 o tema nesta página. A intro começa antes da troca de tema, que ocorre 500 ms
@@ -21,8 +23,7 @@ aparece em vermelho e reinicia a pista após 2 segundos.
 Em telas de toque, os dez símbolos já aparecem e devem ser tocados na ordem.
 Ao completar a sequência, a busca é limpa na ativação e na desativação do tema.
 O estado do tema fica em `blu:settings["vice-city"]` (`on` ou `off`) e é
-restaurado após recarregar a página, sem repetir a intro. A preferência antiga
-`halloweenVisual` é removida quando a temporada de Halloween não está disponível.
+restaurado após recarregar a página, sem repetir a intro.
 O cursor temático aparece ao fim da intro ou quando ela é pulada. Após cinco
 minutos sem interação com o Blû, o logo VI substitui a seta até o próximo clique.
 Ele pode reaparecer após dois minutos de inatividade. Sair do tema remove o

@@ -1,0 +1,15 @@
+<!-- Fragmentos de 2026. Recolocar no menu Conteúdo e no fim do body ao reativar o evento. -->
+<label class="menu-setting-row halloween-palette-row" id="halloweenPaletteRow" hidden><span class="menu-icon halloween-cauldron-icon" aria-hidden="true"></span><span class="menu-btn-label">Estilo de:</span><select id="halloweenPaletteSelect" onchange="setHalloweenPalette(this.value)" aria-label="Estilo de Halloween"><option value="pumpkin">Abóbora</option><option value="zombie">Zumbi</option><option value="vampire">Vampiro</option><option value="witch">Bruxa</option><option value="ghost">Fantasma</option></select></label>
+
+<div id="halloweenPaletteBanner" role="status" aria-live="polite" hidden>
+  <span class="halloween-palette-banner-icon" aria-hidden="true"></span>
+  <div class="halloween-palette-banner-copy">
+    <strong>Novas cores de Dia das Bruxas!</strong>
+    <span>Escolha entre Abóbora, Zumbi, Vampiro, Bruxa e Fantasma.</span>
+    <span class="halloween-palette-banner-swatches" aria-hidden="true"><i class="pumpkin"></i><i class="zombie"></i><i class="vampire"></i><i class="witch"></i><i class="ghost"></i></span>
+  </div>
+  <div class="halloween-palette-banner-actions">
+    <button type="button" onclick="openHalloweenPaletteFromBanner(event)">Escolher estilo</button>
+    <button type="button" onclick="dismissHalloweenPaletteBanner()">Agora não</button>
+  </div>
+</div>

@@ -148,15 +148,6 @@ function migrateLegacySettings() {
   const settings = loadSettings();
   let changed = false;
 
-  // O visual sazonal encerrado não precisa permanecer nas preferências.
-  // Em produção, preserve a escolha até o fim da janela de Halloween.
-  if (typeof isBluFeatureAvailable === 'function' &&
-      !isBluFeatureAvailable('halloween') &&
-      Object.prototype.hasOwnProperty.call(settings, 'halloweenVisual')) {
-    delete settings.halloweenVisual;
-    changed = true;
-  }
-
   // Preferência removida quando a busca por texto passou a ficar sempre
   // disponível no seletor.
   if (Object.prototype.hasOwnProperty.call(settings, 'textSearch')) {

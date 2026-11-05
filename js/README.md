@@ -9,8 +9,8 @@ seus controles ficam ocultos. O loader emite `blu:optional-status` com
 Eventos emitidos antes de um opcional carregar devem ter também um estado
 consultável; a checagem de atualização usa `BluUpdateCheckComplete` para isso.
 O app emite `blu:preferences-reset` e `blu:prepare-popout-clone` para que
-integrações sazonais atualizem seu estado e removam efeitos transitórios da
-cópia do pop-out. A integração do Halloween fica em `../libs/events/halloween/halloween-app.js`.
+integrações sazonais possam atualizar seu estado e remover efeitos transitórios
+da cópia do pop-out. O Halloween está arquivado em `../libs/events/halloween/`.
 
 ## Estrutura
 
@@ -26,7 +26,7 @@ cópia do pop-out. A integração do Halloween fica em `../libs/events/halloween
 - `service-worker.js`: cache offline e ciclo de vida do PWA.
 
 Os opcionais atuais são depuração, experimentos, diagnóstico JSON, exportação
-personalizada, ações rápidas, Halloween e novidades. Os demais continuam
+personalizada, ações rápidas, Vice City e novidades. Os demais continuam
 essenciais porque ainda há chamadas diretas entre eles. Exemplos: `storage.js`
 chama a busca ao restaurar dados; `render.js` usa os catálogos de ícones e o
 seletor de aparência; `app.js` usa o painel de conteúdo; `crud.js` usa as opções

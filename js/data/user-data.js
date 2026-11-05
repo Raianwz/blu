@@ -161,14 +161,12 @@ function replaceUserData(source, validIds = null) {
   userData = sanitizeUserData(source);
   if (validIds) pruneUserData(validIds);
   else persistUserData();
-  if (typeof refreshHalloweenButtonWebs === 'function') refreshHalloweenButtonWebs();
   renderUserDataPanels();
 }
 
 function resetUserData() {
   userData = sanitizeUserData({});
   userData.dailyMetrics.startedAt = getLocalDateKey();
-  if (typeof refreshHalloweenButtonWebs === 'function') refreshHalloweenButtonWebs();
   renderUserDataPanels();
 }
 
@@ -224,9 +222,6 @@ function recordButtonCopy(buttonId) {
   userData.activity.copied++;
   recordDailyMetric('copied', id);
   persistUserData();
-  if (typeof noteHalloweenSpiderButtonCopy === 'function') noteHalloweenSpiderButtonCopy(id);
-  if (typeof noteHalloweenDemoButtonCopy === 'function') noteHalloweenDemoButtonCopy(id);
-  if (typeof refreshHalloweenButtonWebs === 'function') refreshHalloweenButtonWebs();
   renderUserDataPanels();
 }
 

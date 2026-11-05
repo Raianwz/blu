@@ -61,21 +61,6 @@ function updateWhatsNewButtonUI() {
   if (aboutButton) aboutButton.hidden = false;
 }
 
-function updateWhatsNewHalloweenToggle() {
-  const halloweenToggle = document.getElementById('whatsNewHalloweenVisualSwitch');
-  if (halloweenToggle) {
-    halloweenToggle.closest('.whats-new-seasonal-setting').hidden =
-      !isBluFeatureAvailable('halloween') || typeof applyHalloweenPreference !== 'function';
-    halloweenToggle.checked = document.body.classList.contains('halloween-theme');
-  }
-}
-
-function setWhatsNewHalloweenVisual(enabled) {
-  if (!isBluFeatureAvailable('halloween') || typeof applyHalloweenPreference !== 'function') return;
-  setSetting('halloweenVisual', enabled ? 'on' : 'off');
-  applyHalloweenPreference();
-}
-
 function searchViceCityClue() {
   const input = document.getElementById('searchInput');
   if (!input) return;
@@ -108,16 +93,6 @@ function ensureWhatsNewModal() {
           <p>Confira os principais recursos e mudanças desta versão.</p>
         </header>
         <div class="whats-new-list">${items}</div>
-        <div class="whats-new-visual-setting whats-new-seasonal-setting">
-          <div>
-            <strong>Visual de Dia das Bruxas</strong>
-            <p>Durante a temporada, ative ou desative este visual aqui ou em Menu &gt; Conteúdo.</p>
-          </div>
-          <label class="whats-new-visual-switch">
-            <input id="whatsNewHalloweenVisualSwitch" type="checkbox" role="switch" aria-label="Ativar visual de Dia das Bruxas" onchange="setWhatsNewHalloweenVisual(this.checked)">
-            <span aria-hidden="true"></span>
-          </label>
-        </div>
         <div class="modal-footer"><button class="mbtn primary" type="button" onclick="closeModal('whatsNewModal')">Entendi</button></div>
       </div>
     </div>
@@ -132,12 +107,6 @@ function ensureWhatsNewModal() {
 
 function openWhatsNew({ markSeen = true } = {}) {
   ensureWhatsNewModal();
-  if (markSeen && isBluFeatureAvailable('halloween') &&
-      typeof applyHalloweenPreference === 'function' && getSetting('halloweenVisual') === null) {
-    setSetting('halloweenVisual', 'on');
-    applyHalloweenPreference();
-  }
-  updateWhatsNewHalloweenToggle();
   document.getElementById('menuOverlay')?.classList.remove('open');
   openModal('whatsNewModal');
   if (markSeen) markWhatsNewAsSeen();

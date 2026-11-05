@@ -11,7 +11,6 @@ const optionalReady = {
   'js/data/json-tools.js': 'openJsonModal',
   'js/data/custom-export.js': 'openCustomExportModal',
   'js/ui/quick-actions.js': 'initQuickActions',
-  'libs/events/halloween/halloween.js': 'applyHalloweenPreference',
   'libs/events/vice-city/vice-city.js': 'initViceCityIntro',
   'js/features/whats-new.js': 'initWhatsNew'
 };
@@ -72,7 +71,7 @@ test('inicia o app antes dos recursos opcionais', async () => {
   assert.ok(appIndex > 0);
   assert.ok(state.loaded.indexOf('js/core/debug.js') > appIndex);
   assert.equal(state.alerts.length, 0);
-  assert.equal(state.statuses.length, 8);
+  assert.equal(state.statuses.length, 7);
   assert.ok(state.statuses.every(entry => entry.loaded));
   assert.equal(state.controls.customExportBtn.hidden, false);
   assert.ok(state.started.includes('js/features/whats-new.js'));
@@ -95,13 +94,10 @@ test('erro ao executar um opcional é isolado', async () => {
   assert.equal(state.alerts.length, 0);
 });
 
-test('Halloween e novidades ausentes não bloqueiam o núcleo', async () => {
-  const state = await runLoader({ missing: [
-    'libs/events/halloween/halloween.js', 'js/features/whats-new.js'
-  ] });
+test('novidades ausentes não bloqueiam o núcleo', async () => {
+  const state = await runLoader({ missing: ['js/features/whats-new.js'] });
   assert.equal(state.window.BluCoreReady, true);
   assert.equal(state.alerts.length, 0);
-  assert.equal(state.statuses.find(entry => entry.id === 'halloween').loaded, false);
   assert.equal(state.statuses.find(entry => entry.id === 'whats-new').loaded, false);
 });
 
@@ -112,9 +108,9 @@ test('falha de arquivo obrigatório impede o início e mostra aviso', async () =
   assert.equal(state.alerts[0].role, 'alert');
 });
 
-test('Halloween carrega para acompanhar a janela sazonal, sem bloquear novidades', async () => {
+test('arquivos sazonais encerrados não são carregados', async () => {
   const state = await runLoader();
-  assert.equal(state.loaded.includes('libs/events/halloween/halloween.js'), true);
+  assert.equal(state.loaded.some(path => path.startsWith('libs/events/halloween/')), false);
   assert.ok(state.started.includes('js/features/whats-new.js'));
   assert.equal(state.alerts.length, 0);
 });
