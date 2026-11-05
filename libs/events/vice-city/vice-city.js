@@ -8,7 +8,6 @@
   const ACTIVATION_DELAY = 500;
   const IDLE_CURSOR_DELAY = 5 * 60 * 1000;
   const IDLE_CURSOR_REPEAT_DELAY = 2 * 60 * 1000;
-  const IDLE_CURSOR_BLINK_DURATION = 140;
   const CURSOR_MIN_SIZE = 16;
   const CURSOR_MAX_SIZE = 32;
   const CURSOR_STEP = 2;
@@ -16,9 +15,7 @@
   const CURSOR_ASSETS = {
     arrow: 'ViceCity_Cursor_32.png',
     hand: 'ViceCity_Hand.svg',
-    idle: 'ViceCity_Pointer_32.png',
-    'idle-blink': 'ViceCity_Pointer_32_blink.png',
-    'hand-blink': 'ViceCity_Hand_blink.svg'
+    idle: 'ViceCity_VI_32.png'
   };
   const VICE_LOGO = 'libs/events/vice-city/icons/blu-vice-city.svg';
   const INTRO_AUDIO = new URL('sounds/ViceCity.ogg', document.currentScript.src).href;
@@ -53,16 +50,19 @@
   let clueProgress = 0;
   let clueResetTimer = null;
   let idleCursorTimer = null;
-  let idleCursorBlinkTimer = null;
   let idleCursorActive = false;
   let idleCursorShown = false;
-  let idleCursorClicks = 0;
-  let idleCursorClickTarget = 0;
   let cursorSize = CURSOR_MAX_SIZE;
   let cursorRevision = 0;
   let cursorImagesPromise = null;
   const cursorSizeCache = new Map();
   let cursorTipShown = false;
+
+  function setCursorReady(ready) {
+    const classList = document.body.classList;
+    if (classList.contains('vice-city-cursor-ready') === ready) return;
+    classList.toggle('vice-city-cursor-ready', ready);
+  }
 
   function showCursorTip() {
     if (cursorTipShown || TOUCH_CLUE || !eligible() || overlay || outroOverlay ||
@@ -155,15 +155,8 @@
 
   function stopIdleCursor() {
     clearTimeout(idleCursorTimer);
-    clearTimeout(idleCursorBlinkTimer);
     idleCursorTimer = null;
-    idleCursorBlinkTimer = null;
     idleCursorActive = false;
-    idleCursorClicks = 0;
-    idleCursorClickTarget = 0;
-    if (document.body.classList.contains('vice-city-idle-cursor-blink')) {
-      document.body.classList.remove('vice-city-idle-cursor-blink');
-    }
     if (document.body.classList.contains('vice-city-idle-cursor')) {
       document.body.classList.remove('vice-city-idle-cursor');
     }
@@ -172,47 +165,31 @@
   function scheduleIdleCursor() {
     clearTimeout(idleCursorTimer);
     idleCursorTimer = null;
-    if (!eligible() || document.visibilityState !== 'visible' || idleCursorActive) return;
+    if (!eligible() || !document.body.classList.contains('vice-city-cursor-ready') ||
+        document.visibilityState !== 'visible' || idleCursorActive) return;
     idleCursorTimer = setTimeout(() => {
       idleCursorTimer = null;
-      if (!eligible() || document.visibilityState !== 'visible') return;
+      if (!eligible() || !document.body.classList.contains('vice-city-cursor-ready') ||
+          document.visibilityState !== 'visible') return;
       idleCursorActive = true;
       idleCursorShown = true;
-      idleCursorClicks = 0;
-      idleCursorClickTarget = 20 + Math.floor(Math.random() * 11);
       document.body.classList.add('vice-city-idle-cursor');
     }, idleCursorShown ? IDLE_CURSOR_REPEAT_DELAY : IDLE_CURSOR_DELAY);
   }
 
   function noteIdleCursorClick() {
     if (!idleCursorActive || !eligible() || document.visibilityState !== 'visible') return;
-    idleCursorClicks++;
-    if (idleCursorClicks >= idleCursorClickTarget) {
-      stopIdleCursor();
-      scheduleIdleCursor();
-    } else if (idleCursorClicks % 10 === 0) {
-      clearTimeout(idleCursorBlinkTimer);
-      document.body.classList.add('vice-city-idle-cursor-blink');
-      idleCursorBlinkTimer = setTimeout(() => {
-        idleCursorBlinkTimer = null;
-        document.body.classList.remove('vice-city-idle-cursor-blink');
-      }, IDLE_CURSOR_BLINK_DURATION);
-    }
+    stopIdleCursor();
+    scheduleIdleCursor();
   }
 
   function syncIdleCursor() {
-    if (!eligible()) {
+    if (!eligible() || !document.body.classList.contains('vice-city-cursor-ready')) {
       stopIdleCursor();
     } else if (document.visibilityState !== 'visible') {
       clearTimeout(idleCursorTimer);
       idleCursorTimer = null;
-      clearTimeout(idleCursorBlinkTimer);
-      idleCursorBlinkTimer = null;
-      if (document.body.classList.contains('vice-city-idle-cursor-blink')) {
-        document.body.classList.remove('vice-city-idle-cursor-blink');
-      }
-    } else if (idleCursorActive && idleCursorBlinkTimer === null &&
-               !document.body.classList.contains('vice-city-idle-cursor')) {
+    } else if (idleCursorActive && !document.body.classList.contains('vice-city-idle-cursor')) {
       document.body.classList.add('vice-city-idle-cursor');
     } else if (!idleCursorActive && idleCursorTimer === null) {
       scheduleIdleCursor();
@@ -323,6 +300,7 @@
   function toggleViceCityTheme() {
     if (document.body.classList.contains(THEME)) {
       setSetting(SETTING, 'off');
+      setCursorReady(false);
       document.body.classList.remove(THEME);
       syncTheme();
       return;
@@ -353,6 +331,7 @@
     document.body.classList.toggle(THEME, enabled);
     // Restaurar a escolha após F5 não deve repetir a intro nem a música.
     if (enabled) {
+      setCursorReady(true);
       active = eligible();
       pending = false;
       syncBranding();
@@ -469,6 +448,10 @@
     document.removeEventListener('keydown', onKeyDown, true);
     overlay.remove();
     overlay = null;
+    if (eligible() || activationTimer !== null) {
+      setCursorReady(true);
+      syncIdleCursor();
+    }
     showCursorTip();
   }
 
@@ -514,6 +497,7 @@
     if (overlay || outroOverlay || (!beforeTheme && !eligible()) ||
         document.body.classList.contains('halloween-theme') ||
         document.visibilityState !== 'visible') return;
+    setCursorReady(false);
     overlay = document.createElement('div');
     overlay.className = 'vice-city-intro';
     overlay.setAttribute('role', 'img');
@@ -581,6 +565,7 @@
     syncIdleCursor();
     const enabled = eligible();
     if (!enabled) {
+      setCursorReady(false);
       resetCursorSize();
       if (activationTimer !== null && !document.body.classList.contains('halloween-theme')) return;
       const wasActive = active;

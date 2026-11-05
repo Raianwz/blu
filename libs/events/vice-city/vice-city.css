@@ -130,31 +130,23 @@ body.vice-city-theme:not(.halloween-theme) :is(.menu-btn, .menu-submenu-toggle):
 }
 
 /* Seta comum do tema; após a inatividade, o logo VI assume seu lugar. */
-body.vice-city-theme:not(.halloween-theme),
-body.vice-city-theme:not(.halloween-theme) * {
+body.vice-city-theme.vice-city-cursor-ready:not(.halloween-theme),
+body.vice-city-theme.vice-city-cursor-ready:not(.halloween-theme) * {
   cursor: var(--vice-cursor-arrow, url("cursor/ViceCity_Cursor_32.png") 0 0), auto !important;
 }
-body.vice-city-theme:not(.halloween-theme) :is(button, a, select, label, [role="button"], [role="menuitem"]),
-body.vice-city-theme:not(.halloween-theme) :is(button, a, select, label, [role="button"], [role="menuitem"]) * {
+body.vice-city-theme.vice-city-cursor-ready:not(.halloween-theme) :is(button, a, select, label, [role="button"], [role="menuitem"]),
+body.vice-city-theme.vice-city-cursor-ready:not(.halloween-theme) :is(button, a, select, label, [role="button"], [role="menuitem"]) * {
   cursor: var(--vice-cursor-hand, url("cursor/ViceCity_Hand.svg") 12 2), pointer !important;
 }
-body.vice-city-theme:not(.halloween-theme).vice-city-idle-cursor,
-body.vice-city-theme:not(.halloween-theme).vice-city-idle-cursor * {
-  cursor: var(--vice-cursor-idle, url("cursor/ViceCity_Pointer_32.png") 11 30), auto !important;
+body.vice-city-theme.vice-city-cursor-ready:not(.halloween-theme).vice-city-idle-cursor,
+body.vice-city-theme.vice-city-cursor-ready:not(.halloween-theme).vice-city-idle-cursor * {
+  cursor: var(--vice-cursor-idle, url("cursor/ViceCity_VI_32.png") 11 30), auto !important;
 }
-body.vice-city-theme:not(.halloween-theme).vice-city-idle-cursor :is(button, a, select, label, [role="button"], [role="menuitem"]),
-body.vice-city-theme:not(.halloween-theme).vice-city-idle-cursor :is(button, a, select, label, [role="button"], [role="menuitem"]) * {
+body.vice-city-theme.vice-city-cursor-ready:not(.halloween-theme).vice-city-idle-cursor :is(button, a, select, label, [role="button"], [role="menuitem"]),
+body.vice-city-theme.vice-city-cursor-ready:not(.halloween-theme).vice-city-idle-cursor :is(button, a, select, label, [role="button"], [role="menuitem"]) * {
   cursor: var(--vice-cursor-hand, url("cursor/ViceCity_Hand.svg") 12 2), pointer !important;
 }
-body.vice-city-theme:not(.halloween-theme).vice-city-idle-cursor.vice-city-idle-cursor-blink,
-body.vice-city-theme:not(.halloween-theme).vice-city-idle-cursor.vice-city-idle-cursor-blink * {
-  cursor: var(--vice-cursor-idle-blink, url("cursor/ViceCity_Pointer_32_blink.png") 11 30), auto !important;
-}
-body.vice-city-theme:not(.halloween-theme).vice-city-idle-cursor.vice-city-idle-cursor-blink :is(button, a, select, label, [role="button"], [role="menuitem"]),
-body.vice-city-theme:not(.halloween-theme).vice-city-idle-cursor.vice-city-idle-cursor-blink :is(button, a, select, label, [role="button"], [role="menuitem"]) * {
-  cursor: var(--vice-cursor-hand-blink, url("cursor/ViceCity_Hand_blink.svg") 12 2), pointer !important;
-}
-body.vice-city-theme:not(.halloween-theme) :is(input, textarea, [contenteditable="true"]) {
+body.vice-city-theme.vice-city-cursor-ready:not(.halloween-theme) :is(input, textarea, [contenteditable="true"]) {
   cursor: text !important;
 }
 

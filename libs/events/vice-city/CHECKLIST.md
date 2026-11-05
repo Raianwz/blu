@@ -15,7 +15,7 @@
 - [x] Paleta para os visuais Clássico e Novo: gradiente padrão em `vis-other` no Clássico e roxo padrão no Novo.
 - [x] Faixa em degradê e brilho suave nas seções em hover ou foco.
 - [x] Rosa de destaque mais contido no modo Escuro, inclusive nas ações e no brilho das seções.
-- [x] Cursor especial após cinco minutos na primeira vez; dura de 20 a 30 cliques, fica brevemente translúcido a cada dez e pode reaparecer após dois minutos sem interação.
+- [x] Cursor temático só aparece após a intro; o cursor VI surge após cinco minutos na primeira vez, sai no próximo clique e pode reaparecer após dois minutos sem interação.
 - [x] Cursores do Vice City em 32 × 32 px por padrão, ajustáveis até 16 × 16 px com Shift + rolagem; dica exibida após a primeira intro. Originais de 128 × 128 px preservados.
 
 ## Antes de publicar

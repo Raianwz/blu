@@ -148,8 +148,10 @@ test('a intro só abre ao ativar o tema e pode ser pulada por clique ou tecla', 
   assert.ok(state.body.children[0].innerHTML.includes('id="vice-b"'));
   assert.equal(state.body.children[0].innerHTML.includes('vice-city-intro__badge'), false);
   assert.equal([...state.timers.values()].find(timer => timer.ms === 7000).ms, 7000);
+  assert.equal(state.classes.has('vice-city-cursor-ready'), false);
   state.body.children[0].listeners.get('click')();
   assert.equal(state.body.children.length, 0);
+  assert.equal(state.classes.has('vice-city-cursor-ready'), true);
   assert.match(state.toasts[0].message, /Shift.*roda do mouse/);
   assert.equal(state.toasts[0].options.duration, 7000);
   assert.equal(state.audios[0].pauseCount, 0);
@@ -161,6 +163,7 @@ test('a intro só abre ao ativar o tema e pode ser pulada por clique ou tecla', 
   assert.equal(state.body.children.length, 0);
   state.classes.delete('vice-city-theme');
   state.changed();
+  assert.equal(state.classes.has('vice-city-cursor-ready'), false);
   assert.equal(state.body.children[0].className, 'vice-city-outro');
   [...state.timers.values()].find(timer => timer.ms === 2000).fn();
   state.classes.add('vice-city-theme');
@@ -180,6 +183,7 @@ test('fim natural da intro deixa terminar o trecho de áudio', () => {
   state.changed();
   [...state.timers.values()].find(timer => timer.ms === 7000).fn();
   assert.equal(state.body.children.length, 0);
+  assert.equal(state.classes.has('vice-city-cursor-ready'), true);
   assert.match(state.toasts[0].message, /Shift.*roda do mouse/);
   assert.equal(state.audios[0].pauseCount, 0);
   state.classes.delete('vice-city-theme');
@@ -195,6 +199,7 @@ test('dica do cursor espera a ativação se a intro for pulada antes dela', () =
   }
   state.body.children[0].listeners.get('click')();
   assert.equal(state.toasts.length, 0);
+  assert.equal(state.classes.has('vice-city-cursor-ready'), true);
   state.runTimer(500);
   assert.match(state.toasts[0].message, /Shift.*roda do mouse/);
   assert.equal(setup({ savedTheme: 'on' }).toasts.length, 0);
@@ -278,12 +283,14 @@ test('código Konami alterna o tema e ignora digitação em campos', () => {
   assert.equal([...state.timers.values()].find(timer => timer.ms === 500).ms, 500);
   [...state.timers.values()].find(timer => timer.ms === 500).fn();
   assert.equal(state.classes.has('vice-city-theme'), true);
+  assert.equal(state.classes.has('vice-city-cursor-ready'), false);
   assert.equal(state.settings.get('vice-city'), 'on');
   assert.equal(state.branding.bluFavicon.getAttribute('href'),
     'libs/events/vice-city/icons/blu-vice-city.svg');
   state.changed();
   assert.equal(state.body.children.length, 1);
   state.body.children[0].listeners.get('click')();
+  assert.equal(state.classes.has('vice-city-cursor-ready'), true);
   keys.forEach(key => send(key));
   assert.equal(state.classes.has('vice-city-theme'), false);
   state.changed();
@@ -344,21 +351,11 @@ test('cursor especial surge após o prazo inicial e não persiste após F5', () 
   assert.equal(reloaded.timers.size, 1);
 });
 
-test('cursor pisca no décimo clique, sai no vigésimo e reaparece após dois minutos', () => {
-  const state = setup({ savedTheme: 'on', randomValue: 0 });
-  state.runTimer(state.timers.values().next().value.ms);
-  for (let i = 0; i < 9; i++) state.dispatch('click', {});
+test('cursor VI sai no primeiro clique e reaparece após dois minutos', () => {
+  const state = setup({ savedTheme: 'on' });
+  state.runTimer(300000);
   assert.equal(state.classes.has('vice-city-idle-cursor'), true);
   state.dispatch('click', {});
-  assert.equal(state.classes.has('vice-city-idle-cursor'), true);
-  assert.equal(state.classes.has('vice-city-idle-cursor-blink'), true);
-  state.changed();
-  assert.equal(state.classes.has('vice-city-idle-cursor-blink'), true);
-  state.runTimer(140);
-  assert.equal(state.classes.has('vice-city-idle-cursor'), true);
-  assert.equal(state.classes.has('vice-city-idle-cursor-blink'), false);
-
-  for (let i = 0; i < 10; i++) state.dispatch('click', {});
   assert.equal(state.classes.has('vice-city-idle-cursor'), false);
   const repeatTimer = [...state.timers].find(([, timer]) => timer.ms === 120000)?.[0];
   assert.ok(repeatTimer);
@@ -368,21 +365,14 @@ test('cursor pisca no décimo clique, sai no vigésimo e reaparece após dois mi
   assert.equal(state.classes.has('vice-city-idle-cursor'), true);
 });
 
-test('cursor pode durar trinta cliques e pisca também no vigésimo', () => {
-  const state = setup({ savedTheme: 'on', randomValue: .999 });
-  state.runTimer(state.timers.values().next().value.ms);
-  for (let i = 0; i < 10; i++) state.dispatch('click', {});
-  state.runTimer(140);
-  for (let i = 0; i < 10; i++) state.dispatch('click', {});
-  assert.equal(state.classes.has('vice-city-idle-cursor'), true);
-  assert.equal(state.classes.has('vice-city-idle-cursor-blink'), true);
-  state.runTimer(140);
-  assert.equal(state.classes.has('vice-city-idle-cursor-blink'), false);
-  for (let i = 0; i < 9; i++) state.dispatch('click', {});
-  assert.equal(state.classes.has('vice-city-idle-cursor'), true);
-  state.dispatch('click', {});
-  assert.equal(state.classes.has('vice-city-idle-cursor'), false);
-  assert.ok([...state.timers.values()].some(timer => timer.ms === 120000));
+test('espera o fim da intro para iniciar o contador de inatividade', () => {
+  const state = setup();
+  state.classes.add('vice-city-theme');
+  state.changed();
+  assert.equal([...state.timers.values()].some(timer => timer.ms === 300000), false);
+  state.runTimer(7000);
+  assert.equal(state.classes.has('vice-city-cursor-ready'), true);
+  assert.equal([...state.timers.values()].some(timer => timer.ms === 300000), true);
 });
 
 test('tema inativo não altera a classe do cursor a cada observação', () => {
@@ -390,6 +380,7 @@ test('tema inativo não altera a classe do cursor a cada observação', () => {
   state.changed();
   state.changed();
   assert.equal(state.removedClasses.includes('vice-city-idle-cursor'), false);
+  assert.equal(state.removedClasses.includes('vice-city-cursor-ready'), false);
 });
 
 test('Shift + rolagem ajusta todos os cursores entre 16 e 32 px', async () => {
@@ -405,7 +396,7 @@ test('Shift + rolagem ajusta todos os cursores entre 16 e 32 px', async () => {
   for (let i = 0; i < 9; i++) wheel(100);
   await new Promise(setImmediate);
   assert.equal(prevented, 9);
-  assert.equal(state.cursorStyles.size, 5);
+  assert.equal(state.cursorStyles.size, 3);
   assert.ok(state.cursorStyles.get('--vice-cursor-hand').endsWith(' 6 1'));
   assert.ok(state.cursorStyles.get('--vice-cursor-idle').endsWith(' 6 15'));
 
@@ -413,7 +404,7 @@ test('Shift + rolagem ajusta todos os cursores entre 16 e 32 px', async () => {
   assert.equal(state.cursorStyles.size, 0);
   wheel(100);
   await new Promise(setImmediate);
-  assert.equal(state.cursorStyles.size, 5);
+  assert.equal(state.cursorStyles.size, 3);
   state.classes.delete('vice-city-theme');
   state.changed();
   assert.equal(state.cursorStyles.size, 0);
