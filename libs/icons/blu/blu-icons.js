@@ -22,7 +22,7 @@ const BLU_CUSTOM_ICONS = Object.freeze([
   { id: 'custom:claude-code', label: 'Claude Code', file: 'claude-code-icon.svg' },
   { id: 'custom:copilot', label: 'Copilot', file: 'copilot-icon.svg' },
   { id: 'custom:copilot-new', label: 'Copilot novo', file: 'copilot-new.svg' },
-  { id: 'custom:copilot-color', label: 'Copilot colorido', file: 'copilot-color-new.svg' },
+  { id: 'custom:copilot-color', label: 'Copilot 2', file: 'copilot-color-new.svg' },
   { id: 'custom:github-copilot', label: 'GitHub Copilot', file: 'github-copilot-icon.svg' },
   { id: 'custom:gemini', label: 'Google Gemini', file: 'google-gemini-icon.svg' },
   { id: 'custom:ai-studio', label: 'Google AI Studio', file: 'google-ai-studio-icon.svg' },
