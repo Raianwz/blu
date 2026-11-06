@@ -13,7 +13,7 @@
 // subir a versão abaixo (CACHE_VERSION). Isso cria um cache
 // novo e descarta o antigo na ativação.
 
-const CACHE_VERSION = 'v47';
+const CACHE_VERSION = 'v48';
 const CACHE_NAME = `blu-cache-${CACHE_VERSION}`;
 
 const APP_SHELL = [
@@ -34,6 +34,19 @@ const APP_SHELL = [
   '/libs/icons/blu/blu-icons.js',
   '/libs/icons/blu/b_blu_fill.svg',
   '/libs/icons/blu/b_blu_legacy.svg',
+  '/libs/icons/custom/chatgpt-icon.svg',
+  '/libs/icons/custom/claude-ai-icon.svg',
+  '/libs/icons/custom/claude-code-icon.svg',
+  '/libs/icons/custom/codex-icon.svg',
+  '/libs/icons/custom/codex-white-icon.svg',
+  '/libs/icons/custom/copilot-color-new.svg',
+  '/libs/icons/custom/copilot-icon.svg',
+  '/libs/icons/custom/copilot-new.svg',
+  '/libs/icons/custom/github-copilot-icon.svg',
+  '/libs/icons/custom/google-ai-studio-icon.svg',
+  '/libs/icons/custom/google-gemini-icon.svg',
+  '/libs/icons/custom/grok-ai-icon.svg',
+  '/libs/icons/custom/openai-icon.svg',
   '/js/ui/button-icon-picker.js',
   '/js/ui/section-icon-picker.js',
   '/js/ui/dialogs.js',

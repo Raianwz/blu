@@ -12,6 +12,27 @@ const BLU_BRAND_ICONS = Object.freeze([
   }
 ]);
 
+// Additional local icons share the Blû catalog script so the loader order stays unchanged.
+const BLU_CUSTOM_ICONS = Object.freeze([
+  { id: 'custom:chatgpt', label: 'ChatGPT', file: 'chatgpt-icon.svg' },
+  { id: 'custom:openai', label: 'OpenAI', file: 'openai-icon.svg' },
+  { id: 'custom:codex', label: 'Codex', file: 'codex-icon.svg' },
+  { id: 'custom:codex-white', label: 'Codex branco', file: 'codex-white-icon.svg' },
+  { id: 'custom:claude-ai', label: 'Claude AI', file: 'claude-ai-icon.svg' },
+  { id: 'custom:claude-code', label: 'Claude Code', file: 'claude-code-icon.svg' },
+  { id: 'custom:copilot', label: 'Copilot', file: 'copilot-icon.svg' },
+  { id: 'custom:copilot-new', label: 'Copilot novo', file: 'copilot-new.svg' },
+  { id: 'custom:copilot-color', label: 'Copilot colorido', file: 'copilot-color-new.svg' },
+  { id: 'custom:github-copilot', label: 'GitHub Copilot', file: 'github-copilot-icon.svg' },
+  { id: 'custom:gemini', label: 'Google Gemini', file: 'google-gemini-icon.svg' },
+  { id: 'custom:ai-studio', label: 'Google AI Studio', file: 'google-ai-studio-icon.svg' },
+  { id: 'custom:grok', label: 'Grok', file: 'grok-ai-icon.svg' }
+].map(({ file, ...entry }) => ({
+  ...entry,
+  group: 'IA e assistentes',
+  src: new URL(`../custom/${file}`, document.currentScript.src).href
+})));
+
 // Built-in demo fallback icons. They are intentionally absent from the picker.
 const BLU_DEMO_SECTION_ICONS = Object.freeze([
   {
