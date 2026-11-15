@@ -129,6 +129,124 @@ body.vice-city-theme:not(.halloween-theme) :is(.menu-btn, .menu-submenu-toggle):
   outline-offset: 2px;
 }
 
+/* The radio is mounted only while its remote audio is available. */
+.vice-radio__button {
+  width: 36px;
+  height: 36px;
+  flex: none;
+  margin-left: auto;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--surface2);
+  color: var(--text2);
+  cursor: pointer;
+}
+.vice-radio__button svg { width: 21px; height: 21px; }
+.vice-radio__button:hover,
+.vice-radio__button.is-playing {
+  color: var(--vice-pink);
+  border-color: var(--vice-pink);
+  box-shadow: 0 0 13px color-mix(in srgb, var(--vice-pink) 28%, transparent);
+}
+.vice-radio__button:focus-visible,
+.vice-radio__panel button:focus-visible,
+.vice-radio__volume:focus-visible {
+  outline: 2px solid var(--vice-cyan);
+  outline-offset: 2px;
+}
+.vice-radio__panel {
+  position: fixed;
+  z-index: 650;
+  top: 56px;
+  right: 16px;
+  width: min(330px, calc(100vw - 32px));
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 12px 36px var(--shadow), 0 0 15px color-mix(in srgb, var(--vice-pink) 15%, transparent);
+}
+.vice-radio__panel[hidden] { display: none; }
+.vice-radio__heading,
+.vice-radio__song,
+.vice-radio__controls { display: flex; align-items: center; gap: 8px; }
+.vice-radio__heading { justify-content: space-between; }
+.vice-radio__heading strong { font-size: 13px; }
+.vice-radio__close { margin-left: auto; }
+.vice-radio__song { margin: 12px 0; font-size: 12px; color: var(--text2); }
+.vice-radio__song-info { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: 2px; }
+.vice-radio__track, .vice-radio__artist { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vice-radio__track { display: block; min-width: 0; color: var(--text); font-weight: 600; }
+.vice-radio__track-text { display: block; width: max-content; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.vice-radio__track-text.is-scrolling {
+  max-width: none;
+  overflow: visible;
+  animation: vice-radio-title-pan var(--scroll-duration, 16s) ease-in-out infinite;
+}
+@keyframes vice-radio-title-pan {
+  0%, 8%, 92%, 100% { transform: translateX(0); }
+  45%, 55% { transform: translateX(calc(-1 * var(--scroll-distance, 0px))); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vice-radio__track-text.is-scrolling {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    animation: none;
+  }
+}
+.vice-radio__artist { font-size: 11px; }
+.vice-radio__count { flex: none; }
+.vice-radio__controls { justify-content: center; }
+.vice-radio__panel button {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface2);
+  color: var(--text);
+  cursor: pointer;
+}
+.vice-radio__panel button:hover { border-color: var(--vice-pink); }
+.vice-radio__panel .vice-radio__play { width: 38px; height: 38px; background: var(--vice-pink); color: #fff; }
+.vice-radio__volume-wrap { display: flex; align-items: center; gap: 6px; flex: 1; max-width: 130px; margin-left: 5px; font-size: 15px; }
+.vice-radio__volume-control { position: relative; display: flex; flex: 1; min-width: 55px; --volume-position: 15%; }
+.vice-radio__volume { width: 100%; margin: 0; accent-color: var(--vice-pink); cursor: pointer; }
+.vice-radio__volume-value {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: clamp(13px, var(--volume-position), calc(100% - 13px));
+  transform: translateX(-50%);
+  padding: 3px 6px;
+  border: 1px solid var(--vice-pink);
+  border-radius: 5px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 4px 12px var(--shadow);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 120ms ease, visibility 120ms ease;
+}
+.vice-radio__volume-control:hover .vice-radio__volume-value,
+.vice-radio__volume-control:focus-within .vice-radio__volume-value {
+  opacity: 1;
+  visibility: visible;
+}
+@media (max-width: 550px) {
+  .vice-radio__button { margin-left: 0; }
+}
+
 /* Seta comum do tema; após a inatividade, o logo VI assume seu lugar. */
 body.vice-city-theme.vice-city-cursor-ready:not(.halloween-theme),
 body.vice-city-theme.vice-city-cursor-ready:not(.halloween-theme) * {
@@ -148,6 +266,9 @@ body.vice-city-theme.vice-city-cursor-ready:not(.halloween-theme).vice-city-idle
 }
 body.vice-city-theme.vice-city-cursor-ready:not(.halloween-theme) :is(input, textarea, [contenteditable="true"]) {
   cursor: text !important;
+}
+body.vice-city-theme.vice-city-cursor-ready:not(.halloween-theme) .vice-radio__volume {
+  cursor: var(--vice-cursor-hand, url("cursor/ViceCity_Hand.svg") 12 2), pointer !important;
 }
 
 @media (forced-colors: active) {

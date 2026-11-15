@@ -2,8 +2,15 @@
 // Novidades da versão — conteúdo dinâmico e controle de leitura
 // ==========================================================
 
-const WHATS_NEW_VERSION = '1.10.0';
+const WHATS_NEW_VERSION = '1.10.1';
 const WHATS_NEW_ITEMS = [
+  {
+    icon: '📻',
+    type: 'Novo',
+    status: 'new',
+    title: 'Rádio Vice City',
+    description: 'Durante o evento, o tema Vice City oferece uma rádio opcional com reprodução, troca de faixas e volume ajustável.'
+  },
   {
     icon: '🎨',
     type: 'Novo',

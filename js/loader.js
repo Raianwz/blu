@@ -35,6 +35,8 @@
       init: () => window.initQuickActions() },
     { id: 'vice-city', path: 'libs/events/vice-city/vice-city.js', ready: 'initViceCityIntro',
       init: () => window.initViceCityIntro() },
+    { id: 'vice-city-radio', path: 'libs/events/vice-city/radio.js', ready: 'initViceCityRadio',
+      init: () => window.initViceCityRadio() },
     { id: 'whats-new', path: 'js/features/whats-new.js', ready: 'initWhatsNew',
       init: () => window.initWhatsNew() }
   ];
