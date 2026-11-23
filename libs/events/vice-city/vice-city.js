@@ -209,7 +209,8 @@
 
   function isClueSearch() {
     const input = document.getElementById('searchInput');
-    return !hasEnded() && input && normalizeSearchText(input.value) === CLUE_QUERY;
+    return !hasEnded() && END_MODE !== 'true' && END_MODE !== 'demo' &&
+      input && normalizeSearchText(input.value) === CLUE_QUERY;
   }
 
   function clueSymbol(key) {

@@ -3,12 +3,14 @@
 // ==========================================================
 
 const WHATS_NEW_VERSION = '1.10.1';
+const WHATS_NEW_VICE_CITY_END = Date.parse('2026-11-28T17:00:00-03:00');
 const WHATS_NEW_ITEMS = [
   {
     icon: '📻',
     type: 'Novo',
     status: 'new',
     title: 'Rádio Vice City',
+    seasonalUntil: WHATS_NEW_VICE_CITY_END,
     description: 'Durante o evento, o tema Vice City oferece uma rádio opcional com reprodução, troca de faixas e volume ajustável.'
   },
   {
@@ -44,6 +46,7 @@ const WHATS_NEW_ITEMS = [
     type: 'Desconhecido',
     status: 'mystery',
     title: 'Quando o sol vai embora e o néon começa a brilhar?',
+    seasonalUntil: WHATS_NEW_VICE_CITY_END,
     description: 'Uma pequena surpresa espera por quem gosta de explorar em novembro. <button class="whats-new-search-hint" type="button" onclick="searchViceCityClue()" aria-label="Pesquisar por #BlûViceCity19">#BlûViceCity19 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg></button>'
   }
 ];
@@ -82,9 +85,12 @@ function searchViceCityClue() {
 
 function ensureWhatsNewModal() {
   const existing = document.getElementById('whatsNewModal');
-  if (existing) return existing;
+  const now = Date.now();
+  const viceCityEnded = now >= WHATS_NEW_VICE_CITY_END;
+  if (existing?.dataset.viceCityEnded === String(viceCityEnded)) return existing;
+  existing?.remove();
 
-  const items = WHATS_NEW_ITEMS.map(item => `
+  const items = WHATS_NEW_ITEMS.filter(item => !item.seasonalUntil || now < item.seasonalUntil).map(item => `
     <article class="whats-new-item">
       <span class="whats-new-icon" aria-hidden="true">${item.icon}</span>
       <div><span class="custom-import-status ${item.status}">${item.type}</span><h3>${item.title}</h3><p>${item.description}</p></div>
@@ -106,6 +112,7 @@ function ensureWhatsNewModal() {
   `);
 
   const modal = document.getElementById('whatsNewModal');
+  modal.dataset.viceCityEnded = String(viceCityEnded);
   modal.addEventListener('click', event => {
     if (event.target === modal) closeModal('whatsNewModal');
   });

@@ -582,6 +582,15 @@ test('busca secreta alterna os dois padrões e só surge na consulta exata', () 
   }
 });
 
+test('prévias de encerramento não exibem o teclado da pista', () => {
+  for (const mode of ['demo', 'true']) {
+    const state = setup({ search: `?vice-end=${mode}` });
+    state.searchInput.value = '#BlûViceCity19';
+    state.dispatch('blu:search-updated');
+    assert.equal(state.body.children.length, 0);
+  }
+});
+
 test('em telas de toque a pista vem completa e exige tocar os dez passos na ordem', () => {
   const state = setup({ touch: true });
   state.searchInput.value = '#BlûViceCity19';

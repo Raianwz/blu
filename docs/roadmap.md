@@ -4,6 +4,11 @@ Este documento reúne recursos planejados, polimentos e decisões de produto ain
 
 ## Em desenvolvimento
 
+### Encerramento do Vice City (novembro de 2026)
+
+- [ ] Em 01/12/2026, conferir que a busca `#BlûViceCity19` voltou ao resultado comum. A mensagem “procure em Leonida” deve aparecer somente de 28/11 às 17h até 30/11 às 23h59, horário de Brasília. Os parâmetros internos `?vice-end=demo` e `?vice-end=true` também deixam de mostrar essa mensagem em dezembro.
+- [ ] Em uma manutenção posterior, remover o código da mensagem sazonal após confirmar o encerramento e preservar apenas os arquivos históricos do evento.
+
 ### Dia das Bruxas / Halloween (Temporário - Sazonal)
 
 Preparar a atualização sazonal junto das novas cores e dos ícones de seção. O tema é temporário; as cores personalizadas e os ícones de seção são recursos permanentes.

@@ -20,6 +20,12 @@ const desktopSearchGuidanceMedia = window.matchMedia('(hover: hover) and (pointe
 const reducedMotionMedia = window.matchMedia('(prefers-reduced-motion: reduce)');
 const SEARCH_HISTORY_STORAGE_KEY = 'blu:searchHistory';
 const SEARCH_HISTORY_LIMIT = 6;
+const SEARCH_VICE_CITY_END = Date.parse('2026-11-28T17:00:00-03:00');
+const SEARCH_VICE_CITY_FAREWELL_END = Date.parse('2026-12-01T00:00:00-03:00');
+const SEARCH_VICE_CITY_QUERY = '#bluvicecity19';
+const SEARCH_VICE_CITY_END_PREVIEW = ['true', 'demo'].includes(
+  new URLSearchParams(window.location.search).get('vice-end')
+);
 const SEARCH_TYPE_LABELS = {
   all: 'Tudo',
   name: 'Nome',
@@ -353,6 +359,13 @@ function setSearchFallbackNotice(show) {
   if (notice) notice.hidden = !show;
 }
 
+function isViceCityFarewellSearch(query) {
+  const now = Date.now();
+  return now < SEARCH_VICE_CITY_FAREWELL_END &&
+    (now >= SEARCH_VICE_CITY_END || SEARCH_VICE_CITY_END_PREVIEW) &&
+    normalizeSearchText(query) === SEARCH_VICE_CITY_QUERY;
+}
+
 function setNoResultsMessage(query) {
   const msg = document.getElementById('noResultsMsg');
   const addSectionButton = document.getElementById('addSectionBtn');
@@ -379,7 +392,7 @@ function setNoResultsMessage(query) {
     return;
   }
 
-  msg.innerHTML = `🔍 Nenhum resultado para <strong>"${escapeHtml(query)}"</strong>`;
+  msg.innerHTML = `🔍 Nenhum resultado para <strong>"${escapeHtml(query)}"</strong>${isViceCityFarewellSearch(query) ? ' procure em Leonida.' : ''}`;
   msg.classList.add('show');
   if (addSectionButton) addSectionButton.hidden = true;
   updated();
@@ -424,6 +437,14 @@ function doSearch(options = {}) {
   }
 
   scheduleCurrentSearch();
+
+  if (isViceCityFarewellSearch(raw)) {
+    document.querySelectorAll('.btn-wrap').forEach(button => button.classList.add('search-hidden'));
+    document.querySelectorAll('.section-wrap').forEach(section => section.classList.add('search-hidden'));
+    updateToggleSectionsBtnLabel();
+    setNoResultsMessage(raw);
+    return;
+  }
 
   // Aspas ativam uma busca direta no conteúdo, sem alterar ou depender
   // da opção selecionada no dropdown.

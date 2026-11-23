@@ -53,6 +53,11 @@ mesmo com o tema desligado e, se ele
 estiver ativo, também desliga sua preferência salva.
 Para testar o mesmo gatilho do encerramento real sem o botão de prévia, use
 `/?vice-end=demo`: a primeira interação com a interface inicia a saída e o som.
+Após o encerramento, a rádio e a pista deixam o What's New; buscar
+`#BlûViceCity19` mostra apenas “Nenhum resultado… procure em Leonida.” até
+30/11/2026 às 23h59, horário de Brasília. A partir de 01/12, a busca volta à
+resposta comum. Os dois parâmetros de prévia seguem o mesmo limite para essa
+mensagem.
 O cursor temático aparece ao fim da intro ou quando ela é pulada. Após cinco
 minutos sem interação com o Blû, o logo VI substitui a seta até o próximo clique.
 Ele pode reaparecer após dois minutos de inatividade. Sair do tema remove o
