@@ -12,6 +12,7 @@ function setup({ now = Date.parse('2026-11-16T12:00:00-03:00'), theme = true,
   const timers = new Map();
   const audios = [];
   const requests = [];
+  const listeners = new Map();
   let mutation;
   let nextTimer = 0;
 
@@ -69,9 +70,13 @@ function setup({ now = Date.parse('2026-11-16T12:00:00-03:00'), theme = true,
   const document = {
     body,
     getElementById(id) { return id === 'topbar' ? topbar : null; },
-    createElement() { return element(); }
+    createElement() { return element(); },
+    addEventListener(name, callback) { listeners.set(name, callback); }
   };
-  const window = { location: { hostname, search } };
+  const window = {
+    location: { hostname, search },
+    addEventListener(name, callback) { listeners.set(`window:${name}`, callback); }
+  };
   class MutationObserver {
     constructor(callback) { mutation = callback; }
     observe() {}
@@ -96,6 +101,7 @@ function setup({ now = Date.parse('2026-11-16T12:00:00-03:00'), theme = true,
   return {
     audios, body, topbar, timers, classes, requests, readId3: window.testReadId3,
     setTime(value) { now = value; },
+    dispatch(name) { listeners.get(name)?.(); },
     sync() { mutation(); },
     timer(delay) {
       const entry = [...timers].find(([, timer]) => timer.delay === delay);
@@ -194,8 +200,31 @@ test('hides the radio when audio fails or the calendar window is closed', () => 
   assert.equal(unavailable.topbar.child, undefined);
   const early = setup({ now: Date.parse('2026-11-15T12:00:00-03:00') });
   assert.equal(early.audios.length, 0);
-  const late = setup({ now: Date.parse('2026-11-28T00:00:00-03:00') });
+  const late = setup({ now: Date.parse('2026-11-24T17:00:00-03:00') });
   assert.equal(late.audios.length, 0);
+});
+
+test('the radio stops at 17h Brasília on November 24', () => {
+  const end = Date.parse('2026-11-24T17:00:00-03:00');
+  const state = setup({ now: end - 1000 });
+  state.audios[0].emit('loadedmetadata');
+  state.topbar.child.click();
+  assert.equal(state.audios[1].paused, false);
+  state.setTime(end);
+  state.timer(1000);
+  assert.equal(state.audios[1].paused, true);
+  assert.equal(state.topbar.child, null);
+});
+
+test('the radio closes on return from a suspended tab after the deadline', () => {
+  const end = Date.parse('2026-11-24T17:00:00-03:00');
+  const state = setup({ now: end - 1000 });
+  state.audios[0].emit('loadedmetadata');
+  state.topbar.child.click();
+  state.setTime(end);
+  state.dispatch('visibilitychange');
+  assert.equal(state.audios[1].paused, true);
+  assert.equal(state.topbar.child, null);
 });
 
 test('local preview bypasses only the calendar', () => {

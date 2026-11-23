@@ -2,9 +2,12 @@
 (() => {
   const THEME = 'vice-city-theme';
   const SETTING = 'vice-city';
+  const THEME_END = Date.parse('2026-11-28T17:00:00-03:00');
   const DURATION = 7000;
   const AUDIO_FADE_DURATION = 250;
   const OUTRO_DURATION = 2000;
+  const SHUTDOWN_ANIMATION_DURATION = 6000;
+  const END_MODE = new URLSearchParams(window.location.search).get('vice-end');
   const ACTIVATION_DELAY = 500;
   const IDLE_CURSOR_DELAY = 5 * 60 * 1000;
   const IDLE_CURSOR_REPEAT_DELAY = 2 * 60 * 1000;
@@ -19,6 +22,7 @@
   };
   const VICE_LOGO = 'libs/events/vice-city/icons/blu-vice-city.svg';
   const INTRO_AUDIO = new URL('sounds/ViceCity.ogg', document.currentScript.src).href;
+  const RETURN_AUDIO = new URL('sounds/ocarina.ogg', document.currentScript.src).href;
   const KONAMI = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown',
     'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
   const CLUE_QUERY = '#bluvicecity19';
@@ -36,12 +40,19 @@
   let pending = false;
   let overlay = null;
   let outroOverlay = null;
+  let shutdownOverlay = null;
+  let shutdownAnimationTimer = null;
+  let shutdownWaitingForGesture = false;
+  let shutdownGestureAction = null;
+  let previewPrompt = null;
   let finishTimer = null;
   let introRemaining = DURATION;
   let introStartedAt = null;
   let introPaused = false;
   let activationTimer = null;
+  let shutdownTimer = null;
   let introAudio = null;
+  let returnAudio = null;
   let audioFadeTimers = [];
   let konamiIndex = 0;
   let clueRoot = null;
@@ -198,7 +209,7 @@
 
   function isClueSearch() {
     const input = document.getElementById('searchInput');
-    return input && normalizeSearchText(input.value) === CLUE_QUERY;
+    return !hasEnded() && input && normalizeSearchText(input.value) === CLUE_QUERY;
   }
 
   function clueSymbol(key) {
@@ -297,7 +308,42 @@
     renderClue();
   }
 
+  function hasEnded() {
+    return Date.now() >= THEME_END;
+  }
+
+  function scheduleShutdown() {
+    clearTimeout(shutdownTimer);
+    shutdownTimer = null;
+    if (!active && !pending && !document.body.classList.contains(THEME)) return;
+    const remaining = THEME_END - Date.now();
+    if (remaining > 0) shutdownTimer = setTimeout(shutdownViceCity, remaining);
+  }
+
+  function shutdownViceCity({ preview = false } = {}) {
+    const animate = document.body.classList.contains(THEME) || preview;
+    previewPrompt?.remove();
+    previewPrompt = null;
+    clearTimeout(shutdownTimer);
+    shutdownTimer = null;
+    clearTimeout(activationTimer);
+    activationTimer = null;
+    if (getSetting(SETTING, 'off') === 'on') setSetting(SETTING, 'off');
+    active = false;
+    document.body.classList.remove(THEME);
+    pending = false;
+    syncTheme();
+    updateClueSearch();
+    if (preview) startShutdownAnimation();
+    else if (animate) armShutdownAnimation();
+  }
+
   function toggleViceCityTheme() {
+    if (shutdownOverlay) return;
+    if (hasEnded()) {
+      shutdownViceCity();
+      return;
+    }
     if (document.body.classList.contains(THEME)) {
       setSetting(SETTING, 'off');
       setCursorReady(false);
@@ -311,8 +357,13 @@
       pending = true;
       startIntro(true);
     }
+    scheduleShutdown();
     activationTimer = setTimeout(() => {
       activationTimer = null;
+      if (hasEnded()) {
+        shutdownViceCity();
+        return;
+      }
       setSetting(SETTING, 'on');
       document.body.classList.add(THEME);
       syncTheme();
@@ -321,11 +372,16 @@
   }
 
   function applyViceCityPreference() {
+    if (hasEnded()) {
+      shutdownViceCity();
+      return;
+    }
     const enabled = getSetting(SETTING, 'off') === 'on';
     const currentlyEnabled = document.body.classList.contains(THEME);
     if (enabled === currentlyEnabled) {
       syncBranding();
       syncIdleCursor();
+      scheduleShutdown();
       return;
     }
     document.body.classList.toggle(THEME, enabled);
@@ -336,12 +392,19 @@
       pending = false;
       syncBranding();
       syncIdleCursor();
+      scheduleShutdown();
     } else {
       syncTheme();
     }
   }
 
   function onKonamiKeyDown(event) {
+    if (shutdownOverlay) return;
+    if (hasEnded()) {
+      konamiIndex = 0;
+      if (document.body.classList.contains(THEME)) shutdownViceCity();
+      return;
+    }
     if (overlay || outroOverlay || activationTimer !== null) {
       konamiIndex = 0;
       return;
@@ -376,7 +439,7 @@
   }
 
   function eligible() {
-    return document.body.classList.contains(THEME) &&
+    return !hasEnded() && document.body.classList.contains(THEME) &&
       !document.body.classList.contains('halloween-theme');
   }
 
@@ -415,7 +478,7 @@
     }
   }
 
-  function playAudio() {
+  function playAudio(onBlocked) {
     stopAudio();
     try {
       const audio = new Audio(INTRO_AUDIO);
@@ -429,11 +492,38 @@
       }, { once: true });
       introAudio = audio;
       audio.play().catch(() => {
-        if (introAudio === audio) introAudio = null;
+        if (introAudio === audio) {
+          introAudio = null;
+          onBlocked?.();
+        }
       });
     } catch (_) {
       // The optional intro remains usable if audio is unavailable.
       introAudio = null;
+    }
+  }
+
+  function stopReturnAudio() {
+    if (!returnAudio) return;
+    returnAudio.pause();
+    returnAudio.currentTime = 0;
+    returnAudio = null;
+  }
+
+  function playReturnAudio() {
+    stopReturnAudio();
+    try {
+      const audio = new Audio(RETURN_AUDIO);
+      audio.volume = 0.12;
+      audio.addEventListener('ended', () => {
+        if (returnAudio === audio) returnAudio = null;
+      }, { once: true });
+      returnAudio = audio;
+      audio.play().catch(() => {
+        if (returnAudio === audio) returnAudio = null;
+      });
+    } catch (_) {
+      returnAudio = null;
     }
   }
 
@@ -493,16 +583,11 @@
     fadeOutAudio();
   }
 
-  function startIntro(beforeTheme = false) {
-    if (overlay || outroOverlay || (!beforeTheme && !eligible()) ||
-        document.body.classList.contains('halloween-theme') ||
-        document.visibilityState !== 'visible') return;
-    setCursorReady(false);
-    overlay = document.createElement('div');
-    overlay.className = 'vice-city-intro';
-    overlay.setAttribute('role', 'img');
-    overlay.setAttribute('aria-label', 'Logo do Blû surgindo em luzes de néon. Clique ou pressione uma tecla para pular a abertura.');
-    overlay.innerHTML = `
+  function createNeonOverlay() {
+    const neon = document.createElement('div');
+    neon.className = 'vice-city-intro';
+    neon.setAttribute('role', 'img');
+    neon.innerHTML = `
       <div class="vice-city-intro__horizon" aria-hidden="true"></div>
       <div class="vice-city-intro__frame" aria-hidden="true">
         <!-- Geometria do logo em assets/icons/blu.svg, mantida inline para animar os traços. -->
@@ -535,6 +620,17 @@
         </svg>
       </div>
       <span class="vice-city-intro__skip">Clique ou pressione uma tecla para pular</span>`;
+    return neon;
+  }
+
+  function startIntro(beforeTheme = false) {
+    if (hasEnded() || overlay || outroOverlay || shutdownOverlay || (!beforeTheme && !eligible()) ||
+        document.body.classList.contains('halloween-theme') ||
+        document.visibilityState !== 'visible') return;
+    stopReturnAudio();
+    setCursorReady(false);
+    overlay = createNeonOverlay();
+    overlay.setAttribute('aria-label', 'Logo do Blû surgindo em luzes de néon. Clique ou pressione uma tecla para pular a abertura.');
     overlay.addEventListener('click', skipIntro);
     document.body.appendChild(overlay);
     pending = false;
@@ -545,10 +641,78 @@
     scheduleIntroFinish();
   }
 
-  function startOutro() {
+  function finishShutdownAnimation() {
+    clearTimeout(shutdownAnimationTimer);
+    shutdownAnimationTimer = null;
+    if (!shutdownOverlay) return;
+    fadeOutAudio();
+    startOutro(true);
+    shutdownOverlay.remove();
+    shutdownOverlay = null;
+  }
+
+  function startShutdownAnimation() {
+    if (shutdownOverlay || outroOverlay) return;
+    stopReturnAudio();
+    shutdownOverlay = createNeonOverlay();
+    shutdownOverlay.classList.add('vice-city-intro--reverse');
+    shutdownOverlay.setAttribute('aria-label', 'As luzes do logo Vice City se apagam antes do retorno ao Blû.');
+    shutdownOverlay.innerHTML += '<img class="vice-city-intro__blue-logo" src="assets/icons/blu.svg" alt="" aria-hidden="true"><span class="vice-city-intro__sound-hint">Clique para ativar o som</span>';
+    const retryAudio = () => {
+      if (!shutdownOverlay?.classList.contains('vice-city-intro--needs-audio')) return;
+      shutdownOverlay.classList.remove('vice-city-intro--needs-audio');
+      playAudio(() => shutdownOverlay?.classList.add('vice-city-intro--needs-audio'));
+    };
+    shutdownOverlay.addEventListener('click', retryAudio);
+    document.body.appendChild(shutdownOverlay);
+    playAudio(() => shutdownOverlay?.classList.add('vice-city-intro--needs-audio'));
+    shutdownAnimationTimer = setTimeout(finishShutdownAnimation, SHUTDOWN_ANIMATION_DURATION);
+  }
+
+  function onShutdownGesture(event) {
+    if (!shutdownWaitingForGesture || event.isTrusted === false) return;
+    if (event.key && (['Tab', 'Shift', 'Control', 'Alt', 'Meta'].includes(event.key) ||
+        event.altKey || event.ctrlKey || event.metaKey || event.isComposing)) return;
+    shutdownWaitingForGesture = false;
+    const action = shutdownGestureAction;
+    shutdownGestureAction = null;
+    document.removeEventListener('click', onShutdownGesture, true);
+    document.removeEventListener('keydown', onShutdownGesture, true);
+    document.removeEventListener('input', onShutdownGesture, true);
+    event.preventDefault?.();
+    event.stopImmediatePropagation?.();
+    action?.();
+  }
+
+  function armShutdownAnimation(action = startShutdownAnimation) {
+    if (shutdownWaitingForGesture || shutdownOverlay) return;
+    shutdownWaitingForGesture = true;
+    shutdownGestureAction = action;
+    document.addEventListener('click', onShutdownGesture, true);
+    document.addEventListener('keydown', onShutdownGesture, true);
+    document.addEventListener('input', onShutdownGesture, true);
+  }
+
+  function showShutdownPreview() {
+    if (previewPrompt || shutdownOverlay) return;
+    previewPrompt = document.createElement('div');
+    previewPrompt.className = 'vice-city-end-preview';
+    previewPrompt.setAttribute('role', 'dialog');
+    previewPrompt.setAttribute('aria-modal', 'true');
+    previewPrompt.setAttribute('aria-label', 'Prévia do encerramento Vice City');
+    const start = document.createElement('button');
+    start.type = 'button';
+    start.textContent = 'Iniciar saída com som';
+    start.addEventListener('click', () => shutdownViceCity({ preview: true }));
+    previewPrompt.appendChild(start);
+    document.body.appendChild(previewPrompt);
+    start.focus?.();
+  }
+
+  function startOutro(afterShutdown = false) {
     if (outroOverlay || document.visibilityState !== 'visible') return;
     outroOverlay = document.createElement('div');
-    outroOverlay.className = 'vice-city-outro';
+    outroOverlay.className = afterShutdown ? 'vice-city-outro vice-city-outro--after-shutdown' : 'vice-city-outro';
     outroOverlay.setAttribute('role', 'img');
     outroOverlay.setAttribute('aria-label', 'Logo original do Blû retornando ao centro da tela.');
     outroOverlay.innerHTML = '<img src="assets/icons/blu.svg" alt="" aria-hidden="true">';
@@ -556,11 +720,17 @@
     setTimeout(() => {
       outroOverlay?.remove();
       outroOverlay = null;
+      if (afterShutdown) playReturnAudio();
       if (pending) startIntro();
     }, OUTRO_DURATION);
   }
 
   function syncTheme() {
+    if (hasEnded() && (document.body.classList.contains(THEME) || pending ||
+        activationTimer !== null || getSetting(SETTING, 'off') === 'on')) {
+      shutdownViceCity();
+      return;
+    }
     syncBranding();
     syncIdleCursor();
     const enabled = eligible();
@@ -571,11 +741,13 @@
       const wasActive = active;
       active = false;
       pending = false;
-      finishIntro();
+      scheduleShutdown();
+      finishIntro(!shutdownOverlay);
       if (wasActive && !document.body.classList.contains(THEME) &&
           !document.body.classList.contains('halloween-theme')) startOutro();
       return;
     }
+    scheduleShutdown();
     if (active) return;
     active = true;
     pending = true;
@@ -600,6 +772,7 @@
       attributeFilter: ['class']
     });
     document.addEventListener('visibilitychange', () => {
+      syncTheme();
       syncIdleCursor();
       if (document.visibilityState !== 'visible') pauseIntro();
       else if (overlay) resumeIntro();
@@ -608,8 +781,11 @@
     window.addEventListener('storage', event => {
       if (event.key === 'blu:settings' || event.key === null) applyViceCityPreference();
     });
+    window.addEventListener('pageshow', applyViceCityPreference);
     syncTheme();
     updateClueSearch();
+    if (END_MODE === 'true') setTimeout(showShutdownPreview, 700);
+    else if (END_MODE === 'demo') armShutdownAnimation(() => shutdownViceCity({ preview: true }));
   }
 
   window.initViceCityIntro = initViceCityIntro;

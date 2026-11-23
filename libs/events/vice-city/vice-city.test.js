@@ -5,13 +5,16 @@ const vm = require('node:vm');
 
 const source = fs.readFileSync(require('node:path').join(__dirname, 'vice-city.js'), 'utf8');
 
-function setup({ pattern = 0, savedTheme = 'off', touch = false, randomValue = null } = {}) {
+function setup({ pattern = 0, savedTheme = 'off', touch = false, randomValue = null, search = '',
+  blockAudio = false,
+  initialTime = Date.parse('2026-11-22T12:00:00-03:00') } = {}) {
   const classes = new Set();
   const removedClasses = [];
   const listeners = new Map();
   const settings = new Map(savedTheme === 'on' ? [['vice-city', 'on']] : []);
   const timers = new Map();
   const audios = [];
+  let blockNextAudio = blockAudio;
   const toasts = [];
   const cursorStyles = new Map();
   const searchInput = { value: '', closest() { return this; } };
@@ -42,7 +45,7 @@ function setup({ pattern = 0, savedTheme = 'off', touch = false, randomValue = n
   };
   let changed;
   let nextTimer = 0;
-  let now = 0;
+  let now = initialTime;
   const document = {
     body,
     currentScript: { src: 'https://blu.example/libs/events/vice-city/vice-city.js' },
@@ -84,13 +87,21 @@ function setup({ pattern = 0, savedTheme = 'off', touch = false, randomValue = n
   class Audio {
     constructor(src) { this.src = src; this.pauseCount = 0; this.playCount = 0; audios.push(this); }
     addEventListener() {}
-    play() { this.playCount++; return Promise.resolve(); }
+    play() {
+      this.playCount++;
+      if (blockNextAudio) {
+        blockNextAudio = false;
+        return Promise.reject(new Error('autoplay blocked'));
+      }
+      return Promise.resolve();
+    }
     pause() { this.pauseCount++; }
   }
   class Image {
     set src(value) { this.url = value; this.onload(); }
   }
   const window = {
+    location: { search },
     matchMedia() { return { matches: touch }; },
     addEventListener(name, fn) {
       if (!listeners.has(`window:${name}`)) listeners.set(`window:${name}`, new Set());
@@ -100,7 +111,8 @@ function setup({ pattern = 0, savedTheme = 'off', touch = false, randomValue = n
   const random = Object.create(Math);
   random.random = () => randomValue ?? (pattern ? .9 : .1);
   vm.runInNewContext(source, {
-    document, window, MutationObserver, Audio, Image, URL, Math: random, Date: { now: () => now },
+    document, window, MutationObserver, Audio, Image, URL, URLSearchParams, Math: random,
+    Date: { now: () => now, parse: Date.parse },
     getSetting(name, fallback = null) { return settings.has(name) ? settings.get(name) : fallback; },
     setSetting(name, value) { settings.set(name, value); },
     normalizeSearchText(value) {
@@ -325,6 +337,147 @@ test('salva a escolha e restaura o tema sem repetir intro ou áudio', () => {
   assert.equal(state.audios.length, 0);
 });
 
+test('encerramento às 17h de Brasília desliga o tema e a preferência salva', () => {
+  const end = Date.parse('2026-11-28T17:00:00-03:00');
+  const state = setup({ savedTheme: 'on', initialTime: end - 1000 });
+  assert.equal(state.classes.has('vice-city-theme'), true);
+  state.advanceTime(1000);
+  state.runTimer(1000);
+  assert.equal(state.classes.has('vice-city-theme'), false);
+  assert.equal(state.settings.get('vice-city'), 'off');
+  assert.equal(state.branding.bluFavicon.getAttribute('href'), 'assets/icons/blu.svg');
+  assert.equal(state.body.children.length, 0);
+  assert.equal(state.audios.length, 0);
+  state.dispatch('click', { isTrusted: true, preventDefault() {}, stopImmediatePropagation() {} });
+  assert.equal(state.body.children[0].className, 'vice-city-intro vice-city-intro--reverse');
+  assert.match(state.body.children[0].innerHTML, /vice-city-intro__blue-logo.*assets\/icons\/blu\.svg/);
+  assert.equal(state.audios[0].src, 'https://blu.example/libs/events/vice-city/sounds/ViceCity.ogg');
+  assert.equal(state.audios[0].playCount, 1);
+  state.changed();
+  assert.equal(state.audios[0].pauseCount, 0);
+  state.runTimer(6000);
+  assert.equal(state.body.children[0].className, 'vice-city-outro vice-city-outro--after-shutdown');
+  state.runTimer(250);
+  assert.equal(state.audios[0].pauseCount, 1);
+  state.runTimer(2000);
+  assert.equal(state.body.children.length, 0);
+  assert.equal(state.audios[1].src, 'https://blu.example/libs/events/vice-city/sounds/ocarina.ogg');
+  assert.equal(state.audios[1].volume, 0.12);
+  assert.equal(state.audios[1].playCount, 1);
+});
+
+test('pesquisa por teclado também inicia a saída pendente com áudio', () => {
+  const end = Date.parse('2026-11-28T17:00:00-03:00');
+  const state = setup({ savedTheme: 'on', initialTime: end - 1000 });
+  state.advanceTime(1000);
+  state.runTimer(1000);
+  state.dispatch('keydown', { key: 'Tab', isTrusted: true });
+  assert.equal(state.body.children.length, 0);
+  let consumed = false;
+  state.dispatch('keydown', {
+    key: 'p', isTrusted: true, target: state.searchInput,
+    preventDefault() { consumed = true; }, stopImmediatePropagation() {}
+  });
+  assert.equal(consumed, true);
+  assert.equal(state.body.children[0].className, 'vice-city-intro vice-city-intro--reverse');
+  assert.equal(state.audios[0].playCount, 1);
+});
+
+test('vice-end permite prévia da saída com o tema ativo ou desligado', () => {
+  for (const savedTheme of ['on', 'off']) {
+    const state = setup({ savedTheme, search: '?vice-end=true' });
+    state.runTimer(700);
+    assert.equal(state.body.children[0].className, 'vice-city-end-preview');
+    assert.equal(state.audios.length, 0);
+    state.body.children[0].children[0].listeners.get('click')();
+    assert.equal(state.settings.get('vice-city'), savedTheme === 'on' ? 'off' : undefined);
+    assert.equal(state.classes.has('vice-city-theme'), false);
+    assert.equal(state.body.children[0].className, 'vice-city-intro vice-city-intro--reverse');
+    assert.equal(state.body.children[0].innerHTML.includes('class="vice-city-intro__logo"'), true);
+    assert.equal(state.audios[0].playCount, 1);
+    state.changed();
+    assert.equal(state.audios[0].pauseCount, 0);
+    state.runTimer(6000);
+    assert.equal(state.body.children[0].className, 'vice-city-outro vice-city-outro--after-shutdown');
+    state.runTimer(2000);
+    assert.equal(state.body.children.length, 0);
+    assert.equal(state.audios[1].src, 'https://blu.example/libs/events/vice-city/sounds/ocarina.ogg');
+    assert.equal(state.audios[1].volume, 0.12);
+  }
+});
+
+test('vice-end=demo aguarda interação com a interface para iniciar a saída com som', () => {
+  for (const savedTheme of ['on', 'off']) {
+    const state = setup({ savedTheme, search: '?vice-end=demo' });
+    assert.equal(state.body.children.length, 0);
+    assert.equal(state.classes.has('vice-city-theme'), savedTheme === 'on');
+    state.dispatch('click', { isTrusted: false });
+    assert.equal(state.audios.length, 0);
+    state.dispatch('keydown', { key: 'Tab', isTrusted: true });
+    assert.equal(state.audios.length, 0);
+    state.dispatch('click', { isTrusted: true, preventDefault() {}, stopImmediatePropagation() {} });
+    assert.equal(state.settings.get('vice-city'), savedTheme === 'on' ? 'off' : undefined);
+    assert.equal(state.classes.has('vice-city-theme'), false);
+    assert.equal(state.body.children[0].className, 'vice-city-intro vice-city-intro--reverse');
+    assert.equal(state.audios[0].playCount, 1);
+    state.changed();
+    assert.equal(state.audios[0].pauseCount, 0);
+  }
+});
+
+test('prévia oferece clique para iniciar a música quando o autoplay é bloqueado', async () => {
+  const state = setup({ search: '?vice-end=true', blockAudio: true });
+  state.runTimer(700);
+  state.body.children[0].children[0].listeners.get('click')();
+  await Promise.resolve();
+  const shutdown = state.body.children[0];
+  assert.equal(shutdown.classList.contains('vice-city-intro--needs-audio'), true);
+  shutdown.listeners.get('click')();
+  assert.equal(shutdown.classList.contains('vice-city-intro--needs-audio'), false);
+  assert.equal(state.audios.length, 2);
+  assert.equal(state.audios[1].playCount, 1);
+});
+
+test('tema ativo se encerra ao voltar de uma aba suspensa após o prazo', () => {
+  const end = Date.parse('2026-11-28T17:00:00-03:00');
+  const state = setup({ savedTheme: 'on', initialTime: end - 1000 });
+  state.advanceTime(1000);
+  state.dispatch('visibilitychange');
+  assert.equal(state.classes.has('vice-city-theme'), false);
+  assert.equal(state.settings.get('vice-city'), 'off');
+});
+
+test('não restaura nem permite ativar o tema após o encerramento', () => {
+  const end = Date.parse('2026-11-28T17:00:00-03:00');
+  const state = setup({ savedTheme: 'on', initialTime: end });
+  assert.equal(state.settings.get('vice-city'), 'off');
+  assert.equal(state.classes.has('vice-city-theme'), false);
+  for (const key of ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown',
+    'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a']) {
+    state.dispatch('keydown', { key });
+  }
+  assert.equal(state.body.children.length, 0);
+  state.classes.add('vice-city-theme');
+  state.changed();
+  assert.equal(state.classes.has('vice-city-theme'), false);
+});
+
+test('encerramento durante a intro cancela a ativação agendada', () => {
+  const end = Date.parse('2026-11-28T17:00:00-03:00');
+  const state = setup({ initialTime: end - 100 });
+  for (const key of ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown',
+    'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a']) {
+    state.dispatch('keydown', { key, preventDefault() {} });
+  }
+  assert.equal(state.body.children[0].className, 'vice-city-intro');
+  state.advanceTime(100);
+  state.runTimer(100);
+  assert.equal(state.classes.has('vice-city-theme'), false);
+  assert.equal(state.settings.get('vice-city'), undefined);
+  assert.equal(state.body.children.length, 0);
+  assert.equal([...state.timers.values()].some(timer => timer.ms === 500), false);
+});
+
 test('cursor especial surge após o prazo inicial e não persiste após F5', () => {
   const state = setup({ savedTheme: 'on' });
   const firstTimer = state.timers.keys().next().value;
@@ -332,7 +485,7 @@ test('cursor especial surge após o prazo inicial e não persiste após F5', () 
   assert.equal(state.timers.get(firstTimer).ms, 300000);
   state.dispatch('pointermove', {});
   assert.equal(state.timers.has(firstTimer), false);
-  const idleTimer = state.timers.values().next().value;
+  const idleTimer = [...state.timers.values()].find(timer => timer.ms === 300000);
   idleTimer.fn();
   state.changed();
   assert.equal(state.classes.has('vice-city-idle-cursor'), true);
@@ -348,7 +501,7 @@ test('cursor especial surge após o prazo inicial e não persiste após F5', () 
 
   const reloaded = setup({ savedTheme: 'on' });
   assert.equal(reloaded.classes.has('vice-city-idle-cursor'), false);
-  assert.equal(reloaded.timers.size, 1);
+  assert.ok([...reloaded.timers.values()].some(timer => timer.ms === 300000));
 });
 
 test('cursor VI sai no primeiro clique e reaparece após dois minutos', () => {

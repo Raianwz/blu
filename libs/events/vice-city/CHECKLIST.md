@@ -2,7 +2,7 @@
 
 ## Calendário
 
-- [x] Encerrar o Vice City na virada de sexta, 27/11/2026, para sábado, 28/11/2026, às 00h de São Paulo.
+- [x] Encerrar a rádio em 24/11/2026 às 17h e o tema Vice City em 28/11/2026 às 17h, horário de Brasília.
 
 ## Já feito
 
@@ -25,7 +25,7 @@
 - [ ] Percorrer ativação, pulo, áudio e saída após voltar de outra aba; confirmar que nenhuma transição fica presa.
 - [ ] Conferir nos navegadores usados o ponto de clique da seta comum (ponta superior esquerda), da mão neon (ponta do indicador) e do “VI” em inatividade (base do V).
 - [ ] Conferir a pista com leitor de tela e navegação por teclado: instruções, progresso e erro precisam ser compreensíveis sem depender só das cores.
-- [ ] Implementar o encerramento automático: desativar o Vice City na data acima, impedir nova ativação e tratar uma preferência `on` já salva.
+- [x] Implementar o encerramento automático: desativar o Vice City na data acima, impedir nova ativação e tratar uma preferência `on` já salva.
 - [ ] Definir se o tema deve funcionar no PWA sem rede. O CSS, o JavaScript, o áudio e as imagens do Vice City não estão no `APP_SHELL` do service worker. A `origin/main` publicada pré-carrega o Halloween; a `main` local, após a reorganização, não o pré-carrega mais.
 
 ## Opcional, se ainda couber

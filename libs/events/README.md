@@ -24,7 +24,7 @@ Em telas de toque, os dez símbolos já aparecem e devem ser tocados na ordem.
 Ao completar a sequência, a busca é limpa na ativação e na desativação do tema.
 O estado do tema fica em `blu:settings["vice-city"]` (`on` ou `off`) e é
 restaurado após recarregar a página, sem repetir a intro.
-De 16/11 até 28/11/2026 às 00h de São Paulo, o rádio experimental aparece
+De 16/11 até 24/11/2026 às 17h de Brasília, o rádio experimental aparece
 somente se o tema estiver ativo e a primeira faixa em `rd.blu.rwz.app/vice-city/`
 estiver acessível. Um clique inicia a playlist em ordem aleatória e 15% de
 volume; o painel oferece anterior, reproduzir/pausar, próxima e volume.
@@ -40,6 +40,19 @@ Para exibir as tags ID3, o bucket `radioblu` precisa de uma política CORS para
 `GET` com `Range` liberado nas origens `https://blu.rwz.app`,
 `http://localhost:5500` e `http://127.0.0.1:5500`. Sem essa política o som
 continua funcionando, mas o navegador mostra o nome do arquivo.
+O tema Vice City se encerra automaticamente em 28/11/2026 às 17h de Brasília:
+a preferência salva é desligada e novas ativações são bloqueadas. Para quem
+estiver com o tema aberto nesse horário, a saída começa no próximo clique ou
+tecla, permitindo que o navegador reproduza a música. O logo de néon se apaga em
+6 segundos. O logo azul do Blû aparece no fim, antes da transição de saída
+de 2 segundos. Ao voltar ao Blû normal, `vice-city/sounds/ocarina.ogg` toca
+uma vez a 12% do volume. Para testar a saída antes da data,
+abra `/?vice-end=true` e clique em “Iniciar saída com som”; esse clique libera a
+reprodução nos navegadores que bloqueiam áudio automático. A prévia funciona
+mesmo com o tema desligado e, se ele
+estiver ativo, também desliga sua preferência salva.
+Para testar o mesmo gatilho do encerramento real sem o botão de prévia, use
+`/?vice-end=demo`: a primeira interação com a interface inicia a saída e o som.
 O cursor temático aparece ao fim da intro ou quando ela é pulada. Após cinco
 minutos sem interação com o Blû, o logo VI substitui a seta até o próximo clique.
 Ele pode reaparecer após dois minutos de inatividade. Sair do tema remove o
