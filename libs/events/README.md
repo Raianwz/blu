@@ -46,7 +46,10 @@ estiver com o tema aberto nesse horário, a saída começa no próximo clique ou
 tecla, permitindo que o navegador reproduza a música. O logo de néon se apaga em
 6 segundos. O logo azul do Blû aparece no fim, antes da transição de saída
 de 2 segundos. Ao voltar ao Blû normal, `vice-city/sounds/ocarina.ogg` toca
-uma vez a 12% do volume. Para testar a saída antes da data,
+uma vez a 12% do volume e começa uma neve leve por 30 segundos. A neve não é
+exibida quando o usuário prefere movimento reduzido. Um toast com o símbolo da
+Triforce pergunta “Oh, uma ocarina?”; ele dura até 30 segundos e fecha ao clique.
+Para testar a saída antes da data,
 abra `/?vice-end=true` e clique em “Iniciar saída com som”; esse clique libera a
 reprodução nos navegadores que bloqueiam áudio automático. A prévia funciona
 mesmo com o tema desligado e, se ele

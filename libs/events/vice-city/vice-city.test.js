@@ -5,7 +5,8 @@ const vm = require('node:vm');
 
 const source = fs.readFileSync(require('node:path').join(__dirname, 'vice-city.js'), 'utf8');
 
-function setup({ pattern = 0, savedTheme = 'off', touch = false, randomValue = null, search = '',
+function setup({ pattern = 0, savedTheme = 'off', touch = false, reducedMotion = false,
+  randomValue = null, search = '',
   blockAudio = false,
   initialTime = Date.parse('2026-11-22T12:00:00-03:00') } = {}) {
   const classes = new Set();
@@ -102,7 +103,9 @@ function setup({ pattern = 0, savedTheme = 'off', touch = false, randomValue = n
   }
   const window = {
     location: { search },
-    matchMedia() { return { matches: touch }; },
+    matchMedia(query) {
+      return { matches: query === '(any-pointer: coarse)' ? touch : reducedMotion };
+    },
     addEventListener(name, fn) {
       if (!listeners.has(`window:${name}`)) listeners.set(`window:${name}`, new Set());
       listeners.get(`window:${name}`).add(fn);
@@ -122,7 +125,16 @@ function setup({ pattern = 0, savedTheme = 'off', touch = false, randomValue = n
       searchInput.value = '';
       for (const fn of [...(listeners.get('blu:search-updated') || [])]) fn();
     },
-    notify(message, type, options) { toasts.push({ message, type, options }); },
+    notify(message, type, options) {
+      const toast = { message, type, options, classes: [], icon: null, removed: false, listeners: new Map() };
+      toasts.push(toast);
+      return {
+        classList: { add(name) { toast.classes.push(name); } },
+        prepend(node) { toast.icon = node; },
+        addEventListener(name, fn) { toast.listeners.set(name, fn); },
+        remove() { toast.removed = true; }
+      };
+    },
     setTimeout(fn, ms) { timers.set(++nextTimer, { fn, ms }); return nextTimer; },
     clearTimeout(id) { timers.delete(id); }
   });
@@ -360,10 +372,19 @@ test('encerramento às 17h de Brasília desliga o tema e a preferência salva', 
   state.runTimer(250);
   assert.equal(state.audios[0].pauseCount, 1);
   state.runTimer(2000);
-  assert.equal(state.body.children.length, 0);
+  assert.equal(state.body.children[0].className, 'vice-city-snow');
+  assert.equal(state.body.children[0].children.length, 24);
   assert.equal(state.audios[1].src, 'https://blu.example/libs/events/vice-city/sounds/ocarina.ogg');
   assert.equal(state.audios[1].volume, 0.12);
   assert.equal(state.audios[1].playCount, 1);
+  assert.equal(state.toasts[0].message, 'Oh, uma ocarina?');
+  assert.equal(state.toasts[0].options.duration, 30000);
+  assert.ok(state.toasts[0].classes.includes('vice-city-ocarina-toast'));
+  assert.match(state.toasts[0].icon.innerHTML, /<svg.*<path/);
+  state.toasts[0].listeners.get('click')();
+  assert.equal(state.toasts[0].removed, true);
+  state.runTimer(30000);
+  assert.equal(state.body.children.length, 0);
 });
 
 test('pesquisa por teclado também inicia a saída pendente com áudio', () => {
@@ -400,10 +421,23 @@ test('vice-end permite prévia da saída com o tema ativo ou desligado', () => {
     state.runTimer(6000);
     assert.equal(state.body.children[0].className, 'vice-city-outro vice-city-outro--after-shutdown');
     state.runTimer(2000);
-    assert.equal(state.body.children.length, 0);
+    assert.equal(state.body.children[0].className, 'vice-city-snow');
     assert.equal(state.audios[1].src, 'https://blu.example/libs/events/vice-city/sounds/ocarina.ogg');
     assert.equal(state.audios[1].volume, 0.12);
+    state.runTimer(30000);
+    assert.equal(state.body.children.length, 0);
   }
+});
+
+test('despedida respeita movimento reduzido e mantém o áudio suave', () => {
+  const state = setup({ search: '?vice-end=true', reducedMotion: true });
+  state.runTimer(700);
+  state.body.children[0].children[0].listeners.get('click')();
+  state.runTimer(6000);
+  state.runTimer(2000);
+  assert.equal(state.body.children.length, 0);
+  assert.equal(state.audios[1].volume, 0.12);
+  assert.equal([...state.timers.values()].some(timer => timer.ms === 30000), false);
 });
 
 test('vice-end=demo aguarda interação com a interface para iniciar a saída com som', () => {

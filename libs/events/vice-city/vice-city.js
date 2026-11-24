@@ -7,6 +7,8 @@
   const AUDIO_FADE_DURATION = 250;
   const OUTRO_DURATION = 2000;
   const SHUTDOWN_ANIMATION_DURATION = 6000;
+  const SNOW_DURATION = 30000;
+  const SNOW_FLAKES = 24;
   const END_MODE = new URLSearchParams(window.location.search).get('vice-end');
   const ACTIVATION_DELAY = 500;
   const IDLE_CURSOR_DELAY = 5 * 60 * 1000;
@@ -53,6 +55,8 @@
   let shutdownTimer = null;
   let introAudio = null;
   let returnAudio = null;
+  let snowOverlay = null;
+  let snowTimer = null;
   let audioFadeTimers = [];
   let konamiIndex = 0;
   let clueRoot = null;
@@ -528,6 +532,47 @@
     }
   }
 
+  function showOcarinaToast() {
+    const toast = notify('Oh, uma ocarina?', 'ok', { duration: 30000 });
+    if (!toast) return;
+    toast.classList.add('vice-city-ocarina-toast');
+    toast.title = 'Clique para fechar';
+    toast.addEventListener('click', () => toast.remove(), { once: true });
+    const icon = document.createElement('span');
+    icon.className = 'vice-city-ocarina-toast__icon';
+    icon.setAttribute('aria-hidden', 'true');
+    icon.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1 7 10h10L12 1ZM6.5 11 1.5 20h10l-5-9Zm11 0-5 9h10l-5-9Z"/></svg>';
+    toast.prepend(icon);
+  }
+
+  function stopSnow() {
+    clearTimeout(snowTimer);
+    snowTimer = null;
+    snowOverlay?.remove();
+    snowOverlay = null;
+  }
+
+  function startSnow() {
+    stopSnow();
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches) return;
+    snowOverlay = document.createElement('div');
+    snowOverlay.className = 'vice-city-snow';
+    snowOverlay.setAttribute('aria-hidden', 'true');
+    for (let index = 0; index < SNOW_FLAKES; index++) {
+      const flake = document.createElement('span');
+      flake.className = 'vice-city-snow__flake';
+      const x = (index * 43 + 7) % 100;
+      const size = 2 + index % 4;
+      const duration = 12 + index % 8;
+      const delay = -((index * 7) % duration);
+      const sway = (index % 7 - 3) * 12;
+      flake.setAttribute('style', `--snow-x:${x}%;--snow-size:${size}px;--snow-duration:${duration}s;--snow-delay:${delay}s;--snow-sway:${sway}px`);
+      snowOverlay.appendChild(flake);
+    }
+    document.body.appendChild(snowOverlay);
+    snowTimer = setTimeout(stopSnow, SNOW_DURATION);
+  }
+
   function finishIntro(stopSound = true) {
     if (stopSound) stopAudio();
     if (!overlay) return;
@@ -629,6 +674,7 @@
         document.body.classList.contains('halloween-theme') ||
         document.visibilityState !== 'visible') return;
     stopReturnAudio();
+    stopSnow();
     setCursorReady(false);
     overlay = createNeonOverlay();
     overlay.setAttribute('aria-label', 'Logo do Blû surgindo em luzes de néon. Clique ou pressione uma tecla para pular a abertura.');
@@ -655,6 +701,7 @@
   function startShutdownAnimation() {
     if (shutdownOverlay || outroOverlay) return;
     stopReturnAudio();
+    stopSnow();
     shutdownOverlay = createNeonOverlay();
     shutdownOverlay.classList.add('vice-city-intro--reverse');
     shutdownOverlay.setAttribute('aria-label', 'As luzes do logo Vice City se apagam antes do retorno ao Blû.');
@@ -721,7 +768,11 @@
     setTimeout(() => {
       outroOverlay?.remove();
       outroOverlay = null;
-      if (afterShutdown) playReturnAudio();
+      if (afterShutdown) {
+        playReturnAudio();
+        startSnow();
+        showOcarinaToast();
+      }
       if (pending) startIntro();
     }, OUTRO_DURATION);
   }

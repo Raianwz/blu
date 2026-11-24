@@ -600,6 +600,64 @@ body.vice-city-theme.vice-city-cursor-ready:not(.halloween-theme) .vice-radio__v
   .vice-city-outro img { filter: none; }
 }
 
+/* A brief, quiet snowfall hints at the next seasonal theme after the finale. */
+.vice-city-snow {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  overflow: hidden;
+  pointer-events: none;
+  animation: vice-city-snow-visit 30s linear both;
+}
+
+.vice-city-snow__flake {
+  position: absolute;
+  top: -8px;
+  left: var(--snow-x);
+  width: var(--snow-size);
+  height: var(--snow-size);
+  border-radius: 50%;
+  background: rgba(240, 248, 255, .85);
+  box-shadow: 0 0 5px rgba(170, 220, 255, .55);
+  animation: vice-city-snow-fall var(--snow-duration) linear var(--snow-delay) infinite;
+}
+
+@keyframes vice-city-snow-visit {
+  0% { opacity: 0; }
+  8%, 80% { opacity: .65; }
+  100% { opacity: 0; }
+}
+
+@keyframes vice-city-snow-fall {
+  from { transform: translate3d(0, -8vh, 0); }
+  to { transform: translate3d(var(--snow-sway), 110vh, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vice-city-snow { display: none; }
+}
+
+.vice-city-ocarina-toast {
+  justify-content: flex-start;
+  gap: 10px;
+  background: #205cb5;
+  border: 1px solid #d9b563;
+  cursor: pointer;
+}
+
+.vice-city-ocarina-toast__icon {
+  display: inline-flex;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  color: #ffe18a;
+}
+
+.vice-city-ocarina-toast__icon svg {
+  width: 100%;
+  height: 100%;
+}
+
 /* Search clue: the two layouts reveal different parts of the Konami sequence. */
 .vice-city-clue {
   box-sizing: border-box;
