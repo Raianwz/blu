@@ -377,7 +377,7 @@ test('encerramento às 17h de Brasília desliga o tema e a preferência salva', 
   assert.equal(state.audios[1].src, 'https://blu.example/libs/events/vice-city/sounds/ocarina.ogg');
   assert.equal(state.audios[1].volume, 0.12);
   assert.equal(state.audios[1].playCount, 1);
-  assert.equal(state.toasts[0].message, 'Oh, uma ocarina?');
+  assert.equal(state.toasts[0].message, 'Uma ocarina? O tempo está mudando...');
   assert.equal(state.toasts[0].options.duration, 30000);
   assert.ok(state.toasts[0].classes.includes('vice-city-ocarina-toast'));
   assert.match(state.toasts[0].icon.innerHTML, /<svg.*<path/);

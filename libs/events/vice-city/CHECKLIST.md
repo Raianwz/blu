@@ -2,7 +2,7 @@
 
 ## Calendário
 
-- [x] Encerrar a rádio em 24/11/2026 às 17h e o tema Vice City em 28/11/2026 às 17h, horário de Brasília.
+- [x] Encerrar a rádio em 28/11/2026 às 16h e o tema Vice City às 17h do mesmo dia, horário de Brasília.
 
 ## Já feito
 

@@ -24,7 +24,7 @@ Em telas de toque, os dez símbolos já aparecem e devem ser tocados na ordem.
 Ao completar a sequência, a busca é limpa na ativação e na desativação do tema.
 O estado do tema fica em `blu:settings["vice-city"]` (`on` ou `off`) e é
 restaurado após recarregar a página, sem repetir a intro.
-De 16/11 até 24/11/2026 às 17h de Brasília, o rádio experimental aparece
+De 16/11 até 28/11/2026 às 16h de Brasília, o rádio experimental aparece
 somente se o tema estiver ativo e a primeira faixa em `rd.blu.rwz.app/vice-city/`
 estiver acessível. Um clique inicia a playlist em ordem aleatória e 15% de
 volume; o painel oferece anterior, reproduzir/pausar, próxima e volume.
@@ -48,7 +48,7 @@ tecla, permitindo que o navegador reproduza a música. O logo de néon se apaga 
 de 2 segundos. Ao voltar ao Blû normal, `vice-city/sounds/ocarina.ogg` toca
 uma vez a 12% do volume e começa uma neve leve por 30 segundos. A neve não é
 exibida quando o usuário prefere movimento reduzido. Um toast com o símbolo da
-Triforce pergunta “Oh, uma ocarina?”; ele dura até 30 segundos e fecha ao clique.
+Triforce pergunta “Uma ocarina? O tempo está mudando...”; ele dura até 30 segundos e fecha ao clique.
 Para testar a saída antes da data,
 abra `/?vice-end=true` e clique em “Iniciar saída com som”; esse clique libera a
 reprodução nos navegadores que bloqueiam áudio automático. A prévia funciona

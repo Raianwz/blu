@@ -2,7 +2,7 @@
 (() => {
   const BASE = 'https://rd.blu.rwz.app/vice-city/';
   const START = Date.parse('2026-11-16T00:00:00-03:00');
-  const END = Date.parse('2026-11-24T17:00:00-03:00');
+  const END = Date.parse('2026-11-28T16:00:00-03:00');
   const LOCAL_PREVIEW = ['localhost', '127.0.0.1'].includes(window.location?.hostname) &&
     new URLSearchParams(window.location.search).has('radio-preview');
   const TRACKS = [

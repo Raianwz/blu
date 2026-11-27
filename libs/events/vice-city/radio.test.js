@@ -200,12 +200,14 @@ test('hides the radio when audio fails or the calendar window is closed', () => 
   assert.equal(unavailable.topbar.child, undefined);
   const early = setup({ now: Date.parse('2026-11-15T12:00:00-03:00') });
   assert.equal(early.audios.length, 0);
-  const late = setup({ now: Date.parse('2026-11-24T17:00:00-03:00') });
+  const extended = setup({ now: Date.parse('2026-11-26T12:00:00-03:00') });
+  assert.equal(extended.audios.length, 1);
+  const late = setup({ now: Date.parse('2026-11-28T16:00:00-03:00') });
   assert.equal(late.audios.length, 0);
 });
 
-test('the radio stops at 17h Brasília on November 24', () => {
-  const end = Date.parse('2026-11-24T17:00:00-03:00');
+test('the radio stops at 16h Brasília on November 28', () => {
+  const end = Date.parse('2026-11-28T16:00:00-03:00');
   const state = setup({ now: end - 1000 });
   state.audios[0].emit('loadedmetadata');
   state.topbar.child.click();
@@ -217,7 +219,7 @@ test('the radio stops at 17h Brasília on November 24', () => {
 });
 
 test('the radio closes on return from a suspended tab after the deadline', () => {
-  const end = Date.parse('2026-11-24T17:00:00-03:00');
+  const end = Date.parse('2026-11-28T16:00:00-03:00');
   const state = setup({ now: end - 1000 });
   state.audios[0].emit('loadedmetadata');
   state.topbar.child.click();

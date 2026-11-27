@@ -533,7 +533,7 @@
   }
 
   function showOcarinaToast() {
-    const toast = notify('Oh, uma ocarina?', 'ok', { duration: 30000 });
+    const toast = notify('Uma ocarina? O tempo está mudando...', 'ok', { duration: 30000 });
     if (!toast) return;
     toast.classList.add('vice-city-ocarina-toast');
     toast.title = 'Clique para fechar';
